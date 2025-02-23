@@ -186,8 +186,14 @@ namespace FacultyManagementSystemAPI.Migrations
                         .HasColumnType("int")
                         .HasDefaultValueSql("NEXT VALUE FOR dbo.CommonSequence");
 
+                    b.Property<DateTime>("AddedEnrollmentDate")
+                        .HasColumnType("DATE");
+
                     b.Property<int>("CourseId")
                         .HasColumnType("int");
+
+                    b.Property<DateTime?>("DeletedEnrollmentDate")
+                        .HasColumnType("DATE");
 
                     b.Property<decimal>("Exam1Grade")
                         .HasColumnType("decimal(10,2)");

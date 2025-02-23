@@ -42,28 +42,74 @@ namespace FacultyManagementSystemAPI.Models.Entities
         [Column(TypeName = "DATE")]
         public DateTime EnrollmentDate { get; set; }
 
+        public decimal GPA_Average
+        {
+            get
+            {
+                var gpas = new List<decimal?> { GPA1, GPA2, GPA3, GPA4, GPA5, GPA6, GPA7, GPA8 }
+                            .Where(gpa => gpa.HasValue) // إزالة القيم null
+                            .Select(gpa => gpa.Value)   // تحويل إلى decimal
+                            .ToList();
+
+                return gpas.Any() ? gpas.Average() : 0; // حساب المتوسط إذا وُجدت قيم
+            }
+        }
+
+
+        [Column(TypeName = "decimal(10,2)")]
+        public decimal? GPA1 { get; set; }
+
+
+        [Column(TypeName = "decimal(10,2)")]
+        public decimal? GPA2 { get; set; }
+
+
+        [Column(TypeName = "decimal(10,2)")]
+        public decimal? GPA3 { get; set; }
+
+
+        [Column(TypeName = "decimal(10,2)")]
+        public decimal? GPA4 { get; set; }
+
+
+        [Column(TypeName = "decimal(10,2)")]
+        public decimal? GPA5 { get; set; }
+
+
+        [Column(TypeName = "decimal(10,2)")]
+        public decimal? GPA6 { get; set; }
+
+
+        [Column(TypeName = "decimal(10,2)")]
+        public decimal? GPA7 { get; set; }
+
+
+        [Column(TypeName = "decimal(10,2)")]
+        public decimal? GPA8 { get; set; }
+        [Required]
+
+        [Column(TypeName = "decimal(10,2)")]
+        public decimal High_School_degree { get; set; }
 
         [Required]
-        [Column(TypeName = "decimal(10,2)")]
-        public decimal GPA { get; set; }
-        
-        [Required]
-        [Column(TypeName = "decimal(10,2)")]
-        public decimal High_School_degree { get; set; }  
-
-        [Required]
-		[MaxLength(50)]
-		public string High_School_Section { get; set; }
+        [MaxLength(50)]
+        public string High_School_Section { get; set; }
 
         [Required]
         public int CreditsCompleted { get; set; }
 
         [Required]
-		public string ImagePath { get; set; }
+        public string StudentLevel { get; set; }
 
-		// Navigation Properties
+        [Required]
+        public string status { get; set; }
 
-		public int DepartmentId { get; set; }
+        [Required]
+        public string ImagePath { get; set; }
+
+        // Navigation Properties
+
+        public int DepartmentId { get; set; }
         [ForeignKey(nameof(DepartmentId))]
         public Department Department { get; set; } // العلاقة مع القسم
 
@@ -71,6 +117,6 @@ namespace FacultyManagementSystemAPI.Models.Entities
         public List<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
         public List<Attendance> Attendances { get; set; } = new List<Attendance>();
 
-	}
+    }
 
 }
