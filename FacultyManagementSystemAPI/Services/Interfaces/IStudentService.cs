@@ -3,7 +3,7 @@ namespace FacultyManagementSystemAPI.Services.Interfaces
 {
 	public interface IStudentService
 	{
-		Task<IEnumerable<StudentDto>> GetAllAsync();
+		//Task<IEnumerable<StudentDto>> GetAllAsync();
 		//Task<StudentDto> GetByIdAsync(int id);
 		Task AddAsync(CreateStudentDto createStudentDto);
 		Task UpdateAsync(int id, UpdateStudentDto updateStudentDto);
@@ -12,5 +12,8 @@ namespace FacultyManagementSystemAPI.Services.Interfaces
 		// Customer Interfaces
 		Task<IEnumerable<StudentDto>> GetAllWithDepartmentNameAsync();
 		Task<StudentDto> GetByIdWithDepartmentNameAsync(int id);
+		Task<IEnumerable<StudentDto>> GetByNameWithDepartmentNameAsync(string name);
+		Task<StudentWithGradesDto> GetByIdWithHisGradeAsync(int id);
 	}
+
 }

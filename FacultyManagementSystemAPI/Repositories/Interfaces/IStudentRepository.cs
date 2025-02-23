@@ -5,11 +5,14 @@ namespace FacultyManagementSystemAPI.Repositories.Interfaces
 {
 	public interface IStudentRepository : IGenericRepository<Student>
 	{
+
 		// Customer Interfaces
 		Task<IEnumerable<StudentDto>> GetAllWithDepartmentNameAsync();
 		Task<StudentDto> GetByIdWithDepartmentNameAsync(int id);
+		Task<IEnumerable<StudentDto>> GetByNameWithDepartmentNameAsync(string name);
 		Task<bool> DepartmentExistsAsync(int departmentId);
 		Task<bool> PhoneExistsAsync(string phoneNumber);
 		Task<bool> EmailExistsAsync(string email);
+		Task<StudentWithGradesDto> GetByIdWithHisGradeAsync(int id);
 	}
 }

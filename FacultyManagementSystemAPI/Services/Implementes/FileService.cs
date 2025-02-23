@@ -2,7 +2,8 @@
 
 namespace FacultyManagementSystemAPI.Services.Implementes
 {
-	public class FileService : IFileService
+
+    public class FileService : IFileService
 	{
 		private readonly IWebHostEnvironment _environment;
 		private readonly IHttpContextAccessor _httpContextAccessor;
@@ -61,14 +62,19 @@ namespace FacultyManagementSystemAPI.Services.Implementes
 			return $"{baseUrl}/Images/{category}/{fileName}";
 		}
 
-		public async Task DeleteFileAsync(string relativePath)
+		public async Task DeleteFileAsync(string fileUrl)
 		{
-			if (string.IsNullOrEmpty(relativePath))
+			if (string.IsNullOrEmpty(fileUrl))
 			{
 				throw new ArgumentException("مسار الملف غير صالح");
 			}
 
-			var fullPath = Path.Combine(_environment.WebRootPath, relativePath.TrimStart('/'));
+			// استخراج الجزء النسبي من الرابط
+			var relativePath = fileUrl.Replace($"{_httpContextAccessor.HttpContext?.Request.Scheme}://{_httpContextAccessor.HttpContext?.Request.Host}/", "");
+
+
+			// تحويل المسار إلى مسار فعلي داخل `wwwroot`
+			var fullPath = Path.Combine(_environment.WebRootPath, relativePath);
 
 			if (File.Exists(fullPath))
 			{
@@ -78,7 +84,7 @@ namespace FacultyManagementSystemAPI.Services.Implementes
 				}
 				catch (Exception ex)
 				{
-					throw new IOException($"حدث خطأ أثناء حذف الملف: {fullPath}", ex);
+					throw new IOException($"حدث خطأ أثناء حذف الملف: {ex.Message}");
 				}
 			}
 			else
@@ -87,4 +93,4 @@ namespace FacultyManagementSystemAPI.Services.Implementes
 			}
 		}
 	}
-	}
+}

@@ -13,9 +13,9 @@ namespace FacultyManagementSystemAPI.Models.DTOs.Student
 
 		public string Gender { get; set; }
 
-		public string? Address { get; set; }
+		public string Address { get; set; }
 
-		public string? Nationality { get; set; }
+		public string Nationality { get; set; }
 
 		public string Email { get; set; }
 
@@ -33,8 +33,9 @@ namespace FacultyManagementSystemAPI.Models.DTOs.Student
 
 		public int CreditsCompleted { get; set; }
 
-		public string ImagePath { get; set; } 
-
+		//public int DepartmentId { get; set; }
 		public string DepartmentName { get; set; }
+
+		public string ImagePath { get; set; }
 	}
 }

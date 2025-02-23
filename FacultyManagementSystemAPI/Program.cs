@@ -29,6 +29,15 @@ builder.Services.AddScoped<IFileService, FileService>();
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddCors(options =>
+{
+	options.AddPolicy("AllowAll", builder =>
+	{
+		builder.AllowAnyOrigin()
+			   .AllowAnyMethod()
+			   .AllowAnyHeader();
+	});
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -39,6 +48,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("AllowAll");
 
 app.UseAuthorization();
 

@@ -30,7 +30,7 @@ namespace FacultyManagementSystemAPI.Controllers
 			}
 		}
 
-		[HttpGet("{id:int}")]
+		[HttpGet("GetStudentById{id:int}")]
 		public async Task<IActionResult> GetById(int id)
 		{
 			try
@@ -49,6 +49,42 @@ namespace FacultyManagementSystemAPI.Controllers
 			}
 		}
 
+		[HttpGet("SearchByName{name}")]
+		public async Task<IActionResult> GetByName(string name)
+		{
+			try
+			{
+				if (!ModelState.IsValid)
+				{
+					return BadRequest(ModelState);
+				}
+
+				var studentsDto = await _studentService.GetByNameWithDepartmentNameAsync(name);
+				return Ok(studentsDto);
+			}
+			catch (Exception ex)
+			{
+				return BadRequest(ex.Message);
+			}
+		}
+		[HttpGet("GetGradesOFStudentById{id:int}")]
+		public async Task<IActionResult> GetGradesOFStudentById(int id)
+		{
+			try
+			{
+				if (!ModelState.IsValid)
+				{
+					return BadRequest(ModelState);
+				}
+
+				var studentDto = await _studentService.GetByIdWithHisGradeAsync(id);
+				return Ok(studentDto);
+			}
+			catch (Exception ex)
+			{
+				return BadRequest(ex.Message);
+			}
+		}
 
 		[HttpPost("AddStudent")]
 		public async Task<IActionResult> Add([FromForm] CreateStudentDto createStudentDto)
@@ -69,7 +105,42 @@ namespace FacultyManagementSystemAPI.Controllers
 			}
 		}
 
+		[HttpPut("UpdateStudent{id}")]
+		public async Task<IActionResult> Update(int id, [FromForm] UpdateStudentDto updateStudentDto)
+		{
+			try
+			{
+				if (!ModelState.IsValid)
+				{
+					return BadRequest(ModelState);
+				}
 
+				await _studentService.UpdateAsync(id, updateStudentDto);
+				return NoContent(); // 204 No Content
+			}
+			catch (Exception ex)
+			{
+				return BadRequest(ex.Message);
+			}
+		}
+
+		[HttpDelete("DeleteStudent{id:int}")]
+		public async Task<IActionResult> DeleteById(int id)
+		{
+			try
+			{
+				if (!ModelState.IsValid)
+				{
+					return BadRequest(ModelState);
+				}
+
+				await _studentService.DeleteAsync(id);
+				return NoContent(); // 204 No Content
+			}
+			catch (Exception ex)
+			{
+				return BadRequest(ex.Message);
+			}
+		}
 	}
-
 }

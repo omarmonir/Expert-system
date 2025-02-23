@@ -60,6 +60,33 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
 					 DepartmentName = s.Department.Name
 				 }).FirstOrDefaultAsync();
 		}
+
+		public async Task<IEnumerable<StudentDto>> GetByNameWithDepartmentNameAsync(string name)
+		{
+			return await _dbContext.Students
+				 .AsNoTrackingWithIdentityResolution()
+				 .Where(s => s.Name.Contains(name))
+				 .Select(s => new StudentDto
+				 {
+					 Id = s.Id,
+					 Name = s.Name,
+					 Email = s.Email,
+					 Address = s.Address,
+					 EnrollmentDate = s.EnrollmentDate,
+					 Phone = s.Phone,
+					 Gender = s.Gender,
+					 NationalId = s.NationalId,
+					 Nationality = s.Nationality,
+					 Semester = s.Semester,
+					 GPA = s.GPA,
+					 High_School_degree = s.High_School_degree,
+					 High_School_Section = s.High_School_Section,
+					 CreditsCompleted = s.CreditsCompleted,
+					 ImagePath = s.ImagePath,
+					 DepartmentName = s.Department.Name
+				 }).ToListAsync();
+		}
+
 		public async Task<bool> DepartmentExistsAsync(int departmentId)
 		{
 			return await _dbContext.Departments
@@ -76,6 +103,22 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
 		{
 			return await _dbContext.Students
 				 .AnyAsync(s => s.Email.ToUpper() == email.ToUpper());
+		}
+		public async Task<StudentWithGradesDto> GetByIdWithHisGradeAsync(int id)
+		{
+			return await _dbContext.Enrollments
+				 .AsNoTrackingWithIdentityResolution()
+				 .Where(s => s.StudentId == id)
+				 .Select(s => new StudentWithGradesDto
+				 {
+					 Id = s.Student.Id,
+					 Name = s.Student.Name,
+					 GPA = s.Student.GPA,
+					 Exam1Grade = s.Exam1Grade,
+					 Exam2Grade = s.Exam2Grade,
+					 FinalGrade = s.FinalGrade,
+					 Grade = s.Grade
+				 }).FirstOrDefaultAsync();
 		}
 	}
 
