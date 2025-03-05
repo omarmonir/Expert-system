@@ -69,5 +69,30 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
         {
             return await _dbContext.Classes.AnyAsync(c => c.CourseId == courseId && c.ProfessorId == professorId);
         }
+
+        public Task<IEnumerable<Class>> GetAllAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Class> GetByIdAsync(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task AddAsync(Class entity)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task UpdateAsync(int id, Class entity)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task DeleteAsync(int id)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -10,14 +10,9 @@ namespace FacultyManagementSystemAPI.Controllers
     {
         private readonly ICourseService _courseService = courseService;
 
-        [HttpGet("GetAllWithPreCourseName")]
-        public async Task<IActionResult> GetAllCourses()
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+
         [HttpGet("AllCourses")]
+
         public async Task<IActionResult> GetAllCourses()
         {
             if (!ModelState.IsValid)
@@ -36,16 +31,8 @@ namespace FacultyManagementSystemAPI.Controllers
             }
         }
 
-        [HttpGet("GetByIdWithPreCourseName{id:int}")]
-        public async Task<IActionResult> GetByIdWithPreCourseName(int id)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
-        [HttpGet("CourseById/{id:int}")]
+       [HttpGet("CourseById/{id:int}")]
+
         public async Task<IActionResult> GetByIdWithPreCourseName(int id)
         {
             try
@@ -102,7 +89,7 @@ namespace FacultyManagementSystemAPI.Controllers
             }
         }
 
-        [HttpGet("GetCoursesBySemester/{semester}")]
+        [HttpGet("CoursesBySemester/{semester}")]
         public async Task<IActionResult> GetCoursesBySemesterWithPreCourseName(byte semester)
         {
             if (!ModelState.IsValid)
@@ -140,96 +127,48 @@ namespace FacultyManagementSystemAPI.Controllers
             }
         } 
         
-        [HttpGet("GetCourseRegistrationStatsByCourseOverTime/{courseId}")]
-        public async Task<IActionResult> GetCourseRegistrationStatsByCourseOverTime(int courseId)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+        //[HttpGet("GetCourseRegistrationStatsByCourseOverTime/{courseId}")]
+        //public async Task<IActionResult> GetCourseRegistrationStatsByCourseOverTime(int courseId)
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return BadRequest(ModelState);
+        //    }
 
-            try
-            {
-                var courses = await _courseService.GetCourseRegistrationStatsByCourseOverTimeAsync(courseId);
-                return Ok(courses);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-        [HttpGet("CoursesByStudentId/{studentId}")]
-        public async Task<IActionResult> GetCoursesByStudentId(int studentId)
-        {
-            try
-            {
-                var courses = await _courseService.GetCoursesByStudentIdAsync(studentId);
-                return Ok(courses);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "حدث خطأ غير متوقع.", details = ex.Message });
-            }
-        }
-        [HttpGet("GetCoursesByProfessorId/{professorId}")]
-        public async Task<IActionResult> GetCoursesByProfessorIdWithPreCourseName(int professorId)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            try
-            {
-                var courses = await _courseService.GetCoursesByProfessorIdWithPreCourseNameAsync(professorId);
-                return Ok(courses);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
+        //    try
+        //    {
+        //        var courses = await _courseService.GetCourseRegistrationStatsByCourseOverTimeAsync(courseId);
+        //        return Ok(courses);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest(ex.Message);
+        //    }
+        //}
+        //[HttpGet("CoursesByStudentId/{studentId}")]
+        //public async Task<IActionResult> GetCoursesByStudentId(int studentId)
+        //{
+        //    try
+        //    {
+        //        var courses = await _courseService.GetCoursesByStudentIdAsync(studentId);
+        //        return Ok(courses);
+        //    }
+        //    catch (ArgumentException ex)
+        //    {
+        //        return BadRequest(new { message = ex.Message });
+        //    }
+        //    catch (InvalidOperationException ex)
+        //    {
+        //        return NotFound(new { message = ex.Message });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, new { message = "حدث خطأ غير متوقع.", details = ex.Message });
+        //    }
+        //}
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateCourse(int id, [FromBody] UpdateCourseDto updateCourseDto)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
+       
 
-                await _courseService.UpdateCourseAsync(id, updateCourseDto);
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpDelete("DeleteCourse/{id}")]
-        public async Task<IActionResult> DeleteCourse(int id)
-        {
-            try
-            {
-                await _courseService.DeleteCourseAsync(id);
-                return NoContent(); // 204 No Content
-            }
-            catch (Exception ex)
-            {
-                return Content(ex.Message);// 404 Not Found
-            }
-        }
-    }
         [HttpPut("UpdateCourse/{id}")]
         public async Task<IActionResult> UpdateCourse(int id, [FromBody] UpdateCourseDto updateCourseDto)
         {
@@ -239,6 +178,7 @@ namespace FacultyManagementSystemAPI.Controllers
                 {
                     return BadRequest(ModelState);
                 }
+
                 await _courseService.UpdateCourseAsync(id, updateCourseDto);
                 return NoContent();
             }
@@ -261,6 +201,7 @@ namespace FacultyManagementSystemAPI.Controllers
                 return Content(ex.Message);// 404 Not Found
             }
         }
+
 
         [HttpGet("CountOfCourses")]
         public async Task<IActionResult> GetCourseCount()
@@ -300,5 +241,6 @@ namespace FacultyManagementSystemAPI.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
     }
 }
