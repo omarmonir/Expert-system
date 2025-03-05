@@ -11,6 +11,7 @@
         public int Credits { get; set; }
 
         public string Status { get; set; }
+        public string Code { get; set; }
 
         public byte Semester { get; set; }
 

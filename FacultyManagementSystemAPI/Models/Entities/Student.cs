@@ -57,59 +57,59 @@ namespace FacultyManagementSystemAPI.Models.Entities
 
 
         [Column(TypeName = "decimal(10,2)")]
-        public decimal? GPA1 { get; set; }       
-        
-     
+        public decimal? GPA1 { get; set; }
+
+
         [Column(TypeName = "decimal(10,2)")]
         public decimal? GPA2 { get; set; }
-        
-     
-        [Column(TypeName = "decimal(10,2)")]
-        public decimal? GPA3 { get; set; }       
-        
-        
-        [Column(TypeName = "decimal(10,2)")]
-        public decimal? GPA4 { get; set; }       
-        
-       
-        [Column(TypeName = "decimal(10,2)")]
-        public decimal? GPA5 { get; set; }       
-        
+
 
         [Column(TypeName = "decimal(10,2)")]
-        public decimal? GPA6 { get; set; }        
-        
-       
+        public decimal? GPA3 { get; set; }
+
+
         [Column(TypeName = "decimal(10,2)")]
-        public decimal? GPA7 { get; set; }       
-        
-       
+        public decimal? GPA4 { get; set; }
+
+
         [Column(TypeName = "decimal(10,2)")]
-        public decimal? GPA8 { get; set; }    
+        public decimal? GPA5 { get; set; }
+
+
+        [Column(TypeName = "decimal(10,2)")]
+        public decimal? GPA6 { get; set; }
+
+
+        [Column(TypeName = "decimal(10,2)")]
+        public decimal? GPA7 { get; set; }
+
+
+        [Column(TypeName = "decimal(10,2)")]
+        public decimal? GPA8 { get; set; }
         [Required]
-        
+
         [Column(TypeName = "decimal(10,2)")]
-        public decimal High_School_degree { get; set; }  
+        public decimal High_School_degree { get; set; }
 
         [Required]
-		[MaxLength(50)]
-		public string High_School_Section { get; set; }
+        [MaxLength(50)]
+        public string High_School_Section { get; set; }
 
         [Required]
         public int CreditsCompleted { get; set; }
 
         [Required]
         public string StudentLevel { get; set; }
-        
+
         [Required]
         public string status { get; set; }
 
         [Required]
-		public string ImagePath { get; set; }
+        public string ImagePath { get; set; }
 
-		// Navigation Properties
+        // Navigation Properties
 
-		public int DepartmentId { get; set; }
+        public int DepartmentId { get; set; }
         [ForeignKey(nameof(DepartmentId))]
         public Department Department { get; set; } // العلاقة مع القسم
 
@@ -117,6 +117,6 @@ namespace FacultyManagementSystemAPI.Models.Entities
         public List<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
         public List<Attendance> Attendances { get; set; } = new List<Attendance>();
 
-	}
+    }
 
 }

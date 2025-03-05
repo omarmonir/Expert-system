@@ -17,6 +17,13 @@ namespace FacultyManagementSystemAPI.Controllers
             {
                 return BadRequest(ModelState);
             }
+        [HttpGet("AllCourses")]
+        public async Task<IActionResult> GetAllCourses()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
             try
             {
@@ -30,6 +37,15 @@ namespace FacultyManagementSystemAPI.Controllers
         }
 
         [HttpGet("GetByIdWithPreCourseName{id:int}")]
+        public async Task<IActionResult> GetByIdWithPreCourseName(int id)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+        [HttpGet("CourseById/{id:int}")]
         public async Task<IActionResult> GetByIdWithPreCourseName(int id)
         {
             try
@@ -163,6 +179,23 @@ namespace FacultyManagementSystemAPI.Controllers
                 return StatusCode(500, new { message = "حدث خطأ غير متوقع.", details = ex.Message });
             }
         }
+        [HttpGet("GetCoursesByProfessorId/{professorId}")]
+        public async Task<IActionResult> GetCoursesByProfessorIdWithPreCourseName(int professorId)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            try
+            {
+                var courses = await _courseService.GetCoursesByProfessorIdWithPreCourseNameAsync(professorId);
+                return Ok(courses);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateCourse(int id, [FromBody] UpdateCourseDto updateCourseDto)
@@ -194,6 +227,77 @@ namespace FacultyManagementSystemAPI.Controllers
             catch (Exception ex)
             {
                 return Content(ex.Message);// 404 Not Found
+            }
+        }
+    }
+        [HttpPut("UpdateCourse/{id}")]
+        public async Task<IActionResult> UpdateCourse(int id, [FromBody] UpdateCourseDto updateCourseDto)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+                await _courseService.UpdateCourseAsync(id, updateCourseDto);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpDelete("DeleteCourse/{id}")]
+        public async Task<IActionResult> DeleteCourse(int id)
+        {
+            try
+            {
+                await _courseService.DeleteCourseAsync(id);
+                return NoContent(); // 204 No Content
+            }
+            catch (Exception ex)
+            {
+                return Content(ex.Message);// 404 Not Found
+            }
+        }
+
+        [HttpGet("CountOfCourses")]
+        public async Task<IActionResult> GetCourseCount()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            try
+            {
+                var count = await _courseService.GetCourseCountAsync();
+                return Ok(new { countOfCourses = count });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("CountOfAvailableCourses")]
+        public async Task<IActionResult> GetCourseCountByStatus()
+        {
+            var count = await _courseService.GetCourseCountByStatusAsync();
+            return Ok(new { countOfCourses = count });
+        }
+
+        [HttpGet("AllPreCoursesName")]
+        public async Task<IActionResult> GetAllPreCoursesName()
+        {
+            try
+            {
+                var preCoursesNames = await _courseService.GetAllPreRequisiteCoursesAsync();
+                return Ok(preCoursesNames);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
             }
         }
     }

@@ -8,35 +8,35 @@ using FacultyManagementSystemAPI.Services.Interfaces;
 
 namespace FacultyManagementSystemAPI.Services.Implementes
 {
-    public class ClassService(IClassRepository classRepository, IMapper mapper) : IClassService
-	{
-		private readonly IMapper _mapper = mapper;
-		private readonly IClassRepository _classRepository = classRepository;
+    public class ClassService : IClassService
+    {
+        private readonly IClassRepository _classRepository;
 
-        public async Task AddClassAsync(CreateClassDto createClassDto)
+        public ClassService(IClassRepository classRepository)
         {
-            if (createClassDto == null)
-                throw new ArgumentNullException("البيانات المدخلة لا يمكن أن تكون فارغة.");
-
-           
-
-            var classes = _mapper.Map<Class>(createClassDto);
-            await _classRepository.AddAsync(classes);
+            _classRepository = classRepository;
         }
 
-        public Task DeleteClassAsync(int id)
+        public async Task AssignCourseToProfessorAsync(int courseId, string professorName)
         {
-            throw new NotImplementedException();
-        }
+            var professor = await _classRepository.GetProfessorByNameAsync(professorName) ??
+                throw new KeyNotFoundException($"الأستاذ '{professorName}' غير موجود.");
 
-        public Task<IEnumerable<ClassDto>> GetAllClassesAsync()
-        {
-            throw new NotImplementedException();
-        }
+            var course = await _classRepository.GetCourseByIdAsync(courseId) ??
+                throw new KeyNotFoundException($"الكورس بالرقم التعريفي {courseId} غير موجود.");
 
-        public Task<ClassDto> GetClassByIdAsync(int id)
-        {
-            throw new NotImplementedException();
+            var existingClass = await _classRepository.GetClassByProfessorNameAsync(professorName) ??
+                throw new KeyNotFoundException($"لا يوجد صف دراسي مرتبط بالأستاذ '{professorName}'.");
+
+            bool isAlreadyAssigned = await _classRepository.IsCourseAlreadyAssignedAsync(courseId, professor.Id);
+            if (isAlreadyAssigned)
+            {
+                throw new InvalidOperationException($"الكورس '{course.Name}' تم تعيينه بالفعل للأستاذ '{professorName}'.");
+            }
+
+            existingClass.CourseId = courseId;
+
+            await _classRepository.UpdateClassAsync(existingClass);
         }
 
         public Task<IEnumerable<ClassDto>> GetClassesByProfessorIdAsync(int professorId)
@@ -49,4 +49,4 @@ namespace FacultyManagementSystemAPI.Services.Implementes
             throw new NotImplementedException();
         }
     }
-    }
+}

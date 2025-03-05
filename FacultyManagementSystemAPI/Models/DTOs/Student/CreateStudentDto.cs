@@ -42,10 +42,10 @@ namespace FacultyManagementSystemAPI.Models.DTOs.Student
         [DefaultValue("user@example.com")]
         public string Email { get; set; }
 
-        [Required(ErrorMessage = "رقم الهاتف مطلوب")]
-        [Phone(ErrorMessage = "تنسيق رقم الهاتف غير صحيح")]
-        [DefaultValue("+201234567890")]
-        public string Phone { get; set; }
+		[Required(ErrorMessage = "رقم الهاتف مطلوب")]
+		[Phone(ErrorMessage = "تنسيق رقم الهاتف غير صحيح")]
+		[DefaultValue("+201234567890")]
+		public string Phone { get; set; }
 
         [Required(ErrorMessage = "الفصل الدراسي مطلوب")]
         [Range(1, 8, ErrorMessage = "يجب أن يكون الفصل الدراسي بين 1 و 8")]
@@ -56,6 +56,12 @@ namespace FacultyManagementSystemAPI.Models.DTOs.Student
         [DataType(DataType.Date, ErrorMessage = "تنسيق التاريخ غير صحيح")]
         [DefaultValue("2025-02-15")]
         public DateTime EnrollmentDate { get; set; } = DateTime.Now;
+
+        [Required(ErrorMessage = "المعدل التراكمي مطلوب")]
+        [Column(TypeName = "decimal(10,2)")]
+        [Range(0.00, 4.00, ErrorMessage = "يجب أن يكون المعدل التراكمي بين 0.00 و 4.00")]
+        [DefaultValue(3.50)]
+        public decimal GPA { get; set; }
 
         [Required(ErrorMessage = "درجة الثانوية العامة مطلوبة")]
         [Column(TypeName = "decimal(10,2)")]
@@ -76,9 +82,15 @@ namespace FacultyManagementSystemAPI.Models.DTOs.Student
         [Required(ErrorMessage = "الصورة مطلوبة")]
         public IFormFile Image { get; set; }
 
+        [Required(ErrorMessage = "السنة الدراسية")]
+        [Range(1, 4, ErrorMessage = "يجب أن تكون السنة الدراسية بين 4 و 1")]
+        [DefaultValue(2)]
+        public int StudentLevel { get; set; }
+
         // Navigation Properties
         [Required(ErrorMessage = "رقم القسم مطلوب")]
         [DefaultValue(1111)]
         public int DepartmentId { get; set; }
     }
 }
+

@@ -209,7 +209,7 @@ namespace FacultyManagementSystemAPI.Migrations
                     b.Property<DateTime?>("DeletedEnrollmentDate")
                         .HasColumnType("DATE");
 
-                    b.Property<decimal?>("Exam1Grade")
+                    b.Property<decimal>("Exam1Grade")
                         .HasColumnType("decimal(10,2)");
 
                     b.Property<decimal?>("Exam2Grade")
