@@ -57,12 +57,6 @@ namespace FacultyManagementSystemAPI.Models.DTOs.Student
         [DefaultValue("2025-02-15")]
         public DateTime EnrollmentDate { get; set; } = DateTime.Now;
 
-        [Required(ErrorMessage = "المعدل التراكمي مطلوب")]
-        [Column(TypeName = "decimal(10,2)")]
-        [Range(0.00, 4.00, ErrorMessage = "يجب أن يكون المعدل التراكمي بين 0.00 و 4.00")]
-        [DefaultValue(3.50)]
-        public decimal GPA { get; set; }
-
         [Required(ErrorMessage = "درجة الثانوية العامة مطلوبة")]
         [Column(TypeName = "decimal(10,2)")]
         [Range(205.00, 410.00, ErrorMessage = "يجب أن تكون درجة الثانوية العامة بين 205.00 و 410.00")]
@@ -87,5 +81,4 @@ namespace FacultyManagementSystemAPI.Models.DTOs.Student
         [DefaultValue(1111)]
         public int DepartmentId { get; set; }
     }
-
 }

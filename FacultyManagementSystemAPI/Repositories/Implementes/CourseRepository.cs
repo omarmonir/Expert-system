@@ -24,7 +24,9 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                     Status = c.Course.Status,
                     Semester = c.Course.Semester,
                     PreCourseName = c.Course.PreCourse != null ? c.Course.PreCourse.Name : "لا يوجد مقرر مطلوب لهذا المقرر",
-                    ProfessorName = c.Professor.FullName
+                    ProfessorName = c.Professor.FullName,
+                    MaxSeats = c.Course.MaxSeats,
+                    CurrentEnrolledStudents = c.Course.CurrentEnrolledStudents
                 })
                 .ToListAsync();
         }
@@ -41,7 +43,9 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                         Status = c.Course.Status,
                         Semester = c.Course.Semester,
                         PreCourseName = c.Course.PreCourse != null ? c.Course.PreCourse.Name : "لا يوجد مقرر مطلوب لهذا المقرر",
-                        ProfessorName = c.Professor.FullName
+                        ProfessorName = c.Professor.FullName,
+                        MaxSeats = c.Course.MaxSeats,
+                        CurrentEnrolledStudents = c.Course.CurrentEnrolledStudents
                     })
 
                                  .ToListAsync();
@@ -61,7 +65,9 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                     Status = c.Course.Status,
                     Semester = c.Course.Semester,
                     PreCourseName = c.Course.PreCourse != null ? c.Course.PreCourse.Name : "لا يوجد مقرر مطلوب لهذا المقرر",
-                    ProfessorName = c.Professor.FullName
+                    ProfessorName = c.Professor.FullName,
+                    MaxSeats = c.Course.MaxSeats,
+                    CurrentEnrolledStudents = c.Course.CurrentEnrolledStudents
                 })
                 .ToListAsync();
         }
@@ -73,13 +79,15 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                 .Where(c => c.DepartmentId == departmentId)
                 .Select(c => new CourseDto
                 {
-                    Id = c.Id,
+                    Id = c.CourseId,
                     Name = c.Course.Name,
                     Description = c.Course.Description,
                     Credits = c.Course.Credits,
                     Status = c.Course.Status,
                     Semester = c.Course.Semester,
                     PreCourseName = c.Course.PreCourse != null ? c.Course.PreCourse.Name : "لا يوجد مقرر مطلوب لهذا المقرر",
+                    MaxSeats = c.Course.MaxSeats,
+                    CurrentEnrolledStudents = c.Course.CurrentEnrolledStudents
                 })
                 .ToListAsync();
         }
@@ -89,14 +97,16 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                .Where(c => c.ProfessorId == facultyId)
                .Select(c => new CourseDto
                {
-                   Id = c.Id,
+                   Id = c.CourseId,
                    Name = c.Course.Name,
                    Description = c.Course.Description,
                    Credits = c.Course.Credits,
                    Status = c.Course.Status,
                    Semester = c.Course.Semester,
                    PreCourseName = c.Course.PreCourse != null ? c.Course.PreCourse.Name : "لا يوجد مقرر مطلوب لهذا المقرر",
-                   ProfessorName = c.Professor.FullName
+                   ProfessorName = c.Professor.FullName,
+                   MaxSeats = c.Course.MaxSeats,
+                   CurrentEnrolledStudents = c.Course.CurrentEnrolledStudents
                })
                .Distinct()
                .ToListAsync();
@@ -122,10 +132,50 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                                     Status = c.Course.Status,
                                     Semester = c.Course.Semester,
                                     PreCourseName = c.Course.PreCourse != null ? c.Course.PreCourse.Name : "لا يوجد مقرر مطلوب لهذا المقرر",
-                                    ProfessorName = c.Professor.FullName
+                                    ProfessorName = c.Professor.FullName,
+                                    MaxSeats = c.Course.MaxSeats,
+                                    CurrentEnrolledStudents = c.Course.CurrentEnrolledStudents
                                 })
 
                                  .FirstOrDefaultAsync();
+        }
+
+        public async Task<IEnumerable<CourseRegistrationStatsDto>> GetCourseRegistrationStatsByCourseOverTimeAsync(int courseId)
+        {
+            return await _dbContext.Enrollments
+            .Where(e => e.CourseId == courseId)
+            .GroupBy(e => new { e.AddedEnrollmentDate.Year, e.AddedEnrollmentDate.Month })
+            .Select(g => new CourseRegistrationStatsDto
+            {
+                CourseId = courseId,
+                CourseName = g.First().Course.Name,
+                Year = g.Key.Year,
+                Month = g.Key.Month,
+                TotalRegistrations = g.Count(e => e.DeletedEnrollmentDate == null), // التسجيل الساري
+                TotalCancellations = g.Count(e => e.DeletedEnrollmentDate != null)  // التسجيل الملغى
+            })
+            .ToListAsync();
+        }
+
+        public async Task<List<CourseDto>> GetCoursesByStudentIdAsync(int studentId)
+        {
+            return await _dbContext.Enrollments
+                .Where(e => e.StudentId == studentId) 
+                .Include(e => e.Course) 
+                .Select(e => new CourseDto
+                {
+                    Id = e.Course.Id,
+                    Name = e.Course.Name,
+                    Description = e.Course.Description,
+                    Credits = e.Course.Credits,
+                    Status = e.Course.Status,
+                    Semester = e.Course.Semester,
+                    MaxSeats = e.Course.MaxSeats,
+                    PreCourseName = e.Course.PreCourse.Name
+                 
+                })
+                .Distinct()
+                .ToListAsync();
         }
     }
 }

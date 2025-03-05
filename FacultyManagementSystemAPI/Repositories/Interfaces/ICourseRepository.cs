@@ -12,6 +12,10 @@ namespace FacultyManagementSystemAPI.Repositories.Interfaces
 		Task<IEnumerable<CourseDto>> GetCoursesByProfessorIdWithPreCourseNameAsync(int professorId);
 		Task<IEnumerable<CourseDto>> GetCoursesBySemesterWithPreCourseNameAsync(byte semester);
 		Task<bool> CourseExistsAsync(string courseName);
+		Task<IEnumerable<CourseRegistrationStatsDto>> GetCourseRegistrationStatsByCourseOverTimeAsync(int courseId);
 
-	}
+        Task<List<CourseDto>> GetCoursesByStudentIdAsync(int studentId);
+
+
+    }
 }

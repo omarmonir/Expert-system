@@ -43,10 +43,25 @@ namespace FacultyManagementSystemAPI.Services.Implementes
 		{
 			var courseDto = await _courseRepository.GetByIdWithPreCourseNameAsync(id)
 				?? throw new KeyNotFoundException($"لم يتم العثور على المقرر برقم {id}.");
+
 			return courseDto;
 		}
 
-		public async Task<IEnumerable<CourseDto>> GetCoursesByDepartmentIdWithPreCourseNameAsync(int departmentId)
+        public async Task<IEnumerable<CourseRegistrationStatsDto>> GetCourseRegistrationStatsByCourseOverTimeAsync(int courseId)
+        {
+            if (courseId <= 0)
+                throw new ArgumentException("يجب أن يكون معرف المقرر رقمًا أكبر من الصفر", nameof(courseId));
+
+            var stats = await _courseRepository.GetCourseRegistrationStatsByCourseOverTimeAsync(courseId);
+
+            if (stats == null || !stats.Any())
+                throw new Exception($"لم يتم العثور على سجلات للتسجيل أو الإلغاء للمقرر برقم {courseId}.");
+
+            return stats;
+
+        }
+
+        public async Task<IEnumerable<CourseDto>> GetCoursesByDepartmentIdWithPreCourseNameAsync(int departmentId)
 		{
 			var coursesDto = await _courseRepository.GetCoursesByDepartmentIdWithPreCourseNameAsync(departmentId);
 			if (coursesDto == null || !coursesDto.Any())
@@ -93,6 +108,17 @@ namespace FacultyManagementSystemAPI.Services.Implementes
 			await _courseRepository.UpdateAsync(id, courseUpdate);
 		}
 
+        public async Task<IEnumerable<CourseDto>> GetCoursesByStudentIdAsync(int studentId)
+        {
+            if (studentId <= 0)
+                throw new ArgumentException("رقم الطالب غير صالح.");
 
-	}
-}
+            var courses = await _courseRepository.GetCoursesByStudentIdAsync(studentId);
+
+            if (courses == null || !courses.Any())
+                throw new InvalidOperationException("هذا الطالب لم يسجل في أي مادة حتى الآن.");
+
+            return courses;
+        }
+    }
+    }

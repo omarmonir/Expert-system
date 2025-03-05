@@ -30,7 +30,7 @@ namespace FacultyManagementSystemAPI.Controllers
 			}
 		}
 
-		[HttpGet("GetStudentById{id:int}")]
+		[HttpGet("GetStudentById/{id:int}")]
 		public async Task<IActionResult> GetById(int id)
 		{
 			try
@@ -49,7 +49,7 @@ namespace FacultyManagementSystemAPI.Controllers
 			}
 		}
 
-		[HttpGet("SearchByName{name}")]
+		[HttpGet("SearchByName/{name}")]
 		public async Task<IActionResult> GetByName(string name)
 		{
 			try
@@ -67,7 +67,7 @@ namespace FacultyManagementSystemAPI.Controllers
 				return BadRequest(ex.Message);
 			}
 		}
-		[HttpGet("GetGradesOFStudentById{id:int}")]
+		[HttpGet("GetGradesOFStudentById/{id:int}")]
 		public async Task<IActionResult> GetGradesOFStudentById(int id)
 		{
 			try
@@ -105,7 +105,7 @@ namespace FacultyManagementSystemAPI.Controllers
 			}
 		}
 
-		[HttpPut("UpdateStudent{id}")]
+		[HttpPut("UpdateStudent/{id}")]
 		public async Task<IActionResult> Update(int id, [FromForm] UpdateStudentDto updateStudentDto)
 		{
 			try
@@ -124,7 +124,7 @@ namespace FacultyManagementSystemAPI.Controllers
 			}
 		}
 
-		[HttpDelete("DeleteStudent{id:int}")]
+		[HttpDelete("DeleteStudent/{id:int}")]
 		public async Task<IActionResult> DeleteById(int id)
 		{
 			try
@@ -142,5 +142,43 @@ namespace FacultyManagementSystemAPI.Controllers
 				return BadRequest(ex.Message);
 			}
 		}
-	}
+
+        [HttpGet("StudentCountinDepartment/{departmentId}")]
+        public async Task<IActionResult> GetStudentCountByDepartment(int departmentId)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            try
+            {
+                var studentCounts = await _studentService.GetStudentCountByDepartmentAsync(departmentId);
+
+                return Ok(studentCounts);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+		
+		[HttpGet("StudentCountInCourse/{courseId}")]
+        public async Task<IActionResult> GetCourseStudentCount(int courseId)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            try
+            {
+                var studentCounts = await _studentService.GetCourseStudentCount(courseId);
+
+                return Ok(studentCounts);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+    }
 }

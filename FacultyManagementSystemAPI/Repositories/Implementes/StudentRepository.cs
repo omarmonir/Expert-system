@@ -1,4 +1,5 @@
 ﻿using FacultyManagementSystemAPI.Data;
+using FacultyManagementSystemAPI.Models.DTOs.Courses;
 using FacultyManagementSystemAPI.Models.DTOs.Student;
 using FacultyManagementSystemAPI.Models.Entities;
 using FacultyManagementSystemAPI.Repositories.Interfaces;
@@ -26,7 +27,9 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
 					 NationalId = s.NationalId,
 					 Nationality = s.Nationality,
 					 Semester = s.Semester,
-					 GPA = s.GPA,
+					 status = s.status,
+					 StudentLevel = s.StudentLevel,
+                     GPA_Average = s.GPA_Average,
 					 High_School_degree = s.High_School_degree,
 					 High_School_Section = s.High_School_Section,
 					 CreditsCompleted = s.CreditsCompleted,
@@ -42,23 +45,25 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
 				 .Where(s => s.Id == id)
 				 .Select(s => new StudentDto
 				 {
-					 Id = s.Id,
-					 Name = s.Name,
-					 Email = s.Email,
-					 Address = s.Address,
-					 EnrollmentDate = s.EnrollmentDate,
-					 Phone = s.Phone,
-					 Gender = s.Gender,
-					 NationalId = s.NationalId,
-					 Nationality = s.Nationality,
-					 Semester = s.Semester,
-					 GPA = s.GPA,
-					 High_School_degree = s.High_School_degree,
-					 High_School_Section = s.High_School_Section,
-					 CreditsCompleted = s.CreditsCompleted,
-					 ImagePath = s.ImagePath,
-					 DepartmentName = s.Department.Name
-				 }).FirstOrDefaultAsync();
+                     Id = s.Id,
+                     Name = s.Name,
+                     Email = s.Email,
+                     Address = s.Address,
+                     EnrollmentDate = s.EnrollmentDate,
+                     Phone = s.Phone,
+                     Gender = s.Gender,
+                     NationalId = s.NationalId,
+                     Nationality = s.Nationality,
+                     Semester = s.Semester,
+                     status = s.status,
+                     StudentLevel = s.StudentLevel,
+                     GPA_Average = s.GPA_Average,
+                     High_School_degree = s.High_School_degree,
+                     High_School_Section = s.High_School_Section,
+                     CreditsCompleted = s.CreditsCompleted,
+                     ImagePath = s.ImagePath,
+                     DepartmentName = s.Department.Name
+                 }).FirstOrDefaultAsync();
 		}
 
 		public async Task<IEnumerable<StudentDto>> GetByNameWithDepartmentNameAsync(string name)
@@ -68,23 +73,25 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
 				 .Where(s => s.Name.Contains(name))
 				 .Select(s => new StudentDto
 				 {
-					 Id = s.Id,
-					 Name = s.Name,
-					 Email = s.Email,
-					 Address = s.Address,
-					 EnrollmentDate = s.EnrollmentDate,
-					 Phone = s.Phone,
-					 Gender = s.Gender,
-					 NationalId = s.NationalId,
-					 Nationality = s.Nationality,
-					 Semester = s.Semester,
-					 GPA = s.GPA,
-					 High_School_degree = s.High_School_degree,
-					 High_School_Section = s.High_School_Section,
-					 CreditsCompleted = s.CreditsCompleted,
-					 ImagePath = s.ImagePath,
-					 DepartmentName = s.Department.Name
-				 }).ToListAsync();
+                     Id = s.Id,
+                     Name = s.Name,
+                     Email = s.Email,
+                     Address = s.Address,
+                     EnrollmentDate = s.EnrollmentDate,
+                     Phone = s.Phone,
+                     Gender = s.Gender,
+                     NationalId = s.NationalId,
+                     Nationality = s.Nationality,
+                     Semester = s.Semester,
+                     status = s.status,
+                     StudentLevel = s.StudentLevel,
+                     GPA_Average = s.GPA_Average,
+                     High_School_degree = s.High_School_degree,
+                     High_School_Section = s.High_School_Section,
+                     CreditsCompleted = s.CreditsCompleted,
+                     ImagePath = s.ImagePath,
+                     DepartmentName = s.Department.Name
+                 }).ToListAsync();
 		}
 
 		public async Task<bool> DepartmentExistsAsync(int departmentId)
@@ -113,13 +120,38 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
 				 {
 					 Id = s.Student.Id,
 					 Name = s.Student.Name,
-					 GPA = s.Student.GPA,
+                     GPA_Average = s.Student.GPA_Average,
 					 Exam1Grade = s.Exam1Grade,
 					 Exam2Grade = s.Exam2Grade,
 					 FinalGrade = s.FinalGrade,
 					 Grade = s.Grade
 				 }).FirstOrDefaultAsync();
 		}
-	}
 
+        public async Task<IEnumerable<StudentCountDto>> GetStudentCountByDepartmentAsync(int departmentId)
+        {
+            return await _dbContext.Students
+             .Where(s => s.DepartmentId == departmentId)
+             .GroupBy(s => s.Department.Name)
+             .Select(g => new StudentCountDto
+             {
+                 DepartmentName = g.Key,
+                 StudentCount = g.Count()
+             })
+             .ToListAsync();
+        }
+        public async Task<IEnumerable<CourseStudentCountDto>> GetCourseStudentCount(int courseId)
+        {
+            return await _dbContext.Enrollments
+               .Where(e => e.CourseId == courseId)
+               .GroupBy(e => new { e.CourseId, e.Course.Name })
+               .Select(g => new CourseStudentCountDto
+               {
+                   CourseId = g.Key.CourseId,
+                   CourseName = g.Key.Name,
+                   StudentCount = g.Count()
+               })
+               .ToListAsync();
+        }
+    }
 }

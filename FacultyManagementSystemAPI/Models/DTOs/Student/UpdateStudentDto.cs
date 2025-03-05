@@ -31,11 +31,6 @@ namespace FacultyManagementSystemAPI.Models.DTOs.Student
 		[DefaultValue(2)]
 		public byte Semester { get; set; }
 
-		[Required(ErrorMessage = "المعدل التراكمي مطلوب")]
-		[Column(TypeName = "decimal(10,2)")]
-		[Range(0.00, 4.00, ErrorMessage = "يجب أن يكون المعدل التراكمي بين 0.00 و 4.00")]
-		[DefaultValue(3.50)]
-		public decimal GPA { get; set; }
 
 		[Required(ErrorMessage = "عدد الساعات المكتملة مطلوب")]
 		[Range(0, 140, ErrorMessage = "يجب أن يكون عدد الساعات المكتملة رقمًا غير سالب")]

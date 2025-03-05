@@ -15,5 +15,8 @@ namespace FacultyManagementSystemAPI.Models.Entities
 		public int DepartmentId { get; set; }
 		[ForeignKey(nameof(DepartmentId))]
 		public Department Department { get; set; }
-	}
+
+        [Required]
+        public bool IsMandatory { get; set; }
+    }
 }

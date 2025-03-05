@@ -74,6 +74,7 @@ namespace FacultyManagementSystemAPI.Data
 				.HasOne(e => e.Student)
 				.WithMany(s => s.Enrollments)
 				.HasForeignKey(e => e.StudentId)
+
 				.OnDelete(DeleteBehavior.Cascade); // If a student is deleted, delete enrollments
 
 			// Enrollment With Course (1-M)

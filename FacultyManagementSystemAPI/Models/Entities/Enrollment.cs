@@ -11,25 +11,41 @@ namespace FacultyManagementSystemAPI.Models.Entities
         [MaxLength(50)]
         public string Semester { get; set; }
 
+   
         [Required]
-        [Column(TypeName = "decimal(10,2)")]
-        public decimal FinalGrade { get; set; }
-        
-        [Required]
-        [Column(TypeName = "decimal(10,2)")]
-        public decimal Exam1Grade { get; set; }
-        
-        [Required]
-        [Column(TypeName = "decimal(10,2)")]
-        public decimal Exam2Grade { get; set; }
-        
-        [Required]
-        [Column(TypeName = "decimal(10,2)")]
-        public decimal Grade { get; set; }
+        public int NumberOFSemster { get; set; }
 
-        // Navigation Properties
+        [Column(TypeName = "decimal(10,2)")]
+        public decimal? FinalGrade
+        {
+            get
+            {
+                return (Exam1Grade ?? 0) + (Exam2Grade ?? 0) + (Grade ?? 0);
+            }
+        }
 
-        public int StudentId { get; set; }
+
+        [Column(TypeName = "decimal(10,2)")]
+        public decimal? Exam1Grade { get; set; }
+        
+  
+        [Column(TypeName = "decimal(10,2)")]
+        public decimal? Exam2Grade { get; set; }
+        
+   
+        [Column(TypeName = "decimal(10,2)")]
+        public decimal? Grade { get; set; }
+
+		[Required]
+		[Column(TypeName = "DATE")]
+		public DateTime AddedEnrollmentDate { get; set; }
+
+		[Column(TypeName = "DATE")]
+		public DateTime? DeletedEnrollmentDate { get; set; }
+
+		// Navigation Properties
+
+		public int StudentId { get; set; }
 
         [ForeignKey(nameof(StudentId))]
         public Student Student { get; set; }
@@ -38,6 +54,8 @@ namespace FacultyManagementSystemAPI.Models.Entities
 
         [ForeignKey(nameof(CourseId))]
         public Course Course { get; set; }
+        [Required]
+        public string IsCompleted { get; set; }
     }
 
 }

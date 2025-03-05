@@ -99,13 +99,24 @@ namespace FacultyManagementSystemAPI.Migrations
                         .HasColumnType("int")
                         .HasDefaultValueSql("NEXT VALUE FOR dbo.CommonSequence");
 
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<int>("Credits")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CurrentEnrolledStudents")
                         .HasColumnType("int");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(250)
                         .HasColumnType("nvarchar(250)");
+
+                    b.Property<int>("MaxSeats")
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -144,6 +155,9 @@ namespace FacultyManagementSystemAPI.Migrations
 
                     b.Property<int>("DepartmentId")
                         .HasColumnType("int");
+
+                    b.Property<bool>("IsMandatory")
+                        .HasColumnType("bit");
 
                     b.HasKey("Id");
 
@@ -186,20 +200,30 @@ namespace FacultyManagementSystemAPI.Migrations
                         .HasColumnType("int")
                         .HasDefaultValueSql("NEXT VALUE FOR dbo.CommonSequence");
 
+                    b.Property<DateTime>("AddedEnrollmentDate")
+                        .HasColumnType("DATE");
+
                     b.Property<int>("CourseId")
                         .HasColumnType("int");
 
-                    b.Property<decimal>("Exam1Grade")
+                    b.Property<DateTime?>("DeletedEnrollmentDate")
+                        .HasColumnType("DATE");
+
+                    b.Property<decimal?>("Exam1Grade")
                         .HasColumnType("decimal(10,2)");
 
-                    b.Property<decimal>("Exam2Grade")
+                    b.Property<decimal?>("Exam2Grade")
                         .HasColumnType("decimal(10,2)");
 
-                    b.Property<decimal>("FinalGrade")
+                    b.Property<decimal?>("Grade")
                         .HasColumnType("decimal(10,2)");
 
-                    b.Property<decimal>("Grade")
-                        .HasColumnType("decimal(10,2)");
+                    b.Property<string>("IsCompleted")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("NumberOFSemster")
+                        .HasColumnType("int");
 
                     b.Property<string>("Semester")
                         .IsRequired()
@@ -307,7 +331,28 @@ namespace FacultyManagementSystemAPI.Migrations
                     b.Property<DateTime>("EnrollmentDate")
                         .HasColumnType("DATE");
 
-                    b.Property<decimal>("GPA")
+                    b.Property<decimal?>("GPA1")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<decimal?>("GPA2")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<decimal?>("GPA3")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<decimal?>("GPA4")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<decimal?>("GPA5")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<decimal?>("GPA6")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<decimal?>("GPA7")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<decimal?>("GPA8")
                         .HasColumnType("decimal(10,2)");
 
                     b.Property<string>("Gender")
@@ -347,6 +392,14 @@ namespace FacultyManagementSystemAPI.Migrations
 
                     b.Property<byte>("Semester")
                         .HasColumnType("tinyint");
+
+                    b.Property<string>("StudentLevel")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 

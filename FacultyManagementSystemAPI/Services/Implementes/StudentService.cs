@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FacultyManagementSystemAPI.Models.DTOs.Courses;
 using FacultyManagementSystemAPI.Models.DTOs.Student;
 using FacultyManagementSystemAPI.Models.Entities;
 using FacultyManagementSystemAPI.Repositories.Interfaces;
@@ -43,10 +44,10 @@ namespace FacultyManagementSystemAPI.Services.Implementes
 				throw new KeyNotFoundException("لم يتم العثور على الطالب"); ;
 
 			// حذف الصورة إذا كانت موجودة
-			if (!string.IsNullOrEmpty(student.ImagePath))
-			{
-				await _fileService.DeleteFileAsync(student.ImagePath);
-			}
+			//if (!string.IsNullOrEmpty(student.ImagePath))
+			//{
+			//	await _fileService.DeleteFileAsync(student.ImagePath);
+			//}
 
 			// حذف الطالب من قاعدة البيانات
 			await _studentRepository.DeleteAsync(id);
@@ -81,10 +82,10 @@ namespace FacultyManagementSystemAPI.Services.Implementes
 			if (updateStudentDto.Image != null)
 			{
 				// حذف الصورة القديمة إذا كانت موجودة
-				if (!string.IsNullOrEmpty(existingStudent.ImagePath))
-				{
-					await _fileService.DeleteFileAsync(existingStudent.ImagePath);
-				}
+				//if (!string.IsNullOrEmpty(existingStudent.ImagePath))
+				//{
+				//	await _fileService.DeleteFileAsync(existingStudent.ImagePath);
+				//}
 
 				// حفظ الصورة الجديدة
 				existingStudent.ImagePath = _fileService.SaveFile(updateStudentDto.Image, "Students");
@@ -128,5 +129,34 @@ namespace FacultyManagementSystemAPI.Services.Implementes
 
 			return gradesDto;
 		}
-	}
+
+        public async Task<IEnumerable<StudentCountDto>> GetStudentCountByDepartmentAsync(int departmentId)
+        {
+            if (departmentId <= 0)
+            {
+                throw new ArgumentException("يجب أن يكون معرف القسم رقمًا أكبر من الصفر");
+            }
+
+            var studentCounts = await _studentRepository.GetStudentCountByDepartmentAsync(departmentId);
+
+            if (studentCounts == null || !studentCounts.Any())
+            {
+                throw new Exception($"لم يتم العثور على طلاب لهذا القسم رقم {departmentId}");
+            }
+
+            return studentCounts;
+        }
+        public async Task<IEnumerable<CourseStudentCountDto>> GetCourseStudentCount(int courseId)
+        {
+            if (courseId <= 0)
+                throw new ArgumentException("يجب أن يكون معرف المقرر رقمًا أكبر من الصفر");
+
+            var studentCounts = await _studentRepository.GetCourseStudentCount(courseId);
+
+            if (studentCounts == null || !studentCounts.Any())
+                throw new Exception($"لم يتم العثور على طلاب لهذا المقرر رقم {courseId}");
+
+            return studentCounts;
+        }
+    }
 }

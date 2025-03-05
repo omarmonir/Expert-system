@@ -11,7 +11,10 @@ namespace FacultyManagementSystemAPI.Models.Entities
         [MaxLength(50)]
         public string Name { get; set; }
 
-		[MaxLength(250)]
+        [MaxLength(50)]
+        public string Code { get; set; }
+
+        [MaxLength(250)]
 		public string Description { get; set; }
 
 		[Required]
@@ -27,8 +30,13 @@ namespace FacultyManagementSystemAPI.Models.Entities
 		[ForeignKey(nameof(PreCourseId))]
 		public virtual Course PreCourse { get; set; }
 
-		// Navigation Properties
-		public List<Class> Classes { get; set; } = new List<Class>();
+        [Required]
+        public int MaxSeats { get; set; }
+        
+        public int CurrentEnrolledStudents { get; set; } = 0;
+
+        // Navigation Properties
+        public List<Class> Classes { get; set; } = new List<Class>();
 		public List<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
 		public List<CourseDepartment> CourseDepartments { get; set; } = new List<CourseDepartment>();
 	}

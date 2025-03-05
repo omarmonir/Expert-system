@@ -42,12 +42,52 @@ namespace FacultyManagementSystemAPI.Models.Entities
         [Column(TypeName = "DATE")]
         public DateTime EnrollmentDate { get; set; }
 
+        public decimal GPA_Average
+        {
+            get
+            {
+                var gpas = new List<decimal?> { GPA1, GPA2, GPA3, GPA4, GPA5, GPA6, GPA7, GPA8 }
+                            .Where(gpa => gpa.HasValue) // إزالة القيم null
+                            .Select(gpa => gpa.Value)   // تحويل إلى decimal
+                            .ToList();
 
-        [Required]
+                return gpas.Any() ? gpas.Average() : 0; // حساب المتوسط إذا وُجدت قيم
+            }
+        }
+
+
         [Column(TypeName = "decimal(10,2)")]
-        public decimal GPA { get; set; }
+        public decimal? GPA1 { get; set; }       
         
+     
+        [Column(TypeName = "decimal(10,2)")]
+        public decimal? GPA2 { get; set; }
+        
+     
+        [Column(TypeName = "decimal(10,2)")]
+        public decimal? GPA3 { get; set; }       
+        
+        
+        [Column(TypeName = "decimal(10,2)")]
+        public decimal? GPA4 { get; set; }       
+        
+       
+        [Column(TypeName = "decimal(10,2)")]
+        public decimal? GPA5 { get; set; }       
+        
+
+        [Column(TypeName = "decimal(10,2)")]
+        public decimal? GPA6 { get; set; }        
+        
+       
+        [Column(TypeName = "decimal(10,2)")]
+        public decimal? GPA7 { get; set; }       
+        
+       
+        [Column(TypeName = "decimal(10,2)")]
+        public decimal? GPA8 { get; set; }    
         [Required]
+        
         [Column(TypeName = "decimal(10,2)")]
         public decimal High_School_degree { get; set; }  
 
@@ -57,6 +97,12 @@ namespace FacultyManagementSystemAPI.Models.Entities
 
         [Required]
         public int CreditsCompleted { get; set; }
+
+        [Required]
+        public string StudentLevel { get; set; }
+        
+        [Required]
+        public string status { get; set; }
 
         [Required]
 		public string ImagePath { get; set; }

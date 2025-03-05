@@ -14,6 +14,10 @@
 
         public byte Semester { get; set; }
 
+        public int MaxSeats { get; set; }
+
+        public int CurrentEnrolledStudents { get; set; }
+
         public string? PreCourseName { get; set; }
         public string ProfessorName { get; set; }
     }

@@ -22,10 +22,13 @@ namespace FacultyManagementSystemAPI.Models.DTOs.Student
 		public string Phone { get; set; }
 
 		public byte Semester { get; set; }
+        public string StudentLevel { get; set; }
 
-		public DateTime EnrollmentDate { get; set; }
+        public string status { get; set; }
 
-		public decimal GPA { get; set; }
+        public DateTime EnrollmentDate { get; set; }
+
+		public decimal GPA_Average { get; set; }
 
 		public decimal High_School_degree { get; set; }
 
