@@ -10,9 +10,12 @@ namespace FacultyManagementSystemAPI.Services.Interfaces
         Task<IEnumerable<EnrollmentDto>> GetByStudentIdAsync(int studentId);
         Task<IEnumerable<EnrollmentDto>> GetByCourseIdAsync(int courseId);
         Task DeleteAsync(int id);
-
+        Task<IEnumerable<string>> GetAllEnrollmentsStatusesAsync();
         Task<int> GetEnrollmentCountAsync();
         Task<int> GetCanceledEnrollmentCountAsync();
+        Task<int> GetAllEnrollmentStudentsCountAsync();
+        Task<double> GetSuccessPercentageAsync();
+        Task<IEnumerable<EnrollmentDto>> GetFilteredEnrollmentsAsync(string? studentName, string? courseName, string? enrollmentStatus, string? semester);
 
         Task UpdateStudentGradeAsync(int studentId, int courseId, decimal newGrade);
         Task UpdateStudentExam1GradeAsync(int studentId, int courseId, decimal newGrade);

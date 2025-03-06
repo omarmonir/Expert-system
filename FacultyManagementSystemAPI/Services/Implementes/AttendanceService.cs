@@ -3,6 +3,7 @@ using FacultyManagementSystemAPI.Models.DTOs.Attendance;
 using FacultyManagementSystemAPI.Models.Entities;
 using FacultyManagementSystemAPI.Repositories.Interfaces;
 using FacultyManagementSystemAPI.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace FacultyManagementSystemAPI.Services.Implementes
 {
@@ -11,20 +12,60 @@ namespace FacultyManagementSystemAPI.Services.Implementes
         private readonly IAttendanceRepository _attendanceRepository = attendanceRepository;
         private readonly IMapper _mapper = mapper;
 
-        public async Task AddAttendanceAsync(CreateAttendanceDto CreateAttendanceDto)
+        public async Task AddAttendanceAsync(CreateAttendanceDto createAttendanceDto)
         {
-            if (CreateAttendanceDto == null)
-                throw new ArgumentException("بيانات الحضور غير صالحة.");
+            try
+            {
+                if (createAttendanceDto == null)
+                    throw new ArgumentException("بيانات الحضور غير صالحة.");
 
-            if (CreateAttendanceDto.Date > DateTime.Now)
-                throw new ArgumentException("لا يمكن أن يكون تاريخ الحضور في المستقبل.");
+                if (createAttendanceDto.Date > DateTime.Now)
+                    throw new ArgumentException("لا يمكن أن يكون تاريخ الحضور في المستقبل.");
 
-            if (CreateAttendanceDto.StudentId <= 0 || CreateAttendanceDto.ClassesId <= 0)
-                throw new ArgumentException("معرف الطالب أو معرف الفصل غير صالح.");
+                if (createAttendanceDto.StudentId <= 0 || createAttendanceDto.ClassesId <= 0)
+                    throw new ArgumentException("معرف الطالب أو معرف الفصل غير صالح.");
 
-            var attendance = _mapper.Map<Attendance>(CreateAttendanceDto);
+                // التحقق من وجود الطالب
+                var studentExists = await _attendanceRepository.StudentExistsAsync(createAttendanceDto.StudentId);
+                if (!studentExists)
+                    throw new Exception("الطالب غير موجود في قاعدة البيانات.");
 
-            await _attendanceRepository.AddAsync(attendance);
+                // التحقق من وجود الفصل
+                var classExists = await _attendanceRepository.ClassExistsAsync(createAttendanceDto.ClassesId);
+                if (!classExists)
+                    throw new Exception("الفصل غير موجود في قاعدة البيانات.");
+
+                var attendance = _mapper.Map<Attendance>(createAttendanceDto);
+
+                await _attendanceRepository.AddAsync(attendance);
+            }
+            catch (DbUpdateException dbEx)
+            {
+                throw new Exception($"خطأ في قاعدة البيانات: {dbEx.InnerException?.Message}", dbEx);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"حدث خطأ أثناء إضافة الحضور: {ex.Message}", ex);
+            }
+        }
+
+
+        public async Task<int> CountAttendanceAsync()
+        {
+            int count = await _attendanceRepository.CountAttendanceAsync();
+            if (count == 0)
+                throw new Exception("لا يوجد حضور.");
+
+            return count;
+        }
+
+        public async Task<int> CountNoAttendanceAsync()
+        {
+            int count = await _attendanceRepository.CountNoAttendanceAsync();
+            if (count == 0)
+                throw new Exception("لا يوجد غياب.");
+
+            return count;
         }
 
         public async Task DeleteAttendanceAsync(int id)
@@ -77,9 +118,20 @@ namespace FacultyManagementSystemAPI.Services.Implementes
 
             var attendanceListDto = await _attendanceRepository.GetAttendancesByStudentIdAsync(studentId);
             if (attendanceListDto == null || !attendanceListDto.Any())
-                throw new Exception("لم يتم العثور على سجلات حضور.");
+                throw new Exception("لا يوجد غياب لهذا الطالب.");
 
             return attendanceListDto;
+        }
+
+        public async Task<double> GetSuccessPercentageAsync()
+        {
+            int totalAttendances = await _attendanceRepository.CountAttendanceAsync();
+
+            int totalNoAttendances = await _attendanceRepository.CountNoAttendanceAsync();
+
+            double successPercentage = ((double)totalNoAttendances / totalAttendances) * 100;
+
+            return Math.Round(successPercentage, 2);
         }
 
         public async Task UpdateAttendanceAsync(int id, UpdateAttendanceDto updateAttendanceDto)

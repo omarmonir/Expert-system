@@ -1,5 +1,4 @@
 ﻿using FacultyManagementSystemAPI.Models.DTOs.Student;
-using FacultyManagementSystemAPI.Services.Implementes;
 using FacultyManagementSystemAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -67,6 +66,7 @@ namespace FacultyManagementSystemAPI.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
         [HttpGet("GradesOFStudentById/{id:int}")]
         public async Task<IActionResult> GetGradesOFStudentById(int id)
         {
@@ -302,7 +302,7 @@ namespace FacultyManagementSystemAPI.Controllers
             }
         }
 
-        [HttpGet("CountOfEnrollmentStudents")]
+        [HttpGet("CountOfAllEnrollmentStudents")]
         public async Task<IActionResult> GetEnrollmentStudents()
         {
             if (!ModelState.IsValid)
@@ -311,8 +311,63 @@ namespace FacultyManagementSystemAPI.Controllers
             }
             try
             {
-                var count = await _studentService.GetEnrolledStudentCountAsync();
+                var count = await _studentService.GetAllEnrollmentStudentsCountAsync();
                 return Ok(new { countOfStudents = count });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("CountOfCanceledEnrollmentStudents")]
+        public async Task<IActionResult> GetCanceledEnrollmentStudents()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            try
+            {
+                var count = await _studentService.CountCanceledEnrolledStudentsAsync();
+                return Ok(new { countOfStudents = count });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("CountEnrollmentCoursesByStudentId/{studentId}")]
+        public async Task<IActionResult> GetCanceledEnrollmentStudents(int studentId)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            try
+            {
+                var count = await _studentService.CountEnrollmentCoursesByStudentIdAsync(studentId);
+                return Ok(new { countOfEnrollments = count });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+        [HttpGet("CountCompletedCoursesCountStudentId/{studentId}")]
+        public async Task<IActionResult> CountCompletedCoursesCountStudentId(int studentId)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            try
+            {
+                var count = await _studentService.CountCompletedCoursesCountStudentIdAsync(studentId);
+                return Ok(new { countOfCompletedCourses = count });
             }
             catch (Exception ex)
             {
@@ -398,5 +453,24 @@ namespace FacultyManagementSystemAPI.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpPut("updateStudentStatus/{studentId}")]
+        public async Task<IActionResult> UpdateProfessorCount(int studentId, string newStatus)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            try
+            {
+                await _studentService.UpdateStudentStatusAsync(studentId, newStatus);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
     }
 }

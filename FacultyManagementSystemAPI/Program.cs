@@ -38,6 +38,9 @@ builder.Services.AddScoped<IAttendanceRepository, AttendanceRepository>();
 builder.Services.AddScoped<IClassService, ClassService>();
 builder.Services.AddScoped<IClassRepository, ClassRepository>();
 
+builder.Services.AddScoped<IProfessorService, ProfessorService>();
+builder.Services.AddScoped<IProfessorRepository, ProfessorRepository>();
+
 builder.Services.AddScoped<IFileService, FileService>();
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
@@ -52,6 +55,8 @@ builder.Services.AddCors(options =>
     });
 });
 var app = builder.Build();
+
+app.UseStaticFiles(); // «·”„«Õ »⁄—÷ «·„·›«  «·À«» …
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

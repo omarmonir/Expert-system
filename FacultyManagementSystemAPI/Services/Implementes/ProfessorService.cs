@@ -1,30 +1,39 @@
 ﻿using AutoMapper;
 using FacultyManagementSystemAPI.Models.DTOs.Courses;
 using FacultyManagementSystemAPI.Models.DTOs.professors;
-using FacultyManagementSystemAPI.Models.DTOs.Student;
 using FacultyManagementSystemAPI.Models.Entities;
-using FacultyManagementSystemAPI.Repositories.Implementes;
 using FacultyManagementSystemAPI.Repositories.Interfaces;
 using FacultyManagementSystemAPI.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace FacultyManagementSystemAPI.Services.Implementes
 {
-    public class ProfessorService(IProfessorRepository professorRepository, IMapper mapper) : IProfessorService
+    public class ProfessorService(IProfessorRepository professorRepository, IFileService fileService, IMapper mapper) : IProfessorService
     {
         private readonly IProfessorRepository _professorRepository = professorRepository;
+        private readonly IFileService _fileService = fileService;
         private readonly IMapper _mapper = mapper;
 
         public async Task AddAsync(CreateProfessorDto createProfessorDto)
         {
+            try
+            {
+                if (createProfessorDto == null)
+                    throw new ArgumentNullException("البيانات المدخلة لا يمكن أن تكون فارغة.");
 
-            if (createProfessorDto == null)
-                throw new ArgumentNullException("البيانات المدخلة لا يمكن أن تكون فارغة.");
+                if (await _professorRepository.ProfessorExistsAsync(createProfessorDto.FullName))
+                    throw new Exception("الدكتور موجود بالفعل.");
 
-            if (await _professorRepository.ProfessorExistsAsync(createProfessorDto.FullName))
-                throw new Exception("الدكتور موجود بالفعل.");
+                var professor = _mapper.Map<Professor>(createProfessorDto);
+                professor.ImagePath = _fileService.SaveFile(createProfessorDto.Image, "Professor");
 
-            var professor = _mapper.Map<Professor>(createProfessorDto);
-            await _professorRepository.AddAsync(professor);
+                await _professorRepository.AddAsync(professor);
+            }
+            catch (DbUpdateException ex)
+            {
+                var innerException = ex.InnerException?.Message ?? ex.Message;
+                throw new Exception($"حدث خطأ أثناء حفظ التغييرات في قاعدة البيانات: {innerException}");
+            }
         }
 
         public async Task DeleteAsync(int id)
@@ -36,7 +45,7 @@ namespace FacultyManagementSystemAPI.Services.Implementes
 
         public async Task<IEnumerable<ProfessorDto>> GetAllAsync()
         {
-            var professorsDto = await _professorRepository.GetAllAsync();
+            var professorsDto = await _professorRepository.GetAllProfessorsAsync();
             if (professorsDto == null || !professorsDto.Any())
                 throw new KeyNotFoundException("لم يتم العثور على أي دكتور.");
             return professorsDto;
@@ -52,7 +61,7 @@ namespace FacultyManagementSystemAPI.Services.Implementes
 
         public async Task<ProfessorDto?> GetByIdAsync(int id)
         {
-            var professorDto = await _professorRepository.GetByIdAsync(id)
+            var professorDto = await _professorRepository.GetProfessorByIdAsync(id)
                 ?? throw new KeyNotFoundException($"لم يتم العثور على دكتور برقم {id}.");
 
             return professorDto;
@@ -68,18 +77,37 @@ namespace FacultyManagementSystemAPI.Services.Implementes
 
         public async Task UpdateAsync(int id, UpdateProfessorDto updateProfessorDto)
         {
-            if (updateProfessorDto == null)
+            try
             {
-                throw new ArgumentNullException(nameof(updateProfessorDto), "بيانات التحديث غير صالحة");
+                if (id <= 0)
+                    throw new ArgumentException("يجب أن يكون معرف الدكنور رقمًا موجبا");
+
+                if (updateProfessorDto == null)
+                {
+                    throw new ArgumentNullException("بيانات التحديث غير صالحة");
+                }
+                var professor = await _professorRepository.GetByIdAsync(id)
+                            ?? throw new KeyNotFoundException($"لم يتم العثور على الأستاذ برقم {id}.");
+
+                _mapper.Map(updateProfessorDto, professor); // ✅ تحديث آمن
+                if (updateProfessorDto.Image != null)
+                {
+                    // حذف الصورة القديمة إذا كانت موجودة
+                    if (!string.IsNullOrEmpty(professor.ImagePath))
+                    {
+                        await _fileService.DeleteFileAsync(professor.ImagePath);
+                    }
+
+                    // حفظ الصورة الجديدة
+                    professor.ImagePath = _fileService.SaveFile(updateProfessorDto.Image, "Professors");
+                }
+                await _professorRepository.UpdateAsync(id, professor);
             }
-            var professorDto = await _professorRepository.GetByIdAsync(id)
-                        ?? throw new KeyNotFoundException($"لم يتم العثور على الأستاذ برقم {id}.");
-
-            var professor = _mapper.Map<Professor>(professorDto);
-
-            _mapper.Map(updateProfessorDto, professor); // ✅ تحديث آمن
-            await _professorRepository.UpdateAsync(id, professor);
-
+            catch (DbUpdateException ex)
+            {
+                var innerException = ex.InnerException?.Message ?? ex.Message;
+                throw new Exception($"حدث خطأ أثناء حفظ التغييرات في قاعدة البيانات: {innerException}");
+            }
         }
     }
 }

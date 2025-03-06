@@ -1,6 +1,4 @@
-﻿using FacultyManagementSystemAPI.Models.DTOs.Department;
-using FacultyManagementSystemAPI.Models.DTOs.Enrollment;
-using FacultyManagementSystemAPI.Services.Implementes;
+﻿using FacultyManagementSystemAPI.Models.DTOs.Enrollment;
 using FacultyManagementSystemAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -173,7 +171,7 @@ namespace FacultyManagementSystemAPI.Controllers
                 return BadRequest(ex.Message);
             }
         }
-        
+
         [HttpPut("UpdateStudentExam1Grade")]
         public async Task<IActionResult> UpdateStudentExam1Grade([FromBody] UpdateGradeDto dto)
         {
@@ -191,8 +189,8 @@ namespace FacultyManagementSystemAPI.Controllers
             {
                 return BadRequest(ex.Message);
             }
-        } 
-        
+        }
+
         [HttpPut("UpdateStudentExam2Grade")]
         public async Task<IActionResult> UpdateStudentExam2Grade([FromBody] UpdateGradeDto dto)
         {
@@ -212,5 +210,73 @@ namespace FacultyManagementSystemAPI.Controllers
             }
         }
 
+        [HttpGet("AllEnrollmentStudentsCount")]
+        public async Task<IActionResult> GetAllEnrollmentStudentsCount()
+        {
+            try
+            {
+                int count = await _enrollmentService.GetAllEnrollmentStudentsCountAsync();
+                return Ok(new { enrollmentStudentsCount = count });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("SuccessEnrollmentPercentage")]
+        public async Task<IActionResult> GetSuccessPercentage()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            try
+            {
+                double successPercentage = await _enrollmentService.GetSuccessPercentageAsync();
+                return Ok(new { successEnrollmentPercentage = successPercentage });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("AllEnrollmentStatuses")]
+        public async Task<IActionResult> GetAllStudentStatuses()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            try
+            {
+                var status = await _enrollmentService.GetAllEnrollmentsStatusesAsync();
+                return Ok(status);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("Filtering")]
+        public async Task<IActionResult> GetFilteredEnrollments([FromQuery] string? studentName, [FromQuery] string? courseName, [FromQuery] string? enrollmentStatus, [FromQuery] string? semester)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            try
+            {
+                var enrollments = await _enrollmentService.GetFilteredEnrollmentsAsync(studentName, courseName, enrollmentStatus, semester);
+                return Ok(enrollments);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+        }
     }
 }

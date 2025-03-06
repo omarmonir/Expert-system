@@ -161,7 +161,7 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
         public async Task<int> CountByStatusAsync()
         {
             return await _dbContext.Courses
-                .Where(c => c.Status == "متاح")
+                .Where(c => c.Status == "نشط")
                 .CountAsync();
         }
 

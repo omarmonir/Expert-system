@@ -99,5 +99,25 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
 
             return attendances;
         }
+
+        public async Task<bool> StudentExistsAsync(int studentId)
+        {
+            return await _dbContext.Students.AnyAsync(s => s.Id == studentId);
+        }
+
+        public async Task<bool> ClassExistsAsync(int classId)
+        {
+            return await _dbContext.Classes.AnyAsync(c => c.Id == classId);
+        }
+
+        public async Task<int> CountAttendanceAsync()
+        {
+            return await _dbContext.Attendances.CountAsync(a => a.Status == true);
+        }
+
+        public async Task<int> CountNoAttendanceAsync()
+        {
+            return await _dbContext.Attendances.CountAsync(a => a.Status == false);
+        }
     }
 }

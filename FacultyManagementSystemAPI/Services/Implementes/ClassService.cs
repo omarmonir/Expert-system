@@ -1,9 +1,4 @@
-﻿using AutoMapper;
-using FacultyManagementSystemAPI.Models.DTOs.Classes;
-using FacultyManagementSystemAPI.Models.DTOs.Courses;
-using FacultyManagementSystemAPI.Models.Entities;
-using FacultyManagementSystemAPI.Repositories.Implementes;
-using FacultyManagementSystemAPI.Repositories.Interfaces;
+﻿using FacultyManagementSystemAPI.Repositories.Interfaces;
 using FacultyManagementSystemAPI.Services.Interfaces;
 
 namespace FacultyManagementSystemAPI.Services.Implementes
@@ -37,16 +32,6 @@ namespace FacultyManagementSystemAPI.Services.Implementes
             existingClass.CourseId = courseId;
 
             await _classRepository.UpdateClassAsync(existingClass);
-        }
-
-        public Task<IEnumerable<ClassDto>> GetClassesByProfessorIdAsync(int professorId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task UpdateClassAsync(int id, UpdateClassDto updateClassDto)
-        {
-            throw new NotImplementedException();
         }
     }
 }

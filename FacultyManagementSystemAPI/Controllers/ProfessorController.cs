@@ -1,9 +1,5 @@
-﻿using FacultyManagementSystemAPI.Models.DTOs.Courses;
-using FacultyManagementSystemAPI.Models.DTOs.professors;
-using FacultyManagementSystemAPI.Models.DTOs.Student;
-using FacultyManagementSystemAPI.Services.Implementes;
+﻿using FacultyManagementSystemAPI.Models.DTOs.professors;
 using FacultyManagementSystemAPI.Services.Interfaces;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FacultyManagementSystemAPI.Controllers
@@ -16,7 +12,7 @@ namespace FacultyManagementSystemAPI.Controllers
 
 
         [HttpPost("CreateProfessor")]
-        public async Task<IActionResult> CreateProfessor([FromBody] CreateProfessorDto createProfessorDto)
+        public async Task<IActionResult> CreateProfessor([FromForm] CreateProfessorDto createProfessorDto)
         {
             try
             {
@@ -72,9 +68,9 @@ namespace FacultyManagementSystemAPI.Controllers
             }
         }
 
-       [HttpGet("GetProfessorById/{id:int}")]
-       public async Task<IActionResult> GetByIdWith(int id)
-       {
+        [HttpGet("GetProfessorById/{id:int}")]
+        public async Task<IActionResult> GetByIdWith(int id)
+        {
             try
             {
                 if (!ModelState.IsValid)
@@ -89,11 +85,11 @@ namespace FacultyManagementSystemAPI.Controllers
             {
                 return BadRequest(ex.Message);
             }
-       } 
-        
-       [HttpGet("GetProfessorByDepartmentId/{id:int}")]
-       public async Task<IActionResult> GetProfessorByDepartmentId(int id)
-       {
+        }
+
+        [HttpGet("GetProfessorByDepartmentId/{id:int}")]
+        public async Task<IActionResult> GetProfessorByDepartmentId(int id)
+        {
             try
             {
                 if (!ModelState.IsValid)
@@ -108,11 +104,11 @@ namespace FacultyManagementSystemAPI.Controllers
             {
                 return BadRequest(ex.Message);
             }
-       } 
-        
-       [HttpGet("GetCoursesByProfessorId/{id:int}")]
-       public async Task<IActionResult> GetCoursesByProfessorId(int id)
-       {
+        }
+
+        [HttpGet("GetCoursesByProfessorId/{id:int}")]
+        public async Task<IActionResult> GetCoursesByProfessorId(int id)
+        {
             try
             {
                 if (!ModelState.IsValid)
@@ -127,7 +123,7 @@ namespace FacultyManagementSystemAPI.Controllers
             {
                 return BadRequest(ex.Message);
             }
-       }
+        }
 
 
         [HttpDelete("DeleteProfessor/{id:int}")]

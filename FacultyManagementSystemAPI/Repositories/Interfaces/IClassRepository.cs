@@ -1,5 +1,4 @@
-﻿using FacultyManagementSystemAPI.Models.DTOs.Classes;
-using FacultyManagementSystemAPI.Models.Entities;
+﻿using FacultyManagementSystemAPI.Models.Entities;
 
 namespace FacultyManagementSystemAPI.Repositories.Interfaces
 {

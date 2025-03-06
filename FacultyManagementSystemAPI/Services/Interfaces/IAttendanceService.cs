@@ -11,5 +11,9 @@ namespace FacultyManagementSystemAPI.Services.Interfaces
         Task DeleteAttendanceAsync(int id);
         Task<IEnumerable<AttendanceDto>> GetAttendancesByStudentIdAsync(int studentId);
         Task<IEnumerable<AttendanceDto>> GetAttendancesByClassIdAsync(int classId);
+
+        Task<int> CountAttendanceAsync();
+        Task<int> CountNoAttendanceAsync();
+        Task<double> GetSuccessPercentageAsync();
     }
 }

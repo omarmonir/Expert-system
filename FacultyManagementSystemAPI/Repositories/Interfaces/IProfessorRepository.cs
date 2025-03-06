@@ -6,8 +6,8 @@ namespace FacultyManagementSystemAPI.Repositories.Interfaces
 {
     public interface IProfessorRepository : IGenericRepository<Professor>
     {
-        Task<IEnumerable<ProfessorDto>> GetAllAsync();
-        Task<ProfessorDto?> GetByIdAsync(int id);
+        Task<IEnumerable<ProfessorDto>> GetAllProfessorsAsync();
+        Task<ProfessorDto?> GetProfessorByIdAsync(int id);
         Task<IEnumerable<ProfessorDto>> GetByDepartmentIdAsync(int departmentId);
         Task<IEnumerable<CourseDto>> GetCoursesByProfessorIdAsync(int professorId);
         Task<bool> ProfessorExistsAsync(string professorName);

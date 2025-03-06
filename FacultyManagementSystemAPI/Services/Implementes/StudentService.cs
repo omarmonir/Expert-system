@@ -299,13 +299,21 @@ namespace FacultyManagementSystemAPI.Services.Implementes
             return count;
         }
 
-        public async Task<int> GetEnrolledStudentCountAsync()
+        public async Task<int> CountCanceledEnrolledStudentsAsync()
         {
-            int count = await _studentRepository.CountEnrolledStudentsAsync();
+            int count = await _studentRepository.CountCanceledEnrolledStudentsAsync();
             if (count == 0)
-                throw new Exception("لا طلاب مسجلين");
+                throw new Exception("لا طلاب غير مسجلين");
 
             return count;
+        }
+        public async Task<int> GetAllEnrollmentStudentsCountAsync()
+        {
+            int count = await _studentRepository.GetAllEnrollmentStudentsCountAsync();
+            if (count == 0)
+                throw new Exception("لا طلاب مسجلين");
+            return count;
+
         }
         private async Task ValidateStudentData(CreateStudentDto studentDto)
         {
@@ -363,6 +371,38 @@ namespace FacultyManagementSystemAPI.Services.Implementes
                 throw new Exception("لا يوجد طلاب مسجلين في هذا الكورس");
 
             return _mapper.Map<IEnumerable<StudentExamGradesDto>>(students);
+        }
+
+        public async Task<int> CountEnrollmentCoursesByStudentIdAsync(int studentId)
+        {
+            int count = await _studentRepository.CountEnrollmentCoursesByStudentIdAsync(studentId);
+            if (count == 0)
+                throw new Exception("لا يوجد تسجيلات لهذا الطالب");
+
+            return count;
+        }
+
+        public async Task<int> CountCompletedCoursesCountStudentIdAsync(int studentId)
+        {
+            int count = await _studentRepository.CountCompletedCoursesCountStudentIdAsync(studentId);
+            if (count == 0)
+                throw new Exception("لا يوجد تسجيلات مكتملة لهذا الطالب");
+
+            return count;
+        }
+
+        public async Task UpdateStudentStatusAsync(int studentId, string newStatus)
+        {
+            if (studentId <= 0)
+                throw new ArgumentException("معرف الطالب غير صالح");
+
+            var student = await _studentRepository.GetByIdAsync(studentId) ??
+                throw new Exception(" الطالب غير موجود");
+
+            if (student.status == newStatus)
+                throw new InvalidOperationException("حالة الطالب الحالية مطابقة للحالة الجديدة، لا يوجد تغيير مطلوب");
+
+            await _studentRepository.UpdateStudentStatusAsync(studentId, newStatus);
         }
     }
 }

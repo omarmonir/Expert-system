@@ -1,7 +1,6 @@
 ﻿using FacultyManagementSystemAPI.Models.DTOs.Enrollment;
 using FacultyManagementSystemAPI.Models.DTOs.Student;
 using FacultyManagementSystemAPI.Models.Entities;
-using Microsoft.AspNetCore.Mvc;
 
 namespace FacultyManagementSystemAPI.Repositories.Interfaces
 {
@@ -33,11 +32,16 @@ namespace FacultyManagementSystemAPI.Repositories.Interfaces
         Task<IEnumerable<StudentDto>> GetFilteredStudentsAsync(StudentFilterDto filter);
         Task<IEnumerable<StudentDto>> GetStudentsByDepartmentAndNameAsync(string? departmentName, string? studentName, string? studentStatus);
         Task<IEnumerable<StudentDto>> GetAllByDepartmentIdAsync(int departmentId);
-        Task<IEnumerable<Student>> GetStudentsByDepartmentNameAsync(string departmentName);
-        Task<int> CountEnrolledStudentsAsync();
+        Task<IEnumerable<StudentDto>> GetStudentsByDepartmentNameAsync(string departmentName);
+        Task<int> CountCanceledEnrolledStudentsAsync();
 
+        Task<int> CountEnrollmentCoursesByStudentIdAsync(int studentId);
+        Task<int> CountCompletedCoursesCountStudentIdAsync(int studentId);
+        Task<int> GetAllEnrollmentStudentsCountAsync();
         Task<IEnumerable<string>> GetAllStudentStatusesAsync();
         Task<IEnumerable<string>> GetAllStudentLevelsAsync();
         Task<IEnumerable<string>> GetAllStudentGenderAsync();
+
+        Task UpdateStudentStatusAsync(int studentId, string newStatus);
     }
 }

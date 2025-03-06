@@ -10,7 +10,7 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
     {
         private readonly AppDbContext _context = context;
 
-        public async Task<IEnumerable<ProfessorDto>> GetAllAsync()
+        public async Task<IEnumerable<ProfessorDto>> GetAllProfessorsAsync()
         {
             return await _context.Professors
                 .AsNoTracking()
@@ -31,7 +31,7 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                 }).ToListAsync();
         }
 
-        public async Task<ProfessorDto?> GetByIdAsync(int id)
+        public async Task<ProfessorDto?> GetProfessorByIdAsync(int id)
         {
             return await _context.Professors
                 .Where(p => p.Id == id)

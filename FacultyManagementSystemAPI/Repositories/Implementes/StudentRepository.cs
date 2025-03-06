@@ -73,31 +73,37 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
 
         public async Task<IEnumerable<StudentDto>> GetByNameWithDepartmentNameAsync(string name)
         {
-            return await _dbContext.Students
-                 .AsNoTrackingWithIdentityResolution()
-                 .Where(s => s.Name.Contains(name))
-                 .Select(s => new StudentDto
-                 {
-                     Id = s.Id,
-                     Name = s.Name,
-                     Email = s.Email,
-                     Address = s.Address,
-                     EnrollmentDate = s.EnrollmentDate,
-                     Phone = s.Phone,
-                     Gender = s.Gender,
-                     DateOfBirth = s.DateOfBirth,
-                     NationalId = s.NationalId,
-                     Nationality = s.Nationality,
-                     Semester = s.Semester,
-                     GPA_Average = s.GPA_Average,
-                     status = s.status,
-                     StudentLevel = s.StudentLevel,
-                     High_School_degree = s.High_School_degree,
-                     High_School_Section = s.High_School_Section,
-                     CreditsCompleted = s.CreditsCompleted,
-                     ImagePath = s.ImagePath,
-                     DepartmentName = s.Department.Name
-                 }).ToListAsync();
+            var students = await _dbContext.Students
+         .AsNoTrackingWithIdentityResolution()
+         .Select(s => new StudentDto
+         {
+             Id = s.Id,
+             Name = s.Name,
+             Email = s.Email,
+             Address = s.Address,
+             EnrollmentDate = s.EnrollmentDate,
+             Phone = s.Phone,
+             Gender = s.Gender,
+             DateOfBirth = s.DateOfBirth,
+             NationalId = s.NationalId,
+             Nationality = s.Nationality,
+             Semester = s.Semester,
+             GPA_Average = s.GPA_Average,
+             status = s.status,
+             StudentLevel = s.StudentLevel,
+             High_School_degree = s.High_School_degree,
+             High_School_Section = s.High_School_Section,
+             CreditsCompleted = s.CreditsCompleted,
+             ImagePath = s.ImagePath,
+             DepartmentName = s.Department.Name
+         })
+         .ToListAsync();  // ✅ اجلب البيانات من قاعدة البيانات أولًا
+
+            // ✅ تطبيق الفلترة بعد جلب البيانات إلى الذاكرة
+            name = NormalizeArabicText(name);
+            students = students.Where(s => NormalizeArabicText(s.Name).Contains(name)).ToList();
+
+            return students;
         }
 
         public async Task<bool> DepartmentExistsAsync(int departmentId)
@@ -127,6 +133,7 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                  {
                      Id = s.Student.Id,
                      Name = s.Student.Name,
+                     GPA_Average = s.Student.GPA_Average,
                      Exam1Grade = s.Exam1Grade,
                      Exam2Grade = s.Exam2Grade,
                      FinalGrade = s.FinalGrade,
@@ -248,18 +255,24 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
             return await query
                 .Select(e => new EnrollmentDto
                 {
-                    Id = e.Id,
-                    Semester = e.Semester,
-                    AddedEnrollmentDate = e.AddedEnrollmentDate,
-                    DeletedEnrollmentDate = e.DeletedEnrollmentDate,
-                    FinalGrade = e.FinalGrade,
-                    Exam1Grade = e.Exam1Grade,
-                    Exam2Grade = e.Exam2Grade,
-                    Grade = e.Grade,
-                    StudentId = e.StudentId,
-                    StudentName = e.Student.Name,
-                    CourseId = e.CourseId,
-                    CourseName = e.Course.Name
+                    StudentID = e.StudentId,
+                    StudentName = _dbContext.Students
+                        .Where(s => s.Id == e.StudentId)
+                        .Select(s => s.Name)
+                        .FirstOrDefault() ?? "غير معروف",
+
+                    CourseCode = _dbContext.Courses
+                        .Where(c => c.Id == e.CourseId)
+                        .Select(c => c.Code)
+                        .FirstOrDefault() ?? "غير معروف",
+
+                    CourseName = _dbContext.Courses
+                        .Where(c => c.Id == e.CourseId)
+                        .Select(c => c.Name)
+                        .FirstOrDefault() ?? "غير معروف",
+
+                    EnrollmentDate = e.AddedEnrollmentDate,
+                    EnrollmentStatus = e.IsCompleted
                 })
                 .ToListAsync();
         }
@@ -430,9 +443,6 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                        .Replace('ه', 'ة');
         }
 
-
-
-
         public async Task<IEnumerable<StudentDto>> GetAllByDepartmentIdAsync(int departmentId)
         {
             var students = await _dbContext.Students
@@ -465,12 +475,40 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
             return students;
         }
 
-        public async Task<IEnumerable<Student>> GetStudentsByDepartmentNameAsync(string departmentName)
+        public async Task<IEnumerable<StudentDto>> GetStudentsByDepartmentNameAsync(string departmentName)
         {
-            return await _dbContext.Students
-                .Where(s => s.Department.Name == departmentName)
-                .AsNoTracking()
-                .ToListAsync();
+
+            var students = await _dbContext.Students
+               .AsNoTrackingWithIdentityResolution()
+               .Select(s => new StudentDto
+               {
+                   Id = s.Id,
+                   Name = s.Name,
+                   NationalId = s.NationalId,
+                   Gender = s.Gender,
+                   DateOfBirth = s.DateOfBirth,
+                   Address = s.Address,
+                   Nationality = s.Nationality,
+                   Email = s.Email,
+                   Phone = s.Phone,
+                   Semester = s.Semester,
+                   EnrollmentDate = s.EnrollmentDate,
+                   GPA_Average = s.GPA_Average,
+                   status = s.status,
+                   StudentLevel = s.StudentLevel,
+                   High_School_degree = s.High_School_degree,
+                   High_School_Section = s.High_School_Section,
+                   CreditsCompleted = s.CreditsCompleted,
+                   ImagePath = s.ImagePath,
+                   DepartmentName = s.Department.Name
+               })
+               .ToListAsync();
+
+            var deptName = NormalizeArabicText(departmentName);
+
+            students = students.Where(s => NormalizeArabicText(s.DepartmentName) == departmentName).ToList();
+
+            return students;
         }
 
         public async Task<int> CountAsync()
@@ -478,13 +516,16 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
             return await _dbContext.Students.CountAsync();
         }
 
-        public async Task<int> CountEnrolledStudentsAsync()
+        public async Task<int> CountCanceledEnrolledStudentsAsync()
         {
             return await _dbContext.Enrollments
-                .Where(e => e.DeletedEnrollmentDate == null)
-                .Select(e => e.StudentId)
-                .Distinct()
+                .Where(e => e.DeletedEnrollmentDate != null)
                 .CountAsync();
+        }
+
+        public async Task<int> GetAllEnrollmentStudentsCountAsync()
+        {
+            return await _dbContext.Enrollments.Select(e => e.StudentId).Distinct().CountAsync();
         }
 
         public async Task<IEnumerable<string>> GetAllStudentStatusesAsync()
@@ -520,8 +561,8 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
         public async Task<IEnumerable<StudentExamGradesDto>> GetStudentsWithExamGradesByCourseIdAsync(int courseId)
         {
             return await _dbContext.Enrollments
-               .Where(e => e.CourseId == courseId) 
-               .Include(e => e.Student) 
+               .Where(e => e.CourseId == courseId)
+               .Include(e => e.Student)
                .Select(e => new StudentExamGradesDto
                {
                    StudentId = e.Student.Id,
@@ -532,6 +573,32 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                })
                .ToListAsync();
         }
+
+        public async Task<int> CountEnrollmentCoursesByStudentIdAsync(int studentId)
+        {
+            return await _dbContext.Enrollments
+                .AsNoTracking()
+                .CountAsync(e => e.StudentId == studentId);
+        }
+
+
+        public async Task<int> CountCompletedCoursesCountStudentIdAsync(int studentId)
+        {
+            return await _dbContext.Enrollments
+                .AsNoTracking()
+                .CountAsync(e => e.StudentId == studentId && e.IsCompleted == "ناجح");
+        }
+
+
+        public async Task UpdateStudentStatusAsync(int studentId, string newStatus)
+        {
+            var student = await _dbContext.Students.FindAsync(studentId);
+
+            student.status = newStatus;
+            _dbContext.Students.Update(student);
+            await _dbContext.SaveChangesAsync();
+        }
+
     }
 
 

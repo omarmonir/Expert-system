@@ -3,6 +3,7 @@ using FacultyManagementSystemAPI.Models.DTOs.Courses;
 using FacultyManagementSystemAPI.Models.Entities;
 using FacultyManagementSystemAPI.Repositories.Interfaces;
 using FacultyManagementSystemAPI.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace FacultyManagementSystemAPI.Services.Implementes
 {
@@ -13,19 +14,30 @@ namespace FacultyManagementSystemAPI.Services.Implementes
 
         public async Task CreateCourseAsync(CreateCourseDto createCourseDto)
         {
-            if (createCourseDto == null)
-                throw new ArgumentNullException("البيانات المدخلة لا يمكن أن تكون فارغة.");
-
-            if (await _courseRepository.CourseExistsAsync(createCourseDto.Name))
-                throw new Exception("المقرر موجود بالفعل.");
-
-            if (!await _courseRepository.CourseExistsAsync(createCourseDto.PreCourseId))
+            try
             {
-                throw new KeyNotFoundException("لم يتم العثور على المقرر");
-            }
+                if (createCourseDto == null)
+                    throw new ArgumentNullException("البيانات المدخلة لا يمكن أن تكون فارغة.");
 
-            var course = _mapper.Map<Course>(createCourseDto);
-            await _courseRepository.AddAsync(course);
+                if (await _courseRepository.CourseExistsAsync(createCourseDto.Name))
+                    throw new Exception("المقرر موجود بالفعل.");
+
+                if (!await _courseRepository.CourseExistsAsync(createCourseDto.PreCourseId))
+                {
+                    throw new KeyNotFoundException("لم يتم العثور على المقرر");
+                }
+
+                var course = _mapper.Map<Course>(createCourseDto);
+                await _courseRepository.AddAsync(course);
+            }
+            catch (DbUpdateException dbEx)
+            {
+                throw new Exception($"خطأ في قاعدة البيانات: {dbEx.InnerException?.Message}", dbEx);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"حدث خطأ أثناء إضافة الحضور: {ex.Message}", ex);
+            }
         }
 
         public async Task DeleteCourseAsync(int id)
@@ -126,6 +138,7 @@ namespace FacultyManagementSystemAPI.Services.Implementes
 
             return preRequisiteCourses;
         }
+
         public async Task<IEnumerable<CourseDto>> GetCoursesByStudentIdAsync(int studentId)
         {
             if (studentId <= 0)

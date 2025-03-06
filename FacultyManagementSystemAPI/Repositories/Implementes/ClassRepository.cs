@@ -1,19 +1,13 @@
 ﻿using FacultyManagementSystemAPI.Data;
-using FacultyManagementSystemAPI.Models.DTOs.Classes;
 using FacultyManagementSystemAPI.Models.Entities;
 using FacultyManagementSystemAPI.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace FacultyManagementSystemAPI.Repositories.Implementes
 {
-    public class ClassRepository : IClassRepository
+    public class ClassRepository(AppDbContext dbContext) : GenericRepository<Class>(dbContext), IClassRepository
     {
         private readonly AppDbContext _dbContext;
-
-        public ClassRepository(AppDbContext dbContext)
-        {
-            _dbContext = dbContext;
-        }
 
         public async Task<Class> GetClassByProfessorNameAsync(string professorName)
         {
@@ -68,31 +62,6 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
         public async Task<bool> IsCourseAlreadyAssignedAsync(int courseId, int professorId)
         {
             return await _dbContext.Classes.AnyAsync(c => c.CourseId == courseId && c.ProfessorId == professorId);
-        }
-
-        public Task<IEnumerable<Class>> GetAllAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<Class> GetByIdAsync(int id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task AddAsync(Class entity)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task UpdateAsync(int id, Class entity)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task DeleteAsync(int id)
-        {
-            throw new NotImplementedException();
         }
     }
 }

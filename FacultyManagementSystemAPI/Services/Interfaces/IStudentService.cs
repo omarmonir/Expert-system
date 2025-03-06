@@ -35,11 +35,15 @@ namespace FacultyManagementSystemAPI.Services.Interfaces
         Task<IEnumerable<StudentExamGradesDto>> GetStudentsWithExamGradesByCourseIdAsync(int courseId);
         Task<int> GetStudentCountAsync();
 
-        Task<int> GetEnrolledStudentCountAsync();
-
+        Task<int> CountCanceledEnrolledStudentsAsync();
+        Task<int> GetAllEnrollmentStudentsCountAsync();
+        Task<int> CountEnrollmentCoursesByStudentIdAsync(int studentId);
+        Task<int> CountCompletedCoursesCountStudentIdAsync(int studentId);
         Task<IEnumerable<string>> GetAllStudentStatusesAsync();
         Task<IEnumerable<string>> GetAllStudentLevelsAsync();
         Task<IEnumerable<string>> GetAllStudentGenderAsync();
+
+        Task UpdateStudentStatusAsync(int studentId, string newStatus);
     }
 
 }

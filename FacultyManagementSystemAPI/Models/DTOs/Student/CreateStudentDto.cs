@@ -52,6 +52,10 @@ namespace FacultyManagementSystemAPI.Models.DTOs.Student
         [DefaultValue(2)]
         public byte Semester { get; set; }
 
+        [Required(ErrorMessage = "حالة الطالب مطلوبة")]
+        [DefaultValue("نشط")]
+        public string status { get; set; }
+
         [Required(ErrorMessage = "تاريخ التسجيل مطلوب")]
         [DataType(DataType.Date, ErrorMessage = "تنسيق التاريخ غير صحيح")]
         [DefaultValue("2025-02-15")]
@@ -83,9 +87,9 @@ namespace FacultyManagementSystemAPI.Models.DTOs.Student
         public IFormFile Image { get; set; }
 
         [Required(ErrorMessage = "السنة الدراسية")]
-        [Range(1, 4, ErrorMessage = "يجب أن تكون السنة الدراسية بين 4 و 1")]
-        [DefaultValue(2)]
-        public int StudentLevel { get; set; }
+        [MaxLength(50, ErrorMessage = "يجب ألا يتجاوز مرحلة الطالب 50 حرفًا")]
+        [DefaultValue("سنة أولى")]
+        public string StudentLevel { get; set; }
 
         // Navigation Properties
         [Required(ErrorMessage = "رقم القسم مطلوب")]

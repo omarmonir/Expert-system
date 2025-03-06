@@ -9,5 +9,10 @@ namespace FacultyManagementSystemAPI.Repositories.Interfaces
         Task<AttendanceDto> GetAttendanceByIdAsync(int id);
         Task<IEnumerable<AttendanceDto>> GetAttendancesByStudentIdAsync(int studentId);
         Task<IEnumerable<AttendanceDto>> GetAttendancesByClassIdAsync(int classId);
+
+        Task<bool> StudentExistsAsync(int studentId);
+        Task<bool> ClassExistsAsync(int classId);
+        Task<int> CountAttendanceAsync();
+        Task<int> CountNoAttendanceAsync();
     }
 }

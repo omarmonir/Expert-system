@@ -54,11 +54,11 @@ namespace FacultyManagementSystemAPI.Models.DTOs.professors
 
         [Required(ErrorMessage = "مسار الصورة مطلوب")]
         [DefaultValue("default.jpg")]
-        public string ImagePath { get; set; }
+        public IFormFile Image { get; set; }
 
         // Navigation Properties
         [Required(ErrorMessage = "رقم القسم مطلوب")]
-        [DefaultValue(1001)]
+        [DefaultValue(1000)]
         public int DepartmentId { get; set; }
     }
 }

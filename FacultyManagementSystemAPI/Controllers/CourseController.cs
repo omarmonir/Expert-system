@@ -31,7 +31,7 @@ namespace FacultyManagementSystemAPI.Controllers
             }
         }
 
-       [HttpGet("CourseById/{id:int}")]
+        [HttpGet("CourseById/{id:int}")]
 
         public async Task<IActionResult> GetByIdWithPreCourseName(int id)
         {
@@ -145,6 +145,7 @@ namespace FacultyManagementSystemAPI.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
         [HttpGet("CoursesByStudentId/{studentId}")]
         public async Task<IActionResult> GetCoursesByStudentId(int studentId)
         {
@@ -153,20 +154,11 @@ namespace FacultyManagementSystemAPI.Controllers
                 var courses = await _courseService.GetCoursesByStudentIdAsync(studentId);
                 return Ok(courses);
             }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-            catch (InvalidOperationException ex)
-            {
-                return NotFound(new { message = ex.Message });
-            }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "حدث خطأ غير متوقع.", details = ex.Message });
+                return BadRequest(ex.Message);
             }
         }
-
 
 
         [HttpPut("UpdateCourse/{id}")]
@@ -191,6 +183,10 @@ namespace FacultyManagementSystemAPI.Controllers
         [HttpDelete("DeleteCourse/{id}")]
         public async Task<IActionResult> DeleteCourse(int id)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             try
             {
                 await _courseService.DeleteCourseAsync(id);
@@ -198,7 +194,7 @@ namespace FacultyManagementSystemAPI.Controllers
             }
             catch (Exception ex)
             {
-                return Content(ex.Message);// 404 Not Found
+                return BadRequest(ex.Message);
             }
         }
 
@@ -224,13 +220,28 @@ namespace FacultyManagementSystemAPI.Controllers
         [HttpGet("CountOfAvailableCourses")]
         public async Task<IActionResult> GetCourseCountByStatus()
         {
-            var count = await _courseService.GetCourseCountByStatusAsync();
-            return Ok(new { countOfCourses = count });
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            try
+            {
+                var count = await _courseService.GetCourseCountByStatusAsync();
+                return Ok(new { countOfCourses = count });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet("AllPreCoursesName")]
         public async Task<IActionResult> GetAllPreCoursesName()
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             try
             {
                 var preCoursesNames = await _courseService.GetAllPreRequisiteCoursesAsync();

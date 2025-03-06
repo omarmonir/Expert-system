@@ -124,5 +124,55 @@ namespace FacultyManagementSystemAPI.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpGet("CountOfAttendances")]
+        public async Task<IActionResult> GetAttendancesCount()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            try
+            {
+                var count = await _attendanceService.CountAttendanceAsync();
+                return Ok(new { countOfStudents = count });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("CountOfNoAttendances")]
+        public async Task<IActionResult> GetNoAttendancesCount()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            try
+            {
+                var count = await _attendanceService.CountNoAttendanceAsync();
+                return Ok(new { countOfStudents = count });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("SuccessAttendancePercentage")]
+        public async Task<IActionResult> GetSuccessPercentage()
+        {
+            try
+            {
+                double successPercentage = await _attendanceService.GetSuccessPercentageAsync();
+                return Ok(new { successAttendancePercentage = successPercentage });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

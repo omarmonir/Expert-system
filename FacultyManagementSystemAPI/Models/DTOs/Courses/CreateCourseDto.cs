@@ -10,6 +10,11 @@ namespace FacultyManagementSystemAPI.Models.DTOs.Courses
         [DefaultValue("أسم المادة")]
         public string Name { get; set; }
 
+        [Required(ErrorMessage = "كود المقرر مطلوب.")]
+        [MaxLength(50, ErrorMessage = "يجب ألا يتجاوز كود المقرر 50 حرفاً.")]
+        [DefaultValue("CS102")]
+        public string Code { get; set; }
+
         [Required(ErrorMessage = "الوصف مطلوب.")]
         [MaxLength(250, ErrorMessage = "يجب ألا يتجاوز اسم الوصف 250 حرفاً.")]
         [DefaultValue("الوصف")]
