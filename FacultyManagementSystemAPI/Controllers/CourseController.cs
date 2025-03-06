@@ -125,49 +125,49 @@ namespace FacultyManagementSystemAPI.Controllers
             {
                 return BadRequest(ex.Message);
             }
-        } 
-        
-        //[HttpGet("GetCourseRegistrationStatsByCourseOverTime/{courseId}")]
-        //public async Task<IActionResult> GetCourseRegistrationStatsByCourseOverTime(int courseId)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
+        }
 
-        //    try
-        //    {
-        //        var courses = await _courseService.GetCourseRegistrationStatsByCourseOverTimeAsync(courseId);
-        //        return Ok(courses);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return BadRequest(ex.Message);
-        //    }
-        //}
-        //[HttpGet("CoursesByStudentId/{studentId}")]
-        //public async Task<IActionResult> GetCoursesByStudentId(int studentId)
-        //{
-        //    try
-        //    {
-        //        var courses = await _courseService.GetCoursesByStudentIdAsync(studentId);
-        //        return Ok(courses);
-        //    }
-        //    catch (ArgumentException ex)
-        //    {
-        //        return BadRequest(new { message = ex.Message });
-        //    }
-        //    catch (InvalidOperationException ex)
-        //    {
-        //        return NotFound(new { message = ex.Message });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return StatusCode(500, new { message = "حدث خطأ غير متوقع.", details = ex.Message });
-        //    }
-        //}
+        [HttpGet("GetCourseRegistrationStatsByCourseOverTime/{courseId}")]
+        public async Task<IActionResult> GetCourseRegistrationStatsByCourseOverTime(int courseId)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
-       
+            try
+            {
+                var courses = await _courseService.GetCourseRegistrationStatsByCourseOverTimeAsync(courseId);
+                return Ok(courses);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        [HttpGet("CoursesByStudentId/{studentId}")]
+        public async Task<IActionResult> GetCoursesByStudentId(int studentId)
+        {
+            try
+            {
+                var courses = await _courseService.GetCoursesByStudentIdAsync(studentId);
+                return Ok(courses);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "حدث خطأ غير متوقع.", details = ex.Message });
+            }
+        }
+
+
 
         [HttpPut("UpdateCourse/{id}")]
         public async Task<IActionResult> UpdateCourse(int id, [FromBody] UpdateCourseDto updateCourseDto)

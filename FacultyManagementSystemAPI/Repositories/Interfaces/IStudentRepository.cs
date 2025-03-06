@@ -25,6 +25,8 @@ namespace FacultyManagementSystemAPI.Repositories.Interfaces
 
         Task<IEnumerable<EnrollmentDto>> GetEnrollmentsByDateRangeAsync(DateTime? minDate, DateTime? maxDate);
 
+        Task<IEnumerable<StudentExamGradesDto>> GetStudentsWithExamGradesByCourseIdAsync(int courseId);
+
         Task<int> CountAsync();
         // Filtering
 

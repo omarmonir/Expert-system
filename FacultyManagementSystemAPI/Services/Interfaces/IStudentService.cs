@@ -32,6 +32,7 @@ namespace FacultyManagementSystemAPI.Services.Interfaces
         Task<IEnumerable<StudentDto>> GetAllByDepartmentIdAsync(int departmentId);
         Task<IEnumerable<StudentDto>> GetStudentsByDepartmentNameAsync(string departmentName);
 
+        Task<IEnumerable<StudentExamGradesDto>> GetStudentsWithExamGradesByCourseIdAsync(int courseId);
         Task<int> GetStudentCountAsync();
 
         Task<int> GetEnrolledStudentCountAsync();

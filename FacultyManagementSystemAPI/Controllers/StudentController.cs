@@ -1,4 +1,5 @@
 ﻿using FacultyManagementSystemAPI.Models.DTOs.Student;
+using FacultyManagementSystemAPI.Services.Implementes;
 using FacultyManagementSystemAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -367,6 +368,17 @@ namespace FacultyManagementSystemAPI.Controllers
             {
                 return BadRequest(ex.Message);
             }
+        }
+
+        [HttpGet("StudentsWithExamGradesByCourseId/{courseId}")]
+        public async Task<IActionResult> GetStudentsWithExamGradesByCourseId(int courseId)
+        {
+            var students = await _studentService.GetStudentsWithExamGradesByCourseIdAsync(courseId);
+            if (students == null || students.Count() == 0)
+            {
+                return NotFound($"لم يتم العثور على طلاب مسجلين في الكورس برقم {courseId}.");
+            }
+            return Ok(students);
         }
 
         [HttpGet("AllStudentGender")]

@@ -1,4 +1,7 @@
-﻿using FacultyManagementSystemAPI.Services.Interfaces;
+﻿using FacultyManagementSystemAPI.Models.DTOs.Department;
+using FacultyManagementSystemAPI.Models.DTOs.Enrollment;
+using FacultyManagementSystemAPI.Services.Implementes;
+using FacultyManagementSystemAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FacultyManagementSystemAPI.Controllers
@@ -146,6 +149,62 @@ namespace FacultyManagementSystemAPI.Controllers
             {
                 var count = await _enrollmentService.GetCanceledEnrollmentCountAsync();
                 return Ok(new { countOfCanceledEnrollments = count });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        [HttpPut("updateGrade")]
+        public async Task<IActionResult> UpdateGrade([FromBody] UpdateGradeDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                await _enrollmentService.UpdateStudentGradeAsync(dto.StudentId, dto.CourseId, dto.NewGrade);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        
+        [HttpPut("UpdateStudentExam1Grade")]
+        public async Task<IActionResult> UpdateStudentExam1Grade([FromBody] UpdateGradeDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                await _enrollmentService.UpdateStudentExam1GradeAsync(dto.StudentId, dto.CourseId, dto.NewGrade);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        } 
+        
+        [HttpPut("UpdateStudentExam2Grade")]
+        public async Task<IActionResult> UpdateStudentExam2Grade([FromBody] UpdateGradeDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                await _enrollmentService.UpdateStudentExam2GradeAsync(dto.StudentId, dto.CourseId, dto.NewGrade);
+                return NoContent();
             }
             catch (Exception ex)
             {

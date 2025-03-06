@@ -1,4 +1,8 @@
-﻿using FacultyManagementSystemAPI.Models.DTOs.Enrollment;
+﻿using AutoMapper;
+using FacultyManagementSystemAPI.Models.DTOs.Enrollment;
+using FacultyManagementSystemAPI.Models.DTOs.professors;
+using FacultyManagementSystemAPI.Models.Entities;
+using FacultyManagementSystemAPI.Repositories.Implementes;
 using FacultyManagementSystemAPI.Repositories.Interfaces;
 using FacultyManagementSystemAPI.Services.Interfaces;
 
@@ -7,11 +11,13 @@ namespace FacultyManagementSystemAPI.Services.Implementes
     public class EnrollmentService(
         IEnrollmentRepository enrollmentRepository,
         IStudentRepository studentRepository,
-        ICourseRepository courseRepository) : IEnrollmentService
+        ICourseRepository courseRepository, IMapper mapper) : IEnrollmentService
     {
         private readonly IEnrollmentRepository _enrollmentRepository = enrollmentRepository;
         private readonly IStudentRepository _studentRepository = studentRepository;
         private readonly ICourseRepository _courseRepository = courseRepository;
+        private readonly IMapper _mapper = mapper;
+        
 
         public async Task DeleteAsync(int id)
         {
@@ -105,5 +111,88 @@ namespace FacultyManagementSystemAPI.Services.Implementes
             return count;
         }
 
+      
+
+        public async Task UpdateStudentGradeAsync(int studentId, int courseId, decimal newGrade)
+        {
+            // التحقق من صحة المدخلات
+            if (studentId <= 0 || courseId <= 0)
+            {
+                throw new ArgumentException("يجب أن يكون معرف الطالب والكورس رقمًا موجبًا.");
+            }
+
+            if (newGrade < 0 || newGrade > 90)
+            {
+                throw new ArgumentException("يجب أن تكون الدرجة بين 0 و 90.");
+            }
+
+            // البحث عن التسجيل
+            var enrollment = await _enrollmentRepository.GetByStudentAndCourseIdAsync(studentId, courseId);
+            if (enrollment == null)
+            {
+                throw new Exception("لم يتم العثور على التسجيل المطلوب.");
+            }
+
+            // تحديث الدرجة
+            enrollment.Grade = newGrade;
+
+            // حفظ التغييرات في قاعدة البيانات
+            await _enrollmentRepository.UpdateAsync(enrollment);
+        }
+
+        public async Task UpdateStudentExam1GradeAsync(int studentId, int courseId, decimal newGrade)
+        {
+            // التحقق من صحة المدخلات
+            if (studentId <= 0 || courseId <= 0)
+            {
+                throw new ArgumentException("يجب أن يكون معرف الطالب والكورس رقمًا موجبًا.");
+            }
+
+            if (newGrade < 0 || newGrade > 30)
+            {
+                throw new ArgumentException("يجب أن تكون الدرجة بين 0 و 30.");
+            }
+
+            // البحث عن التسجيل
+            var enrollment = await _enrollmentRepository.GetByStudentAndCourseIdAsync(studentId, courseId);
+            if (enrollment == null)
+            {
+                throw new Exception("لم يتم العثور على التسجيل المطلوب.");
+            }
+
+            // تحديث الدرجة
+            enrollment.Exam1Grade = newGrade;
+
+            // حفظ التغييرات في قاعدة البيانات
+            await _enrollmentRepository.UpdateAsync(enrollment);
+        }
+
+        public async Task UpdateStudentExam2GradeAsync(int studentId, int courseId, decimal newGrade)
+        {
+
+            // التحقق من صحة المدخلات
+            if (studentId <= 0 || courseId <= 0)
+            {
+                throw new ArgumentException("يجب أن يكون معرف الطالب والكورس رقمًا موجبًا.");
+            }
+
+            if (newGrade < 0 || newGrade > 30)
+            {
+                throw new ArgumentException("يجب أن تكون الدرجة بين 0 و 30.");
+            }
+
+            // البحث عن التسجيل
+            var enrollment = await _enrollmentRepository.GetByStudentAndCourseIdAsync(studentId, courseId);
+            if (enrollment == null)
+            {
+                throw new Exception("لم يتم العثور على التسجيل المطلوب.");
+            }
+
+            // تحديث الدرجة
+            enrollment.Exam2Grade = newGrade;
+
+            // حفظ التغييرات في قاعدة البيانات
+            await _enrollmentRepository.UpdateAsync(enrollment);
+        }
     }
 }

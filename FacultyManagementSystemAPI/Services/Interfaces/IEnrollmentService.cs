@@ -14,5 +14,8 @@ namespace FacultyManagementSystemAPI.Services.Interfaces
         Task<int> GetEnrollmentCountAsync();
         Task<int> GetCanceledEnrollmentCountAsync();
 
+        Task UpdateStudentGradeAsync(int studentId, int courseId, decimal newGrade);
+        Task UpdateStudentExam1GradeAsync(int studentId, int courseId, decimal newGrade);
+        Task UpdateStudentExam2GradeAsync(int studentId, int courseId, decimal newGrade);
     }
 }

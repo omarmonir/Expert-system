@@ -13,6 +13,8 @@ namespace FacultyManagementSystemAPI.Services.Interfaces
         Task<IEnumerable<CourseDto>> GetCoursesByDepartmentIdWithPreCourseNameAsync(int departmentId);
         Task<IEnumerable<CourseDto>> GetCoursesByProfessorIdWithPreCourseNameAsync(int professorId);
         Task<IEnumerable<CourseDto>> GetCoursesBySemesterWithPreCourseNameAsync(byte semester);
+        Task<IEnumerable<CourseRegistrationStatsDto>> GetCourseRegistrationStatsByCourseOverTimeAsync(int courseId);
+        Task<IEnumerable<CourseDto>> GetCoursesByStudentIdAsync(int studentId);
 
         Task<int> GetCourseCountAsync();
         Task<int> GetCourseCountByStatusAsync();

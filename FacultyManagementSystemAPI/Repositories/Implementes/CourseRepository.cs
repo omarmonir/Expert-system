@@ -41,6 +41,7 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                         Description = c.Course.Description,
                         Credits = c.Course.Credits,
                         Status = c.Course.Status,
+                        Code = c.Course.Code,
                         CurrentEnrolledStudents = c.Course.CurrentEnrolledStudents,
                         MaxSeats = c.Course.MaxSeats,
                         Semester = c.Course.Semester,
@@ -63,6 +64,7 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                     Description = c.Course.Description,
                     Credits = c.Course.Credits,
                     Status = c.Course.Status,
+                    Code = c.Course.Code,
                     Semester = c.Course.Semester,
                     CurrentEnrolledStudents = c.Course.CurrentEnrolledStudents,
                     MaxSeats = c.Course.MaxSeats,
@@ -84,6 +86,7 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                     Description = c.Course.Description,
                     Credits = c.Course.Credits,
                     Status = c.Course.Status,
+                    Code = c.Course.Code,
                     Semester = c.Course.Semester,
                     CurrentEnrolledStudents = c.Course.CurrentEnrolledStudents,
                     MaxSeats = c.Course.MaxSeats,
@@ -103,6 +106,7 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                    Description = c.Course.Description,
                    Credits = c.Course.Credits,
                    Status = c.Course.Status,
+                   Code = c.Course.Code,
                    Semester = c.Course.Semester,
                    CurrentEnrolledStudents = c.Course.CurrentEnrolledStudents,
                    MaxSeats = c.Course.MaxSeats,
@@ -131,6 +135,7 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                 Description = c.Course.Description,
                 Credits = c.Course.Credits,
                 Status = c.Course.Status,
+                Code = c.Course.Code,
                 Semester = c.Course.Semester,
                 CurrentEnrolledStudents = c.Course.CurrentEnrolledStudents,
                 MaxSeats = c.Course.MaxSeats,
@@ -166,6 +171,47 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                 .Where(c => c.PreCourseId != null) // Only get courses with prerequisites
                 .Select(c => c.PreCourse.Name) // Select the name of the prerequisite course
                 .Distinct() // Remove duplicates
+                .ToListAsync();
+        }
+        public async Task<IEnumerable<CourseRegistrationStatsDto>> GetCourseRegistrationStatsByCourseOverTimeAsync(int courseId)
+        {
+            return await _dbContext.Enrollments
+            .Where(e => e.CourseId == courseId)
+            .GroupBy(e => new { e.AddedEnrollmentDate.Year, e.AddedEnrollmentDate.Month })
+            .Select(g => new CourseRegistrationStatsDto
+            {
+                CourseId = courseId,
+                CourseName = g.First().Course.Name,
+                Year = g.Key.Year,
+                Month = g.Key.Month,
+                TotalRegistrations = g.Count(e => e.DeletedEnrollmentDate == null), // التسجيل الساري
+                TotalCancellations = g.Count(e => e.DeletedEnrollmentDate != null)  // التسجيل الملغى
+            })
+            .ToListAsync();
+        }
+
+        public async Task<List<CourseDto>> GetCoursesByStudentIdAsync(int studentId)
+        {
+            return await _dbContext.Enrollments
+                .Where(e => e.StudentId == studentId)
+                .Include(e => e.Course)
+                 .ThenInclude(c => c.Classes) // تضمين جدول Class
+                  .ThenInclude(cl => cl.Professor) // تضمين الدكتور المسؤول عن الكلاس
+                .Select(e => new CourseDto
+                {
+                    Id = e.Course.Id,
+                    Name = e.Course.Name,
+                    Description = e.Course.Description,
+                    Credits = e.Course.Credits,
+                    Status = e.Course.Status,
+                    Code = e.Course.Code,
+                    Semester = e.Course.Semester,
+                    MaxSeats = e.Course.MaxSeats,
+                    ProfessorName = e.Course.Classes.Any() ? e.Course.Classes.FirstOrDefault().Professor.FullName : "غير محدد",
+                    PreCourseName = e.Course.PreCourse.Name
+
+                })
+                .Distinct()
                 .ToListAsync();
         }
     }

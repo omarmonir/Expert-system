@@ -11,6 +11,9 @@ namespace FacultyManagementSystemAPI.Repositories.Interfaces
         Task<IEnumerable<EnrollmentDto>> GetByStudentIdAsync(int studentId);
         Task<IEnumerable<EnrollmentDto>> GetByCourseIdAsync(int courseId);
 
+       
+        Task<Enrollment> GetByStudentAndCourseIdAsync(int studentId, int courseId);
+        Task UpdateAsync(Enrollment enrollment);
         Task<int> CountAsync();
         Task<int> CountDeletedAsync();
     }

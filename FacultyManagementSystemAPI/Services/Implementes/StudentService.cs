@@ -354,5 +354,15 @@ namespace FacultyManagementSystemAPI.Services.Implementes
 
             return genders;
         }
+
+        public async Task<IEnumerable<StudentExamGradesDto>> GetStudentsWithExamGradesByCourseIdAsync(int courseId)
+        {
+            var students = await _studentRepository.GetStudentsWithExamGradesByCourseIdAsync(courseId);
+
+            if (students == null || !students.Any())
+                throw new Exception("لا يوجد طلاب مسجلين في هذا الكورس");
+
+            return _mapper.Map<IEnumerable<StudentExamGradesDto>>(students);
+        }
     }
 }

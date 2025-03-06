@@ -169,5 +169,17 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
         {
             return await _dbContext.Enrollments.CountAsync(e => e.DeletedEnrollmentDate != null);
         }
+     
+        public async Task<Enrollment> GetByStudentAndCourseIdAsync(int studentId, int courseId)
+        {
+            return await _dbContext.Enrollments
+                .FirstOrDefaultAsync(e => e.StudentId == studentId && e.CourseId == courseId);
+        }
+
+        public async Task UpdateAsync(Enrollment enrollment)
+        {
+            _dbContext.Enrollments.Update(enrollment);
+            await _dbContext.SaveChangesAsync();
+        }
     }
 }

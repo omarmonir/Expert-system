@@ -516,5 +516,23 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
 
             return genders;
         }
+
+        public async Task<IEnumerable<StudentExamGradesDto>> GetStudentsWithExamGradesByCourseIdAsync(int courseId)
+        {
+            return await _dbContext.Enrollments
+               .Where(e => e.CourseId == courseId) 
+               .Include(e => e.Student) 
+               .Select(e => new StudentExamGradesDto
+               {
+                   StudentId = e.Student.Id,
+                   StudentName = e.Student.Name,
+                   Exam1Grade = e.Exam1Grade,
+                   Exam2Grade = e.Exam2Grade,
+                   FinalGrade = e.FinalGrade
+               })
+               .ToListAsync();
+        }
     }
+
+
 }
