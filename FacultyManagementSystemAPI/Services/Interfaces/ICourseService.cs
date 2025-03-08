@@ -22,5 +22,6 @@ namespace FacultyManagementSystemAPI.Services.Interfaces
         Task DeleteAsync(int id);
         Task<IEnumerable<string>> GetAllCoursesStatusesAsync();
         Task<IEnumerable<string>> GetAllCoursesNameAsync();
+        Task<IEnumerable<FilterCourseDto>> GetFilteredCoursesAsync(string? courseName, string? departmentName, string? courseStatus);
     }
 }

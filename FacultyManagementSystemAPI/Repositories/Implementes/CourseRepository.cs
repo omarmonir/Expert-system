@@ -233,5 +233,63 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
 
             return names;
         }
+
+        public async Task<IEnumerable<FilterCourseDto>> GetFilteredCoursesAsync(string? courseName, string? departmentName, string? courseStatus)
+        {
+            var courseQuery = _dbContext.Courses
+        .AsNoTracking()
+        .Select(c => new FilterCourseDto
+        {
+            Id = c.Id,
+            Name = c.Name,
+            Description = c.Description,
+            Credits = c.Credits,
+            Status = c.Status,
+            Code = c.Code,
+            Semester = c.Semester,
+            MaxSeats = c.MaxSeats,
+            CurrentEnrolledStudents = c.CurrentEnrolledStudents,
+            DepartmentName = c.CourseDepartments.Select(cd => cd.Department.Name).FirstOrDefault()
+        });
+
+            // تطبيق الفلاتر على مستوى قاعدة البيانات
+            if (!string.IsNullOrWhiteSpace(courseStatus))
+            {
+                courseQuery = courseQuery.Where(c => c.Status.Contains(courseStatus));
+            }
+
+            // جلب البيانات إلى الذاكرة قبل تطبيق الفلاتر النصية
+            var courses = await courseQuery.ToListAsync();
+
+            // تنفيذ الفلترة النصية على مستوى الذاكرة
+            if (!string.IsNullOrWhiteSpace(courseName))
+            {
+                courseName = NormalizeArabicText(courseName);
+                courses = courses
+                    .Where(c => NormalizeArabicText(c.Name).Contains(courseName))
+                    .ToList();
+            }
+
+            
+            if (!string.IsNullOrWhiteSpace(departmentName))
+            {
+                departmentName = NormalizeArabicText(departmentName);
+                courses = courses
+                    .Where(c => !string.IsNullOrEmpty(c.DepartmentName) && NormalizeArabicText(c.DepartmentName).Contains(departmentName))
+                    .ToList();
+            }
+
+
+            return courses;
+        }
+        private string NormalizeArabicText(string text)
+        {
+            return text.Replace('أ', 'ا')
+                       .Replace('إ', 'ا')
+                       .Replace('آ', 'ا')
+                       .Replace('ى', 'ي')
+                       .Replace('ه', 'ة');
+        }
+
     }
 }

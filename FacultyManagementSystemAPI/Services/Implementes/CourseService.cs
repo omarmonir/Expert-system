@@ -201,5 +201,15 @@ namespace FacultyManagementSystemAPI.Services.Implementes
 
             return names;
         }
+
+        public async Task<IEnumerable<FilterCourseDto>> GetFilteredCoursesAsync(string? courseName, string? departmentName, string? courseStatus)
+        {
+            var courses = await _courseRepository.GetFilteredCoursesAsync(courseName, departmentName, courseStatus);
+
+            if (!courses.Any())
+                throw new KeyNotFoundException("لا يوجد كورسات مطابقة للمعايير المحددة.");
+
+            return courses;
+        }
     }
 }

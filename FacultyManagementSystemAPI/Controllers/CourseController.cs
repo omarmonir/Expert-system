@@ -292,7 +292,26 @@ namespace FacultyManagementSystemAPI.Controllers
                 return BadRequest(ex.Message);
             }
         }
+        [HttpGet("FilterCourses")]
+        public async Task<IActionResult> GetFilteredCourses(
+                                        [FromQuery] string? courseName,
+                                        [FromQuery] string? departmentName,
+                                        [FromQuery] string? courseStatus)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            try
+            {
+                var courses = await _courseService.GetFilteredCoursesAsync(courseName, departmentName, courseStatus);
+                return Ok(courses);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
-        
     }
 }
