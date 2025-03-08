@@ -1,13 +1,22 @@
 ﻿using FacultyManagementSystemAPI.Data;
+using FacultyManagementSystemAPI.Models.DTOs.Classes;
+using FacultyManagementSystemAPI.Models.DTOs.Courses;
 using FacultyManagementSystemAPI.Models.Entities;
 using FacultyManagementSystemAPI.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace FacultyManagementSystemAPI.Repositories.Implementes
 {
-    public class ClassRepository(AppDbContext dbContext) : GenericRepository<Class>(dbContext), IClassRepository
+    public class ClassRepository : GenericRepository<Class>, IClassRepository
     {
         private readonly AppDbContext _dbContext;
+        private readonly DbSet<Class> _dbSet;
+
+        public ClassRepository(AppDbContext dbContext) : base(dbContext)
+        {
+            _dbContext = dbContext;
+            _dbSet = _dbContext.Set<Class>();
+        }
 
         public async Task<Class> GetClassByProfessorNameAsync(string professorName)
         {
@@ -48,9 +57,27 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
 
         }
 
-        public async Task<Course> GetCourseByIdAsync(int courseId)
+        public async Task<ClassDto> GetClassByIdAsync(int courseId)
         {
-            return await _dbContext.Courses.FindAsync(courseId);
+            //return await _dbContext.Courses.FindAsync(courseId);
+
+            var courseDto = await _dbContext.Classes
+           .AsNoTrackingWithIdentityResolution()
+           .Where(c => c.Id == courseId)
+           .Select(c => new ClassDto
+           {
+               Id = c.Id,
+               StartTime = c.StartTime,
+               EndTime = c.EndTime,
+               Day = c.Day,
+               Location = c.Location,
+
+               CourseName = c.Course.PreCourse != null ? c.Course.PreCourse.Name : "لا يوجد مقرر مطلوب لهذا المقرر",
+               ProfessorName = c.Professor.FullName
+           })
+
+               .FirstOrDefaultAsync();
+            return courseDto;
         }
 
         public async Task<Professor> GetProfessorByNameAsync(string professorName)
@@ -62,6 +89,54 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
         public async Task<bool> IsCourseAlreadyAssignedAsync(int courseId, int professorId)
         {
             return await _dbContext.Classes.AnyAsync(c => c.CourseId == courseId && c.ProfessorId == professorId);
+        }
+
+        public async Task<bool> ClassExistsAsync(int? ClassId)
+        {
+            return await _dbContext.Classes
+                 .AnyAsync(d => d.Id == ClassId);
+        }
+        public async Task<bool> IsTimeAndLocationConflictAsync(TimeSpan startTime, TimeSpan endTime, string day, string location)
+        {
+            return await _dbSet.AnyAsync(c =>
+                EF.Property<string>(c, "Day") == day &&
+                EF.Property<string>(c, "Location") == location &&
+                (EF.Property<TimeSpan>(c, "StartTime") < endTime && EF.Property<TimeSpan>(c, "EndTime") > startTime)
+            );
+        }
+
+        public async Task<IEnumerable<ClassDto>> GetAllClassesWithProfNameAndCourseNameAsync()
+        {
+            return await _dbContext.Classes
+           .AsNoTrackingWithIdentityResolution()
+
+           .Select(c => new ClassDto
+           {
+               Id = c.Id,
+               StartTime = c.StartTime,
+               EndTime = c.EndTime,
+               Day = c.Day,
+               Location = c.Location,
+
+               CourseName = c.Course.PreCourse != null ? c.Course.PreCourse.Name : "لا يوجد مقرر مطلوب لهذا المقرر",
+               ProfessorName = c.Professor.FullName
+           }).ToListAsync();
+
+        }
+        public async Task<int> CountAsync()
+        {
+            return await _dbContext.Classes.CountAsync();
+
+
+        }
+
+        public async Task<IEnumerable<string>> GetAllLocationsNameAsync()
+        {
+            var names = await _dbContext.Classes
+         .Select(d => d.Location)
+         .ToListAsync();
+
+            return names;
         }
     }
 }

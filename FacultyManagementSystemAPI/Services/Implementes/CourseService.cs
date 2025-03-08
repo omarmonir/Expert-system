@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FacultyManagementSystemAPI.Models.DTOs.Courses;
 using FacultyManagementSystemAPI.Models.Entities;
+using FacultyManagementSystemAPI.Repositories.Implementes;
 using FacultyManagementSystemAPI.Repositories.Interfaces;
 using FacultyManagementSystemAPI.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +30,7 @@ namespace FacultyManagementSystemAPI.Services.Implementes
 
                 var course = _mapper.Map<Course>(createCourseDto);
                 await _courseRepository.AddAsync(course);
+              
             }
             catch (DbUpdateException dbEx)
             {
@@ -102,8 +104,8 @@ namespace FacultyManagementSystemAPI.Services.Implementes
             var course = await _courseRepository.GetByIdAsync(id)
                 ?? throw new KeyNotFoundException($"لم يتم العثور على المقرر برقم {id}.");
 
-            if (await _courseRepository.CourseExistsAsync(updateCourseDto.Name))
-                throw new Exception("المقرر موجود بالفعل.");
+            //if (await _courseRepository.CourseExistsAsync(updateCourseDto.Name))
+            //    throw new Exception("المقرر موجود بالفعل.");
 
             var courseUpdate = _mapper.Map(updateCourseDto, course);
             await _courseRepository.UpdateAsync(id, courseUpdate);
@@ -165,5 +167,39 @@ namespace FacultyManagementSystemAPI.Services.Implementes
 
         }
 
+        public async Task<IEnumerable<string>> GetAllCoursesStatusesAsync()
+        {
+            var status = await _courseRepository.GetAllCoursesStatusesAsync();
+
+            if (status == null || !status.Any())
+                throw new Exception("لا يوجد أي حالات للطلاب");
+
+            return status;
+        }
+
+
+        public async Task DeleteAsync(int id)
+        {
+            if (id <= 0)
+                throw new ArgumentException("يجب أن يكون معرف الكورس رقمًا موجبا");
+
+            var student = await _courseRepository.GetByIdAsync(id) ??
+                throw new KeyNotFoundException("لم يتم العثور على الكورس"); ;
+
+
+
+            // حذف الكورس من قاعدة البيانات
+            await _courseRepository.DeleteAsync(id);
+        }
+
+        public async Task<IEnumerable<string>> GetAllCoursesNameAsync()
+        {
+            var names = await _courseRepository.GetAllCoursesNameAsync();
+
+            if (names == null || !names.Any())
+                throw new Exception("لا يوجد أي كورسات");
+
+            return names;
+        }
     }
 }

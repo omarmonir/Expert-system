@@ -20,6 +20,6 @@
         public int CurrentEnrolledStudents { get; set; }
 
         public string? PreCourseName { get; set; }
-        public string ProfessorName { get; set; }
+        //public string ProfessorName { get; set; }
     }
 }

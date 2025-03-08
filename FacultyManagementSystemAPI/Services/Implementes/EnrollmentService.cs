@@ -225,5 +225,15 @@ namespace FacultyManagementSystemAPI.Services.Implementes
 
             return enrollments;
         }
+
+        public async Task<IEnumerable<string>> GetAllEnrollmentsSemsterAsync()
+        {
+            var status = await _enrollmentRepository.GetAllEnrollmentsSemsterAsync();
+
+            if (status == null || !status.Any())
+                throw new Exception("لا يوجد أي فصل");
+
+            return status;
+        }
     }
 }

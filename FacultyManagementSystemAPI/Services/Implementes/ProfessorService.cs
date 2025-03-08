@@ -2,6 +2,7 @@
 using FacultyManagementSystemAPI.Models.DTOs.Courses;
 using FacultyManagementSystemAPI.Models.DTOs.professors;
 using FacultyManagementSystemAPI.Models.Entities;
+using FacultyManagementSystemAPI.Repositories.Implementes;
 using FacultyManagementSystemAPI.Repositories.Interfaces;
 using FacultyManagementSystemAPI.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -49,6 +50,17 @@ namespace FacultyManagementSystemAPI.Services.Implementes
             if (professorsDto == null || !professorsDto.Any())
                 throw new KeyNotFoundException("لم يتم العثور على أي دكتور.");
             return professorsDto;
+        }
+
+        public async Task<IEnumerable<string>> GetAllProfessorsNameAsync()
+        {
+
+            var names = await _professorRepository.GetAllProfessorsNameAsync();
+
+            if (names == null || !names.Any())
+                throw new Exception("لا يوجد أي دكاترة");
+
+            return names;
         }
 
         public async Task<IEnumerable<ProfessorDto>> GetByDepartmentIdAsync(int departmentId)

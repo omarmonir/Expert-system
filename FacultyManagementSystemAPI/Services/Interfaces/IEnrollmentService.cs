@@ -20,5 +20,6 @@ namespace FacultyManagementSystemAPI.Services.Interfaces
         Task UpdateStudentGradeAsync(int studentId, int courseId, decimal newGrade);
         Task UpdateStudentExam1GradeAsync(int studentId, int courseId, decimal newGrade);
         Task UpdateStudentExam2GradeAsync(int studentId, int courseId, decimal newGrade);
+        Task<IEnumerable<string>> GetAllEnrollmentsSemsterAsync();
     }
 }

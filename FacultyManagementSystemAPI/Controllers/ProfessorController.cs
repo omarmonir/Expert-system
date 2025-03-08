@@ -1,4 +1,5 @@
 ﻿using FacultyManagementSystemAPI.Models.DTOs.professors;
+using FacultyManagementSystemAPI.Services.Implementes;
 using FacultyManagementSystemAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -138,6 +139,24 @@ namespace FacultyManagementSystemAPI.Controllers
 
                 await _professorService.DeleteAsync(id);
                 return NoContent(); // 204 No Content
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("AllNamesProfessors")]
+        public async Task<IActionResult> GetAllName()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            try
+            {
+                var names = await _professorService.GetAllProfessorsNameAsync();
+                return Ok(names);
             }
             catch (Exception ex)
             {

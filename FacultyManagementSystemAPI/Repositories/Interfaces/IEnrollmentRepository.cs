@@ -20,7 +20,7 @@ namespace FacultyManagementSystemAPI.Repositories.Interfaces
         Task<IEnumerable<EnrollmentDto>> GetFilteredEnrollmentsAsync(string? studentName, string? courseName, string? enrollmentStatus, string? semester);
         Task<int> GetAllEnrollmentStudentsCountAsync();
         Task<IEnumerable<string>> GetAllEnrollmentsStatusesAsync();
-
+        Task<IEnumerable<string>> GetAllEnrollmentsSemsterAsync();
     }
 
 }

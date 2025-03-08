@@ -269,5 +269,14 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
             return status;
         }
 
+        public async Task<IEnumerable<string>> GetAllEnrollmentsSemsterAsync()
+        {
+            var status = await _dbContext.Enrollments
+               .Select(d => d.Semester)
+               .Distinct()
+               .ToListAsync();
+
+            return status;
+        }
     }
 }

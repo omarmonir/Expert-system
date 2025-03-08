@@ -19,5 +19,7 @@ namespace FacultyManagementSystemAPI.Repositories.Interfaces
 
         Task<int> CountByStatusAsync();
         Task<IEnumerable<string>> GetAllPreRequisiteCoursesAsync();
+        Task<IEnumerable<string>> GetAllCoursesStatusesAsync();
+        Task<IEnumerable<string>> GetAllCoursesNameAsync();
     }
 }

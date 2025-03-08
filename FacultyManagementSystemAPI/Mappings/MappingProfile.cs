@@ -1,6 +1,7 @@
 ﻿
 using AutoMapper;
 using FacultyManagementSystemAPI.Models.DTOs.Attendance;
+using FacultyManagementSystemAPI.Models.DTOs.Classes;
 using FacultyManagementSystemAPI.Models.DTOs.Courses;
 using FacultyManagementSystemAPI.Models.DTOs.Department;
 using FacultyManagementSystemAPI.Models.DTOs.Enrollment;
@@ -43,7 +44,9 @@ namespace FacultyManagementSystemAPI.Mappings
             CreateMap<UpdateGradeDto, Enrollment>()
                 .ForMember(dest => dest.FinalGrade, opt => opt.Ignore());
 
-
+            CreateMap<Class, ClassDto>();
+            CreateMap<CreateClassDto, Class>();
+            CreateMap<UpdateClassDto, Class>();
         }
     }
 }

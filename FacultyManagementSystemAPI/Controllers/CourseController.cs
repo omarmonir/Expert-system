@@ -1,4 +1,5 @@
 ﻿using FacultyManagementSystemAPI.Models.DTOs.Courses;
+using FacultyManagementSystemAPI.Services.Implementes;
 using FacultyManagementSystemAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -89,6 +90,7 @@ namespace FacultyManagementSystemAPI.Controllers
             }
         }
 
+
         [HttpGet("CoursesBySemester/{semester}")]
         public async Task<IActionResult> GetCoursesBySemesterWithPreCourseName(byte semester)
         {
@@ -162,7 +164,7 @@ namespace FacultyManagementSystemAPI.Controllers
 
 
         [HttpPut("UpdateCourse/{id}")]
-        public async Task<IActionResult> UpdateCourse(int id, [FromBody] UpdateCourseDto updateCourseDto)
+        public async Task<IActionResult> UpdateCourse(int id, [FromForm] UpdateCourseDto updateCourseDto)
         {
             try
             {
@@ -217,6 +219,44 @@ namespace FacultyManagementSystemAPI.Controllers
             }
         }
 
+        [HttpGet("AllCoursesStatuses")]
+        public async Task<IActionResult> GetAllCoursesStatuses()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            try
+            {
+                var status = await _courseService.GetAllCoursesStatusesAsync();
+                return Ok(status);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("AllNamesCourse")]
+        public async Task<IActionResult> GetAllName()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            try
+            {
+                var names = await _courseService.GetAllCoursesNameAsync();
+                return Ok(names);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+
         [HttpGet("CountOfAvailableCourses")]
         public async Task<IActionResult> GetCourseCountByStatus()
         {
@@ -253,5 +293,6 @@ namespace FacultyManagementSystemAPI.Controllers
             }
         }
 
+        
     }
 }

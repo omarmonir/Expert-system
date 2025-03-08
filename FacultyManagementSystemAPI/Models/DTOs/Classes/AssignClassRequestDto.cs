@@ -1,4 +1,4 @@
-﻿namespace FacultyManagementSystemAPI.Models.DTOs.Class
+﻿namespace FacultyManagementSystemAPI.Models.DTOs.Classes
 {
     public class AssignClassRequestDto
     {

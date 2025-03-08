@@ -19,5 +19,8 @@ namespace FacultyManagementSystemAPI.Services.Interfaces
         Task<int> GetCourseCountAsync();
         Task<int> GetCourseCountByStatusAsync();
         Task<IEnumerable<string>> GetAllPreRequisiteCoursesAsync();
+        Task DeleteAsync(int id);
+        Task<IEnumerable<string>> GetAllCoursesStatusesAsync();
+        Task<IEnumerable<string>> GetAllCoursesNameAsync();
     }
 }

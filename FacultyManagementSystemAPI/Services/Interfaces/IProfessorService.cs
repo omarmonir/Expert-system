@@ -13,5 +13,6 @@ namespace FacultyManagementSystemAPI.Services.Interfaces
         Task<ProfessorDto?> GetByIdAsync(int id);
         Task<IEnumerable<ProfessorDto>> GetByDepartmentIdAsync(int departmentId);
         Task<IEnumerable<CourseDto>> GetCoursesByProfessorIdAsync(int professorId);
+        Task<IEnumerable<string>> GetAllProfessorsNameAsync();
     }
 }

@@ -259,6 +259,24 @@ namespace FacultyManagementSystemAPI.Controllers
                 return BadRequest(ex.Message);
             }
         }
+        
+        [HttpGet("AllEnrollmentsSemster")]
+        public async Task<IActionResult> GetAllEnrollmentsSemster()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            try
+            {
+                var semster = await _enrollmentService.GetAllEnrollmentsSemsterAsync();
+                return Ok(semster);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
         [HttpGet("Filtering")]
         public async Task<IActionResult> GetFilteredEnrollments([FromQuery] string? studentName, [FromQuery] string? courseName, [FromQuery] string? enrollmentStatus, [FromQuery] string? semester)

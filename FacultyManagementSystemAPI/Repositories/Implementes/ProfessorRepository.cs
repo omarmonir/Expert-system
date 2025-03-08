@@ -86,7 +86,7 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                     Status = c.Course.Status,
                     Semester = c.Course.Semester,
                     PreCourseName = c.Course.PreCourse.Name,
-                    ProfessorName = c.Professor.FullName
+                    //ProfessorName = c.Professor.FullName
                 }).Distinct().ToListAsync();
         }
 
@@ -94,6 +94,15 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
         {
             return await _context.Professors
                  .AnyAsync(p => p.FullName == professorName);
+        }
+
+        public async Task<IEnumerable<string>> GetAllProfessorsNameAsync()
+        {
+            var names = await _context.Professors
+          .Select(d => d.FullName)
+          .ToListAsync();
+
+            return names;
         }
     }
 }
