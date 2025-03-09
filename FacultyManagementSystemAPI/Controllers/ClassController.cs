@@ -1,6 +1,4 @@
 ﻿using FacultyManagementSystemAPI.Models.DTOs.Classes;
-using FacultyManagementSystemAPI.Models.DTOs.Courses;
-using FacultyManagementSystemAPI.Services.Implementes;
 using FacultyManagementSystemAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -88,7 +86,6 @@ namespace FacultyManagementSystemAPI.Controllers
         }
 
         [HttpGet("ClassById/{id:int}")]
-
         public async Task<IActionResult> ClassById(int id)
         {
             try
@@ -107,8 +104,8 @@ namespace FacultyManagementSystemAPI.Controllers
             }
         }
 
-        [HttpGet("CountOfClases")]
-        public async Task<IActionResult> CountOfClases()
+        [HttpGet("CountOfClasses")]
+        public async Task<IActionResult> CountOfClasses()
         {
             if (!ModelState.IsValid)
             {

@@ -173,6 +173,7 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                 .Distinct() // Remove duplicates
                 .ToListAsync();
         }
+
         public async Task<IEnumerable<CourseRegistrationStatsDto>> GetCourseRegistrationStatsByCourseOverTimeAsync(int courseId)
         {
             return await _dbContext.Enrollments
@@ -236,20 +237,21 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
 
         public async Task<IEnumerable<FilterCourseDto>> GetFilteredCoursesAsync(string? courseName, string? departmentName, string? courseStatus)
         {
-            var courseQuery = _dbContext.Courses
+            var courseQuery = _dbContext.CourseDepartments
         .AsNoTracking()
         .Select(c => new FilterCourseDto
         {
-            Id = c.Id,
-            Name = c.Name,
-            Description = c.Description,
-            Credits = c.Credits,
-            Status = c.Status,
-            Code = c.Code,
-            Semester = c.Semester,
-            MaxSeats = c.MaxSeats,
-            CurrentEnrolledStudents = c.CurrentEnrolledStudents,
-            DepartmentName = c.CourseDepartments.Select(cd => cd.Department.Name).FirstOrDefault()
+            Id = c.Course.Id,
+            Name = c.Course.Name,
+            Description = c.Course.Description,
+            Credits = c.Course.Credits,
+            Status = c.Course.Status,
+            Code = c.Course.Code,
+            Semester = c.Course.Semester,
+            MaxSeats = c.Course.MaxSeats,
+            CurrentEnrolledStudents = c.Course.CurrentEnrolledStudents,
+            PreCourseName = c.Course.PreCourse.Name != null ? c.Course.PreCourse.Name : "لا يوجد مقرر مطلوب لهذا المقرر",
+            DepartmentName = c.Department != null ? c.Department.Name : "لا يوجد قسم لهذا المقرر"
         });
 
             // تطبيق الفلاتر على مستوى قاعدة البيانات
@@ -270,7 +272,7 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                     .ToList();
             }
 
-            
+
             if (!string.IsNullOrWhiteSpace(departmentName))
             {
                 departmentName = NormalizeArabicText(departmentName);
@@ -282,6 +284,7 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
 
             return courses;
         }
+
         private string NormalizeArabicText(string text)
         {
             return text.Replace('أ', 'ا')

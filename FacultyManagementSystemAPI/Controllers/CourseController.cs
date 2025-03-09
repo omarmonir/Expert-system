@@ -1,5 +1,4 @@
 ﻿using FacultyManagementSystemAPI.Models.DTOs.Courses;
-using FacultyManagementSystemAPI.Services.Implementes;
 using FacultyManagementSystemAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -292,6 +291,7 @@ namespace FacultyManagementSystemAPI.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
         [HttpGet("FilterCourses")]
         public async Task<IActionResult> GetFilteredCourses(
                                         [FromQuery] string? courseName,
