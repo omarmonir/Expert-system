@@ -404,5 +404,14 @@ namespace FacultyManagementSystemAPI.Services.Implementes
 
             await _studentRepository.UpdateStudentStatusAsync(studentId, newStatus);
         }
+
+        public async Task<int> CountStudentsByCourseIdAsync(int courseId)
+        {
+            var studentsCount = await _studentRepository.CountStudentsByCourseIdAsync(courseId);
+
+            if (studentsCount == 0)
+                throw new Exception("لا يوجد طلاب مسجلين في هذا الكورس");
+            return studentsCount;
+        }
     }
 }

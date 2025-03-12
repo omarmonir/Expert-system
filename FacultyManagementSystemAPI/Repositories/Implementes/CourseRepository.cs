@@ -139,7 +139,7 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                 CurrentEnrolledStudents = c.CurrentEnrolledStudents,
                 MaxSeats = c.MaxSeats,
                 Semester = c.Semester,
-                //PreCourseName = c.Course.PreCourse != null ? c.Course.PreCourse.Name : "لا يوجد مقرر مطلوب لهذا المقرر",
+                PreCourseName = c.PreCourse != null ? c.PreCourse.Name : "لا يوجد مقرر مطلوب لهذا المقرر",
                 //ProfessorName = c.Professor.FullName
             })
 

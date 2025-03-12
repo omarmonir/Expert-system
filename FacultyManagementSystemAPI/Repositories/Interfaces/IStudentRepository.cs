@@ -38,6 +38,7 @@ namespace FacultyManagementSystemAPI.Repositories.Interfaces
         Task<int> CountEnrollmentCoursesByStudentIdAsync(int studentId);
         Task<int> CountCompletedCoursesCountStudentIdAsync(int studentId);
         Task<int> GetAllEnrollmentStudentsCountAsync();
+        Task<int> CountStudentsByCourseIdAsync(int CourseId);
         Task<IEnumerable<string>> GetAllStudentStatusesAsync();
         Task<IEnumerable<string>> GetAllStudentLevelsAsync();
         Task<IEnumerable<string>> GetAllStudentGenderAsync();

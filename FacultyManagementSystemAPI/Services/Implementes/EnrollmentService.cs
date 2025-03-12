@@ -194,6 +194,15 @@ namespace FacultyManagementSystemAPI.Services.Implementes
             return count;
         }
 
+        public async Task<int> GetAllWaitEnrollmentStudentsCountAsync()
+        {
+            var count = await _enrollmentRepository.GetAllWaitEnrollmentStudentsCountAsync();
+            if (count == 0)
+                throw new Exception("لا يوجد تسجيلات.");
+
+            return count;
+        }
+
         public async Task<double> GetSuccessPercentageAsync()
         {
             int totalEnrollments = await _enrollmentRepository.CountAsync();

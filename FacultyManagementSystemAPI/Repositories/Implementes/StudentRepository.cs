@@ -581,6 +581,13 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                 .CountAsync(e => e.StudentId == studentId);
         }
 
+        public async Task<int> CountStudentsByCourseIdAsync(int courseId)
+        {
+            return await _dbContext.Enrollments
+                .AsNoTracking()
+                .CountAsync(e => e.CourseId == courseId && e.DeletedEnrollmentDate == null);
+        }
+
 
         public async Task<int> CountCompletedCoursesCountStudentIdAsync(int studentId)
         {

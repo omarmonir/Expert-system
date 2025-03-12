@@ -6,9 +6,10 @@ namespace FacultyManagementSystemAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class EnrollmentController(IEnrollmentService enrollmentService) : ControllerBase
+    public class EnrollmentController(IEnrollmentService enrollmentService, IStudentService studentService) : ControllerBase
     {
         private readonly IEnrollmentService _enrollmentService = enrollmentService;
+        private readonly IStudentService _studentService = studentService;
 
         [HttpGet("AllEnrollments")]
         public async Task<IActionResult> GetAll()
@@ -242,6 +243,27 @@ namespace FacultyManagementSystemAPI.Controllers
             }
         }
 
+        [HttpGet("EnrollmentPercentage")]
+        public async Task<IActionResult> GetSPercentage()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            try
+            {
+                int countOfStudents = await _studentService.GetStudentCountAsync();
+                int countOfEnrollments = await _enrollmentService.GetEnrollmentCountAsync();
+
+                decimal total = (countOfEnrollments / countOfStudents) * 100;
+                return Ok(new { successEnrollmentPercentage = total });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpGet("AllEnrollmentStatuses")]
         public async Task<IActionResult> GetAllStudentStatuses()
         {
@@ -259,7 +281,7 @@ namespace FacultyManagementSystemAPI.Controllers
                 return BadRequest(ex.Message);
             }
         }
-        
+
         [HttpGet("AllEnrollmentsSemster")]
         public async Task<IActionResult> GetAllEnrollmentsSemster()
         {

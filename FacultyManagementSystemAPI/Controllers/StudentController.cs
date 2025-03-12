@@ -6,9 +6,11 @@ namespace FacultyManagementSystemAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class StudentController(IStudentService studentService) : ControllerBase
+    public class StudentController(IStudentService studentService, ICourseService courseService, IEnrollmentService enrollmentService) : ControllerBase
     {
         private readonly IStudentService _studentService = studentService;
+        private readonly ICourseService _courseService = courseService;
+        private readonly IEnrollmentService _enrollmentService = enrollmentService;
 
         [HttpGet("AllStudents")]
         public async Task<IActionResult> GetAllWithDepartmentName()
@@ -284,7 +286,7 @@ namespace FacultyManagementSystemAPI.Controllers
             }
         }
 
-        [HttpGet("CountOfStudents")]
+        [HttpGet("CountOfStudentsAndCourses")]
         public async Task<IActionResult> GetStudentCount()
         {
             if (!ModelState.IsValid)
@@ -293,8 +295,23 @@ namespace FacultyManagementSystemAPI.Controllers
             }
             try
             {
-                var count = await _studentService.GetStudentCountAsync();
-                return Ok(new { countOfStudents = count });
+                var countOfAllStudents = await _studentService.GetStudentCountAsync();
+                var countOfAllCourses = await _courseService.GetCourseCountAsync();
+
+                int countOfStudents = await _studentService.GetStudentCountAsync();
+                int countOfEnrollments = await _enrollmentService.GetAllEnrollmentStudentsCountAsync();
+
+                var total = ((decimal)countOfEnrollments / countOfStudents) * 100;
+                total = Math.Round(total, 2);
+
+                int waitEnrollment = await _enrollmentService.GetAllWaitEnrollmentStudentsCountAsync();
+                return Ok(new
+                {
+                    countOfStudents = countOfAllStudents,
+                    countOfCourses = countOfAllCourses,
+                    enrollmentPercentage = total,
+                    contWailEnrollment = waitEnrollment
+                });
             }
             catch (Exception ex)
             {
@@ -368,6 +385,24 @@ namespace FacultyManagementSystemAPI.Controllers
             {
                 var count = await _studentService.CountCompletedCoursesCountStudentIdAsync(studentId);
                 return Ok(new { countOfCompletedCourses = count });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("CountStudentByCourseId/{courseId}")]
+        public async Task<IActionResult> CountStudentByCourseId(int courseId)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            try
+            {
+                var count = await _studentService.CountStudentsByCourseIdAsync(courseId);
+                return Ok(new { countOfStudents = count });
             }
             catch (Exception ex)
             {

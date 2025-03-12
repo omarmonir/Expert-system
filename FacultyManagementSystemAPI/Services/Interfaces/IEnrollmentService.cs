@@ -14,6 +14,7 @@ namespace FacultyManagementSystemAPI.Services.Interfaces
         Task<int> GetEnrollmentCountAsync();
         Task<int> GetCanceledEnrollmentCountAsync();
         Task<int> GetAllEnrollmentStudentsCountAsync();
+        Task<int> GetAllWaitEnrollmentStudentsCountAsync();
         Task<double> GetSuccessPercentageAsync();
         Task<IEnumerable<EnrollmentDto>> GetFilteredEnrollmentsAsync(string? studentName, string? courseName, string? enrollmentStatus, string? semester);
 

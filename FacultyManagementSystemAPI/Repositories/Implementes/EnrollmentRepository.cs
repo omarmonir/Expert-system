@@ -174,6 +174,12 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
             return await _dbContext.Enrollments.CountAsync(e => e.IsCompleted == "ناجح");
         }
 
+
+        public async Task<int> GetAllWaitEnrollmentStudentsCountAsync()
+        {
+            return await _dbContext.Enrollments.CountAsync(e => e.IsCompleted == "قيد الدراسة");
+        }
+
         public async Task<int> CountDeletedAsync()
         {
             return await _dbContext.Enrollments.CountAsync(e => e.DeletedEnrollmentDate != null);
