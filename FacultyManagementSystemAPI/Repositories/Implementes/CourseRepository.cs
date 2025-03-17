@@ -9,7 +9,7 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
     public class CourseRepository(AppDbContext dbContext) : GenericRepository<Course>(dbContext), ICourseRepository
     {
         private readonly AppDbContext _dbContext = dbContext;
-
+        private const decimal PASSING_GRADE = 60;
         public async Task<IEnumerable<CourseDto>> SearchCoursesWithPreCourseNameAsync(string searchTerm)
         {
             return await _dbContext.Classes
@@ -294,5 +294,48 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                        .Replace('ه', 'ة');
         }
 
+        public async Task<CourseStatisticsDto> GetCourseStatisticsAsync(int courseId)
+        {
+            var enrollments = await _dbContext.Enrollments
+            .AsNoTracking()
+            .Where(e => e.CourseId == courseId)
+            .ToListAsync();
+
+            int enrolledStudentsCount = enrollments.Count;
+
+            int departmentsCount = await _dbContext.CourseDepartments
+           .AsNoTracking()
+           .Where(cd => cd.CourseId == courseId)
+           .CountAsync();
+
+            decimal averageGrade = 0;
+            if (enrollments.Any())
+            {
+                averageGrade = enrollments
+                    .Where(e => e.FinalGrade.HasValue)
+                    .Select(e => e.FinalGrade.Value)
+                    .DefaultIfEmpty(0)
+                    .Average();
+            }
+
+            decimal successRate = 0;
+            int totalStudentsWithGrades = enrollments.Count(e => e.FinalGrade.HasValue);
+            if (totalStudentsWithGrades > 0)
+            {
+                int passedStudents = enrollments.Count(e =>
+                    e.FinalGrade.HasValue && e.FinalGrade.Value >= PASSING_GRADE);
+                successRate = (decimal)passedStudents / totalStudentsWithGrades * 100;
+            }
+            var statistics = new CourseStatisticsDto
+            {
+                CourseId = courseId,
+                EnrolledStudentsCount = enrolledStudentsCount,
+                DepartmentsCount = departmentsCount,
+                AverageGrade = Math.Round(averageGrade, 2),
+                SuccessRate = Math.Round(successRate, 2)
+            };
+
+            return statistics;
+        }
     }
 }

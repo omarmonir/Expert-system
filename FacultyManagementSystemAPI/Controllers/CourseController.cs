@@ -313,5 +313,29 @@ namespace FacultyManagementSystemAPI.Controllers
             }
         }
 
+        [HttpGet("CourseStatistics/{courseId}")]
+        public async Task<IActionResult> GetCourseStatistics(int courseId)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var statistics = await _courseService.GetCourseStatisticsAsync(courseId);
+                return Ok(statistics);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
+
+
 }

@@ -36,6 +36,15 @@ namespace FacultyManagementSystemAPI.Models.DTOs.Courses
         [DefaultValue(5)]
         public byte Semester { get; set; }
 
+        [Required(ErrorMessage = "الحد الأقصى للمقاعد مطلوب.")]
+        [Range(1, 200, ErrorMessage = "يجب أن يكون الحد الأقصى للمقاعد بين 1 و200.")]
+        [DefaultValue(30)]
+        public int MaxSeats { get; set; }
+
+        // يمكن إضافة هذه الخاصية أو الاعتماد على القيمة الافتراضية في نموذج Course
+        [DefaultValue(0)]
+        public int CurrentEnrolledStudents { get; set; } = 0;
+
         [DefaultValue(1111)]
         public int? PreCourseId { get; set; }
     }

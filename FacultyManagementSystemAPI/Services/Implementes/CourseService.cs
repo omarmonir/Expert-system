@@ -23,7 +23,7 @@ namespace FacultyManagementSystemAPI.Services.Implementes
                 if (await _courseRepository.CourseExistsAsync(createCourseDto.Name))
                     throw new Exception("المقرر موجود بالفعل.");
 
-                if (!await _courseRepository.CourseExistsAsync(createCourseDto.PreCourseId))
+                if (!await _courseRepository.CourseExistsAsync(createCourseDto.PreCourseId) && createCourseDto.PreCourseId != null)
                 {
                     throw new KeyNotFoundException("لم يتم العثور على المقرر");
                 }
@@ -210,6 +210,19 @@ namespace FacultyManagementSystemAPI.Services.Implementes
                 throw new KeyNotFoundException("لا يوجد كورسات مطابقة للمعايير المحددة.");
 
             return courses;
+        }
+
+        public async Task<CourseStatisticsDto> GetCourseStatisticsAsync(int courseId)
+        {
+            bool courseExists = await _courseRepository.CourseExistsAsync(courseId);
+            if (!courseExists)
+            {
+                throw new KeyNotFoundException($"لا توجد مادة بالمعرف {courseId}");
+            }
+
+            // جلب الإحصائيات من الريبوزيتوري
+            var statistics = await _courseRepository.GetCourseStatisticsAsync(courseId);
+            return statistics;
         }
     }
 }
