@@ -16,7 +16,7 @@ namespace FacultyManagementSystemAPI.Repositories.Interfaces
         Task<bool> CourseExistsAsync(string courseName);
         Task<bool> CourseExistsAsync(int? PreCourseId);
         Task<int> CountAsync();
-
+        Task<int> CountActiveCourseAsync();
         Task<int> CountByStatusAsync();
         Task<IEnumerable<string>> GetAllPreRequisiteCoursesAsync();
         Task<IEnumerable<string>> GetAllCoursesStatusesAsync();

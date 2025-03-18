@@ -45,6 +45,7 @@ namespace FacultyManagementSystemAPI.Services.Interfaces
         Task<IEnumerable<string>> GetAllStudentGenderAsync();
 
         Task UpdateStudentStatusAsync(int studentId, string newStatus);
+
     }
 
 }

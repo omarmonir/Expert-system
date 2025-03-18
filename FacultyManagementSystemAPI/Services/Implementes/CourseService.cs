@@ -224,5 +224,14 @@ namespace FacultyManagementSystemAPI.Services.Implementes
             var statistics = await _courseRepository.GetCourseStatisticsAsync(courseId);
             return statistics;
         }
+
+        public async Task<int> CountActiveCourseAsync()
+        {
+            int count = await _courseRepository.CountActiveCourseAsync();
+            if (count == 0)
+                throw new Exception("لا يوجد مقررات نشطه");
+
+            return count;
+        }
     }
 }

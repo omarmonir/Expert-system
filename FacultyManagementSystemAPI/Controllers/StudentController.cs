@@ -304,13 +304,13 @@ namespace FacultyManagementSystemAPI.Controllers
                 var total = ((decimal)countOfEnrollments / countOfStudents) * 100;
                 total = Math.Round(total, 2);
 
-                int waitEnrollment = await _enrollmentService.GetAllWaitEnrollmentStudentsCountAsync();
+                
                 return Ok(new
                 {
                     countOfStudents = countOfAllStudents,
                     countOfCourses = countOfAllCourses,
                     enrollmentPercentage = total,
-                    contWailEnrollment = waitEnrollment
+                   
                 });
             }
             catch (Exception ex)
