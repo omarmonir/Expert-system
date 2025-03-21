@@ -566,10 +566,14 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                .Select(e => new StudentExamGradesDto
                {
                    StudentId = e.Student.Id,
+                   CourseName = e.Course.Name,
+                   Code = e.Course.Code,
                    StudentName = e.Student.Name,
-                   Exam1Grade = e.Exam1Grade,
-                   Exam2Grade = e.Exam2Grade,
-                   FinalGrade = e.FinalGrade
+                   Exam1Grade = e.Exam1Grade ?? 0.0m,
+                   Exam2Grade = e.Exam2Grade ?? 0.0m,
+                   Grade = e.Grade ?? 0.0m,
+                   FinalGrade = e.FinalGrade ?? 0.0m
+
                })
                .ToListAsync();
         }

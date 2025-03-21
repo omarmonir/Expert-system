@@ -111,6 +111,7 @@ namespace FacultyManagementSystemAPI.Services.Implementes
                 // حفظ الصورة الجديدة
                 existingStudent.ImagePath = _fileService.SaveFile(updateStudentDto.Image, "Students");
             }
+
             await _studentRepository.UpdateAsync(id, existingStudent);
         }
 

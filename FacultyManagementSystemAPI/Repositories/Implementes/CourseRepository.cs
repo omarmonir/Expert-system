@@ -27,7 +27,7 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                     Status = c.Course.Status,
                     Semester = c.Course.Semester,
                     Code = c.Course.Code,
-                    CurrentEnrolledStudents = c.Course.CurrentEnrolledStudents,
+                    CurrentEnrolledStudents = _dbContext.Enrollments.Count(e => e.CourseId == c.Course.Id),
                     MaxSeats = c.Course.MaxSeats,
                     PreCourseName = c.Course.PreCourse != null ? c.Course.PreCourse.Name : "لا يوجد مقرر مطلوب لهذا المقرر",
                     ProfessorName = c.Professor.FullName,
@@ -48,7 +48,7 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                         Credits = c.Credits,
                         Status = c.Status,
                         Code = c.Code,
-                        CurrentEnrolledStudents = c.CurrentEnrolledStudents,
+                        CurrentEnrolledStudents = _dbContext.Enrollments.Count(e => e.CourseId == c.Id),
                         MaxSeats = c.MaxSeats,
                         Semester = c.Semester,
                         PreCourseName = c.PreCourse != null ? c.PreCourse.Name : "لا يوجد مقرر مطلوب لهذا المقرر",
@@ -71,7 +71,7 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                     Credits = c.Credits,
                     Status = c.Status,
                     Code = c.Code,
-                    CurrentEnrolledStudents = c.CurrentEnrolledStudents,
+                    CurrentEnrolledStudents = _dbContext.Enrollments.Count(e => e.CourseId == c.Id),
                     MaxSeats = c.MaxSeats,
                     Semester = c.Semester,
                     PreCourseName = c.PreCourse != null ? c.PreCourse.Name : "لا يوجد مقرر مطلوب لهذا المقرر",
@@ -95,7 +95,7 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                     Status = c.Course.Status,
                     Code = c.Course.Code,
                     Semester = c.Course.Semester,
-                    CurrentEnrolledStudents = c.Course.CurrentEnrolledStudents,
+                    CurrentEnrolledStudents = _dbContext.Enrollments.Count(e => e.CourseId == c.Course.Id),
                     MaxSeats = c.Course.MaxSeats,
                     PreCourseName = c.Course.PreCourse != null ? c.Course.Name : "لا يوجد مقرر مطلوب لهذا المقرر",
                     DepartmentName = c.Department.Name,
@@ -106,6 +106,7 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
 
         public async Task<IEnumerable<CourseDto>> GetCoursesByProfessorIdWithPreCourseNameAsync(int professorId)
         {
+           
             return await _dbContext.Classes
                .Where(c => c.ProfessorId == professorId)
                .Select(c => new CourseDto
@@ -117,11 +118,12 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                    Status = c.Course.Status,
                    Semester = c.Course.Semester,
                    Code = c.Course.Code,
-                   CurrentEnrolledStudents = c.Course.CurrentEnrolledStudents,
+                   CurrentEnrolledStudents = _dbContext.Enrollments.Count(e => e.CourseId == c.Course.Id),
                    MaxSeats = c.Course.MaxSeats,
                    PreCourseName = c.Course.PreCourse != null ? c.Course.PreCourse.Name : "لا يوجد مقرر مطلوب لهذا المقرر",
                    ProfessorName = c.Professor.FullName,
-                   DepartmentName = c.Course.CourseDepartments.Select(d => d.Department.Name).FirstOrDefault() ?? "لا يوجد قسم لهذا المقرر"
+                   DepartmentName = c.Course.CourseDepartments.Select(d => d.Department.Name).FirstOrDefault() ?? "لا يوجد قسم لهذا المقرر",
+                   
                })
                .Distinct()
                .ToListAsync();
@@ -146,7 +148,7 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                 Credits = c.Credits,
                 Status = c.Status,
                 Code = c.Code,
-                CurrentEnrolledStudents = c.CurrentEnrolledStudents,
+                CurrentEnrolledStudents = _dbContext.Enrollments.Count(e => e.CourseId == c.Id),
                 MaxSeats = c.MaxSeats,
                 Semester = c.Semester,
                 PreCourseName = c.PreCourse != null ? c.PreCourse.Name : "لا يوجد مقرر مطلوب لهذا المقرر",
@@ -262,7 +264,7 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
             Code = c.Course.Code,
             Semester = c.Course.Semester,
             MaxSeats = c.Course.MaxSeats,
-            CurrentEnrolledStudents = c.Course.CurrentEnrolledStudents,
+            CurrentEnrolledStudents = _dbContext.Enrollments.Count(e => e.CourseId == c.Course.Id),
             PreCourseName = c.Course.PreCourse.Name != null ? c.Course.PreCourse.Name : "لا يوجد مقرر مطلوب لهذا المقرر",
             DepartmentName = c.Department != null ? c.Department.Name : "لا يوجد قسم لهذا المقرر"
         });
