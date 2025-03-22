@@ -2,6 +2,7 @@
 using FacultyManagementSystemAPI.Models.DTOs.Courses;
 using FacultyManagementSystemAPI.Models.Entities;
 using FacultyManagementSystemAPI.Repositories.Interfaces;
+using Gherkin.CucumberMessages.Types;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 
@@ -106,28 +107,54 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
 
         public async Task<IEnumerable<CourseDto>> GetCoursesByProfessorIdWithPreCourseNameAsync(int professorId)
         {
-           
-            return await _dbContext.Classes
-               .Where(c => c.ProfessorId == professorId)
-               .Select(c => new CourseDto
-               {
-                   Id = c.CourseId,
-                   Name = c.Course.Name,
-                   Description = c.Course.Description,
-                   Credits = c.Course.Credits,
-                   Status = c.Course.Status,
-                   Semester = c.Course.Semester,
-                   Code = c.Course.Code,
-                   CurrentEnrolledStudents = _dbContext.Enrollments.Count(e => e.CourseId == c.Course.Id),
-                   MaxSeats = c.Course.MaxSeats,
-                   PreCourseName = c.Course.PreCourse != null ? c.Course.PreCourse.Name : "لا يوجد مقرر مطلوب لهذا المقرر",
-                   ProfessorName = c.Professor.FullName,
-                   DepartmentName = c.Course.CourseDepartments.Select(d => d.Department.Name).FirstOrDefault() ?? "لا يوجد قسم لهذا المقرر",
-                   
-               })
-               .Distinct()
-               .ToListAsync();
+            var courses = await _dbContext.Classes
+                .Where(c => c.ProfessorId == professorId)
+                .Select(c => new CourseDto
+                {
+                    Id = c.CourseId,
+                    Name = c.Course.Name,
+                    Description = c.Course.Description,
+                    Credits = c.Course.Credits,
+                    Status = c.Course.Status,
+                    Semester = c.Course.Semester,
+                    Code = c.Course.Code,
+                    CurrentEnrolledStudents = _dbContext.Enrollments.Count(e => e.CourseId == c.Course.Id),
+                    MaxSeats = c.Course.MaxSeats,
+                    PreCourseName = c.Course.PreCourse != null ? c.Course.PreCourse.Name : "لا يوجد مقرر مطلوب لهذا المقرر",
+                    ProfessorName = c.Professor.FullName,
+                    DepartmentName = c.Course.CourseDepartments.Select(d => d.Department.Name).FirstOrDefault() ?? "لا يوجد قسم لهذا المقرر",
+
+                    // حساب معدل الحضور للمقرر
+                    AttendanceRate = _dbContext.Attendances
+                        .Where(a => a.Class.CourseId == c.CourseId)
+                        .Any()
+                        ? Math.Round(
+                            (double)_dbContext.Attendances
+                                .Where(a => a.Class.CourseId == c.CourseId)
+                                .Count(a => a.Status) /
+                            _dbContext.Attendances
+                                .Where(a => a.Class.CourseId == c.CourseId)
+                                .Count() * 100, 2)
+                        : (double?)null,
+                })
+                .Distinct()
+                .ToListAsync();
+
+            // هنا نقوم بحساب المعدل في الذاكرة بعد تحميل البيانات
+            foreach (var course in courses)
+            {
+                var finalGrades = _dbContext.Enrollments
+                    .Where(e => e.CourseId == course.Id )
+                    .Select(e => (e.Exam1Grade.GetValueOrDefault() + e.Exam2Grade.GetValueOrDefault() + e.Grade.GetValueOrDefault()))
+                    .ToList();
+
+                // حساب المعدل النهائي
+                course.AverageFinalGrade = finalGrades.Any() ? Math.Round(finalGrades.Average(), 2) : (decimal?)null;
+            }
+
+            return courses;
         }
+
 
         public async Task<bool> CourseExistsAsync(string courseName)
         {
