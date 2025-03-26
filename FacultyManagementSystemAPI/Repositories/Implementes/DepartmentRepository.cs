@@ -32,4 +32,12 @@ public class DepartmentRepository(AppDbContext dbContext) : GenericRepository<De
 
         return names;
     }
+
+    public async Task<int?> GetIdOfDepartmentByNameAsync(string departmentName)
+    {
+        return await _dbContext.Departments
+            .Where(d => d.Name.Trim().ToLower() == departmentName.Trim().ToLower()) // إزالة المسافات والتأكد من تطابق الأحرف
+            .Select(d => (int?)d.Id)
+            .FirstOrDefaultAsync();
+    }
 }

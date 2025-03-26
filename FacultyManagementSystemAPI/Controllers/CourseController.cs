@@ -164,7 +164,7 @@ namespace FacultyManagementSystemAPI.Controllers
 
 
         [HttpPut("UpdateCourse/{id}")]
-        public async Task<IActionResult> UpdateCourse(int id, [FromForm] UpdateCourseDto updateCourseDto)
+        public async Task<IActionResult> UpdateCourse(int id, [FromBody] UpdateCourseDto updateCourseDto)
         {
             try
             {
@@ -348,6 +348,24 @@ namespace FacultyManagementSystemAPI.Controllers
             {
                 var count = await _courseService.CountActiveCourseAsync();
                 return Ok(new { CountActiveCourse = count });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("SearchCoursesWithStatus")]
+        public async Task<IActionResult> SearchCoursesWithCourseNameAndStatus([FromBody] SearchCoursesRequestDto request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            try
+            {
+                var courses = await _courseService.SearchCoursesWithCourseNameAndStatusAsync(request.SearchTerm, request.Status);
+                return Ok(courses);
             }
             catch (Exception ex)
             {

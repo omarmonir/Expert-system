@@ -7,5 +7,6 @@ namespace FacultyManagementSystemAPI.Repositories.Interfaces
         Task<IEnumerable<string>> GetAllDepartmentNameAsync();
         Task UpdateProfessorCountAsync(int DepartmentId, int professorCount);
         Task UpdateHeadOfDepartmentAsync(int DepartmentId, string headOfDepartment);
+        Task<int?> GetIdOfDepartmentByNameAsync(string DepartmentName);
     }
 }

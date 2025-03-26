@@ -23,6 +23,7 @@ namespace FacultyManagementSystemAPI.Repositories.Interfaces
         Task<IEnumerable<string>> GetAllCoursesNameAsync();
         Task<IEnumerable<FilterCourseDto>> GetFilteredCoursesAsync(string? courseName, string? departmentName, string? courseStatus);
         Task<CourseStatisticsDto> GetCourseStatisticsAsync(int courseId);
+        Task<IEnumerable<CourseDto>> SearchCoursesWithCourseNameAndStatusAsync(string searchTerm, string status);
 
     }
 }

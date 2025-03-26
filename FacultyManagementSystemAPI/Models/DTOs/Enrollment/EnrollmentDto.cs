@@ -2,6 +2,7 @@
 {
     public class EnrollmentDto
     {
+        public int Id{ get; set; }
         public int StudentID { get; set; }
         public string StudentName { get; set; }
         public string CourseCode { get; set; }

@@ -25,5 +25,7 @@ namespace FacultyManagementSystemAPI.Services.Interfaces
         Task<IEnumerable<FilterCourseDto>> GetFilteredCoursesAsync(string? courseName, string? departmentName, string? courseStatus);
         Task<CourseStatisticsDto> GetCourseStatisticsAsync(int courseId);
         Task<int> CountActiveCourseAsync();
+        Task<IEnumerable<CourseDto>> SearchCoursesWithCourseNameAndStatusAsync(string searchTerm, string status);
+
     }
 }

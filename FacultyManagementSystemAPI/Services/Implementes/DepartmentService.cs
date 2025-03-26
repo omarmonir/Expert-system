@@ -65,6 +65,14 @@ namespace FacultyManagementSystemAPI.Services.Implementes
             await _departmentRepository.UpdateProfessorCountAsync(departmentId, professorCount);
         }
 
+        public async Task<int?> GetIdOfDepartmentByNameAsync(string DepartmentName)
+        {
+            int? departmentId = await _departmentRepository.GetIdOfDepartmentByNameAsync(DepartmentName);
+            if (!departmentId.HasValue)
+                throw new Exception("القسم غير موجود");
+
+            return departmentId;
+        }
 
     }
 }

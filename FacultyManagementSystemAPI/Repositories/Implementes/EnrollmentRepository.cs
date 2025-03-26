@@ -15,6 +15,7 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
             var enrollments = await _dbContext.Enrollments
                 .Select(e => new EnrollmentDto
                 {
+                    Id = e.Id,
                     StudentID = e.StudentId,
                     StudentName = _dbContext.Students
                         .Where(s => s.Id == e.StudentId)

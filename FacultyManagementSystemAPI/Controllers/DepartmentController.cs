@@ -99,5 +99,26 @@ namespace FacultyManagementSystemAPI.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpGet("DepartmentId/{departmentName}")]
+        public async Task<IActionResult> GetIdOfDepartmentByName(string departmentName)
+        {
+            Console.WriteLine($"Received departmentName: {departmentName}"); // طباعة الاسم المستلم
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            try
+            {
+                var deptId = await _departmentService.GetIdOfDepartmentByNameAsync(departmentName);
+
+                return Ok(new { departmentId = deptId });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

@@ -5,8 +5,12 @@ using FacultyManagementSystemAPI.Repositories.Implementes;
 using FacultyManagementSystemAPI.Repositories.Interfaces;
 using FacultyManagementSystemAPI.Services.Implementes;
 using FacultyManagementSystemAPI.Services.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using OfficeOpenXml;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
@@ -45,9 +49,12 @@ builder.Services.AddScoped<IProfessorRepository, ProfessorRepository>();
 
 builder.Services.AddScoped<IReportRepository, ReportRepository>();
 builder.Services.AddScoped<IReportService, ReportService>();
-builder.Services.AddScoped<ExcelService>();  
-builder.Services.AddScoped<PdfService>();  
+builder.Services.AddScoped<ExcelService>();
+builder.Services.AddScoped<PdfService>();
 
+builder.Services.AddScoped<IEmailService, EmailService>();
+
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddScoped<IFileService, FileService>();
 builder.Services.AddAutoMapper(typeof(MappingProfile));
@@ -62,6 +69,39 @@ builder.Services.AddCors(options =>
                .AllowAnyHeader();
     });
 });
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+    .AddJwtBearer(o =>
+    {
+        o.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+        };
+    });
+builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddAuthorization();
+
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+{
+    options.Password.RequireDigit = true; //  Ì ÿ·» —ﬁ„
+    options.Password.RequireLowercase = false; // ? ·« Ì ÿ·» Õ—›« ’€Ì—«
+    options.Password.RequireUppercase = false; // ? ·« Ì ÿ·» Õ—›« ﬂ»Ì—«
+    options.Password.RequireNonAlphanumeric = false; // ? ·« Ì ÿ·» —„“« Œ«’« (@, #, !)
+    options.Password.RequiredLength = 8; // «·Õœ «·√œ‰Ï ·ÿÊ· ﬂ·„… «·„—Ê— (Ì„ﬂ‰ﬂ  €ÌÌ—Â)
+})
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddDefaultTokenProviders();
 var app = builder.Build();
 
 app.UseStaticFiles(); // «·”„«Õ »⁄—÷ «·„·›«  «·À«» …
@@ -69,16 +109,15 @@ app.UseStaticFiles(); // «·”„«Õ »⁄—÷ «·„·›«  «·À«» …
 // Configure the HTTP request pipeline.
 //if (app.Environment.IsDevelopment())
 //{
-
-//}
-
 app.UseSwagger();
 app.UseSwaggerUI();
+//}
 
 app.UseHttpsRedirection();
 
 app.UseCors("AllowAll");
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

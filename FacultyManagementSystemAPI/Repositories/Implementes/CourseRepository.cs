@@ -386,5 +386,28 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                  .Where(e => e.Status == "نشط")
                  .CountAsync();
         }
+        public async Task<IEnumerable<CourseDto>> SearchCoursesWithCourseNameAndStatusAsync(string searchTerm, string status)
+        {
+            return await _dbContext.Classes
+                 .AsNoTrackingWithIdentityResolution()
+                 .Where(c => c.Course.Name.Contains(searchTerm) && c.Course.Status == status)
+                 .Select(c => new CourseDto
+                 {
+                     Id = c.CourseId,
+                     Name = c.Course.Name,
+                     Description = c.Course.Description,
+                     Credits = c.Course.Credits,
+                     Status = c.Course.Status,
+                     Semester = c.Course.Semester,
+                     Code = c.Course.Code,
+                     CurrentEnrolledStudents = _dbContext.Enrollments.Count(e => e.CourseId == c.Course.Id),
+                     MaxSeats = c.Course.MaxSeats,
+                     PreCourseName = c.Course.PreCourse != null ? c.Course.PreCourse.Name : "لا يوجد مقرر مطلوب لهذا المقرر",
+                     ProfessorName = c.Professor.FullName,
+                     DepartmentName = c.Course.CourseDepartments.Select(d => d.Department.Name).FirstOrDefault() ?? "لا يوجد قسم لهذا المقرر"
+                 })
+                 .ToListAsync();
+        }
+
     }
 }

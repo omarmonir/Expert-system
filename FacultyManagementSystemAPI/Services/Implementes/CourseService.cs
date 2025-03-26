@@ -233,5 +233,13 @@ namespace FacultyManagementSystemAPI.Services.Implementes
 
             return count;
         }
+        public async Task<IEnumerable<CourseDto>> SearchCoursesWithCourseNameAndStatusAsync(string searchTerm, string status)
+        {
+            var coursesDto = await _courseRepository.SearchCoursesWithCourseNameAndStatusAsync(searchTerm, status);
+            if (coursesDto == null || !coursesDto.Any())
+                throw new Exception($"{searchTerm} غير موجود.");
+            return coursesDto;
+        }
+
     }
 }
