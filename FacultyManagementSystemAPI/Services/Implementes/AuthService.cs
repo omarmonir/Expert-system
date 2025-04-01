@@ -15,6 +15,7 @@ namespace FacultyManagementSystemAPI.Services.Implementes
     public class AuthService : IAuthService
     {
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IConfiguration _configuration;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IMapper _mapper;
@@ -25,6 +26,7 @@ namespace FacultyManagementSystemAPI.Services.Implementes
         public AuthService(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
+            RoleManager<IdentityRole> roleManager,
             IConfiguration configuration,
             IMapper mapper,
             IEmailService emailService,
@@ -37,6 +39,7 @@ namespace FacultyManagementSystemAPI.Services.Implementes
             _emailService = emailService;
             _httpContextAccessor = httpContextAccessor;
             _refreshTokenValidityInDays = configuration.GetValue<int>("Jwt:RefreshTokenValidityInDays");
+            _roleManager = roleManager;
         }
 
         public async Task<ResponseLoginDto> LoginAsync(RequestLoginDto request)
@@ -72,6 +75,39 @@ namespace FacultyManagementSystemAPI.Services.Implementes
             };
         }
 
+        public async Task<string> AssignRoleAsync(string email, string roleName)
+        {
+            var user = await _userManager.FindByEmailAsync(email) ??
+                throw new Exception("المستخدم غير موجود");
+
+            if (!await _roleManager.RoleExistsAsync(roleName))
+                throw new Exception("الدور المطلوب غير موجود في النظام");
+
+            var result = await _userManager.AddToRoleAsync(user, roleName);
+            if (!result.Succeeded)
+            {
+                var errors = string.Join("، ", result.Errors.Select(e => e.Description));
+                throw new Exception($"فشل تعيين الدور: {errors}");
+            }
+
+            return $"تم تعيين دور '{roleName}' للمستخدم '{email}' بنجاح";
+        }
+
+        public async Task<IEnumerable<UserDto>> GetUsersAsync()
+        {
+            var users = _userManager.Users.ToList();
+
+            var usersDto = _mapper.Map<List<UserDto>>(users);
+
+            // User لكل  Role لتحديد 
+            foreach (var userDto in usersDto)
+            {
+                var user = users.FirstOrDefault(u => u.Id == userDto.Id);
+                userDto.Roles = await _userManager.GetRolesAsync(user);
+            }
+
+            return usersDto;
+        }
         public async Task<string> LogoutAsync(string email)
         {
             var user = await _userManager.FindByEmailAsync(email);
@@ -210,6 +246,47 @@ namespace FacultyManagementSystemAPI.Services.Implementes
                 signingCredentials: signingCredentials);
 
             return jwtSecurityToken;
+        }
+
+        public async Task<UserDto> GetUserByEmailAsync(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email)
+                 ?? throw new Exception("المستخدم غير موجود");
+
+            var userDto = _mapper.Map<UserDto>(user);
+            userDto.Roles = await _userManager.GetRolesAsync(user); // تعيين الأدوار يدويًا
+
+            return userDto;
+        }
+
+        public async Task<UserDto> GetUserByIdAsync(string Id)
+        {
+            var user = await _userManager.FindByIdAsync(Id)
+                 ?? throw new Exception("المستخدم غير موجود");
+
+            var userDto = _mapper.Map<UserDto>(user);
+            userDto.Roles = await _userManager.GetRolesAsync(user);
+
+            return userDto;
+        }
+
+        public async Task UpdateUserAsync(string Id, UpdateUserDto model)
+        {
+            var user = await _userManager.FindByIdAsync(Id)
+                ?? throw new Exception("المستخدم غير موجود");
+
+            if (user.UserName == model.UserName && user.PhoneNumber == model.PhoneNumber
+                && user.Email == model.Email)
+                throw new Exception("لم تقم بالتعديل البيانات موجوده بالفعل");
+
+            _mapper.Map(model, user);
+
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                throw new Exception($"فشل  في التعديل علي المستخدم: {errors}");
+            }
         }
 
         private string GenerateRefreshToken()

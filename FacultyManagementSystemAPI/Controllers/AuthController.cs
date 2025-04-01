@@ -44,7 +44,7 @@ namespace FacultyManagementSystemAPI.Controllers
             }
         }
         [HttpPost("Logout")]
-        [Authorize] // تأكد من وجود هذه السمة
+        //[Authorize] // تأكد من وجود هذه السمة
         public async Task<IActionResult> Logout()
         {
             try
@@ -91,5 +91,81 @@ namespace FacultyManagementSystemAPI.Controllers
                 return BadRequest(new { error = ex.Message });
             }
         }
+
+        [HttpPost("assign-role")]
+        public async Task<IActionResult> AssignRole([FromBody] AssignRoleDto model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var result = await _authService.AssignRoleAsync(model.Email, model.Role);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("GetUsers")]
+        public async Task<IActionResult> GetUsers()
+        {
+            try
+            {
+                var users = await _authService.GetUsersAsync();
+                return Ok(users);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("GetUserByEmail/{email}")]
+        public async Task<IActionResult> GetUserByEmail(string email)
+        {
+            try
+            {
+                var user = await _authService.GetUserByEmailAsync(email);
+                return Ok(user);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("GetUserById/{Id}")]
+        public async Task<IActionResult> GetUserById(string Id)
+        {
+            try
+            {
+                var user = await _authService.GetUserByIdAsync(Id);
+                return Ok(user);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPut("UpdateUser/{Id}")]
+        public async Task<IActionResult> UpdateUser(string Id, [FromBody] UpdateUserDto model)
+        {
+            try
+            {
+                await _authService.UpdateUserAsync(Id, model);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
     }
 }

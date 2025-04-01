@@ -1,5 +1,4 @@
 ﻿using FacultyManagementSystemAPI.Models.DTOs.professors;
-using FacultyManagementSystemAPI.Services.Implementes;
 using FacultyManagementSystemAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,7 +11,7 @@ namespace FacultyManagementSystemAPI.Controllers
         private readonly IProfessorService _professorService = professorService;
 
 
-        [HttpPost("CreateProfessor")]
+        [HttpPost("RegisterProfessor")]
         public async Task<IActionResult> CreateProfessor([FromForm] CreateProfessorDto createProfessorDto)
         {
             try

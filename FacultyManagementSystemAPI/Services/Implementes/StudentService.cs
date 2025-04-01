@@ -96,7 +96,8 @@ namespace FacultyManagementSystemAPI.Services.Implementes
             // 1️⃣ إنشاء المستخدم أولاً
             var user = new ApplicationUser
             {
-                UserName = createStudentDto.Email,
+                UserName = createStudentDto.Name,
+                PhoneNumber = createStudentDto.Phone,
                 Email = createStudentDto.Email,
                 UserType = "Student",
                 StudentId = null, // سيتم تحديثه لاحقًا

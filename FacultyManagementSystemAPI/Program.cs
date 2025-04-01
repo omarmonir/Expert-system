@@ -20,8 +20,52 @@ ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+
+{
+
+    options.Password.RequireDigit = true; //  íÊØáÈ ÑŞã
+
+    options.Password.RequireLowercase = false; // ? áÇ íÊØáÈ ÍÑİğÇ ÕÛíÑğÇ
+
+    options.Password.RequireUppercase = false; // ? áÇ íÊØáÈ ÍÑİğÇ ßÈíÑğÇ
+
+    options.Password.RequireNonAlphanumeric = false; // ? áÇ íÊØáÈ ÑãÒğÇ ÎÇÕğÇ (@, #, !)
+
+    options.Password.RequiredLength = 8; // ÇáÍÏ ÇáÃÏäì áØæá ßáãÉ ÇáãÑæÑ (íãßäß ÊÛííÑå)
+
+    options.User.AllowedUserNameCharacters =
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+ ÇÃÅÂÈÊËÌÍÎÏĞÑÒÓÔÕÖØÙÚÛİŞßáãäåæíìÁÄÆ";
+
+})
+
+    .AddEntityFrameworkStores<AppDbContext>()
+
+    .AddDefaultTokenProviders();
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+    .AddJwtBearer(o =>
+    {
+        o.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey
+            (Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
+            //RoleClaimType = ClaimTypes.Role
+        };
+    });
 
 builder.Services.AddControllers();
+
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -70,41 +114,26 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddAuthentication(options =>
+
+builder.Services.AddAuthorization(options =>
 {
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-    .AddJwtBearer(o =>
-    {
-        o.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuerSigningKey = true,
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
-        };
-    });
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("SuperAdminOnly", policy => policy.RequireRole("SuperAdmin"));
+    options.AddPolicy("AdminOrSuperAdmin", policy =>
+        policy.RequireAssertion(context =>
+            context.User.IsInRole("Admin") || context.User.IsInRole("SuperAdmin")));
+});
+
 builder.Services.AddHttpContextAccessor();
 
-builder.Services.AddAuthorization();
 
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
-{
-    options.Password.RequireDigit = true; //  íÊØáÈ ÑŞã
-    options.Password.RequireLowercase = false; // ? áÇ íÊØáÈ ÍÑİğÇ ÕÛíÑğÇ
-    options.Password.RequireUppercase = false; // ? áÇ íÊØáÈ ÍÑİğÇ ßÈíÑğÇ
-    options.Password.RequireNonAlphanumeric = false; // ? áÇ íÊØáÈ ÑãÒğÇ ÎÇÕğÇ (@, #, !)
-    options.Password.RequiredLength = 8; // ÇáÍÏ ÇáÃÏäì áØæá ßáãÉ ÇáãÑæÑ (íãßäß ÊÛííÑå)
-})
-    .AddEntityFrameworkStores<AppDbContext>()
-    .AddDefaultTokenProviders();
+
+
 var app = builder.Build();
 
-app.UseStaticFiles(); // ÇáÓãÇÍ ÈÚÑÖ ÇáãáİÇÊ ÇáËÇÈÊÉ
+
+
+app.MapControllers();
 
 // Configure the HTTP request pipeline.
 //if (app.Environment.IsDevelopment())
@@ -112,14 +141,12 @@ app.UseStaticFiles(); // ÇáÓãÇÍ ÈÚÑÖ ÇáãáİÇÊ ÇáËÇÈÊÉ
 app.UseSwagger();
 app.UseSwaggerUI();
 //}
-
+app.UseStaticFiles(); // íÓãÍ ÈÚÑÖ ÇáÕæÑ ãä wwwroot
 app.UseHttpsRedirection();
-
-app.UseCors("AllowAll");
-
+app.UseResponseCaching();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapControllers();
+app.UseCors("AllowAll");
 
 app.Run();

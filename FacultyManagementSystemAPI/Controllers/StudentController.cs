@@ -1,5 +1,6 @@
 ﻿using FacultyManagementSystemAPI.Models.DTOs.Student;
 using FacultyManagementSystemAPI.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FacultyManagementSystemAPI.Controllers
@@ -12,6 +13,7 @@ namespace FacultyManagementSystemAPI.Controllers
         private readonly ICourseService _courseService = courseService;
         private readonly IEnrollmentService _enrollmentService = enrollmentService;
 
+        [Authorize(Roles = "Student")]
         [HttpGet("AllStudents")]
         public async Task<IActionResult> GetAllWithDepartmentName()
         {

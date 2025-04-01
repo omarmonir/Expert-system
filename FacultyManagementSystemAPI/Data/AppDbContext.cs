@@ -60,6 +60,12 @@ namespace FacultyManagementSystemAPI.Data
              }
                     };
 
+            modelBuilder.Entity<ApplicationUser>(entity =>
+            {
+                entity.Property(e => e.UserName)
+                      .HasColumnType("nvarchar(256)"); // استخدم NVARCHAR للأحرف العربية
+            });
+
             modelBuilder.Entity<IdentityRole>().HasData(roles);
 
 
