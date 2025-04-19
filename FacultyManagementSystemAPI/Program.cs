@@ -20,48 +20,7 @@ ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 
-{
-
-    options.Password.RequireDigit = true; //  Ì ÿ·» —ﬁ„
-
-    options.Password.RequireLowercase = false; // ? ·« Ì ÿ·» Õ—›« ’€Ì—«
-
-    options.Password.RequireUppercase = false; // ? ·« Ì ÿ·» Õ—›« ﬂ»Ì—«
-
-    options.Password.RequireNonAlphanumeric = false; // ? ·« Ì ÿ·» —„“« Œ«’« (@, #, !)
-
-    options.Password.RequiredLength = 8; // «·Õœ «·√œ‰Ï ·ÿÊ· ﬂ·„… «·„—Ê— (Ì„ﬂ‰ﬂ  €ÌÌ—Â)
-
-    options.User.AllowedUserNameCharacters =
-      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+ «√≈¬» ÀÃÕŒœ–—“”‘’÷ÿŸ⁄€›ﬁﬂ·„‰ÂÊÌÏ¡ƒ∆";
-
-})
-
-    .AddEntityFrameworkStores<AppDbContext>()
-
-    .AddDefaultTokenProviders();
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-    .AddJwtBearer(o =>
-    {
-        o.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuerSigningKey = true,
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey
-            (Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
-            //RoleClaimType = ClaimTypes.Role
-        };
-    });
 
 builder.Services.AddControllers();
 
@@ -98,7 +57,6 @@ builder.Services.AddScoped<PdfService>();
 
 builder.Services.AddScoped<IEmailService, EmailService>();
 
-builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddScoped<IFileService, FileService>();
 builder.Services.AddAutoMapper(typeof(MappingProfile));
@@ -115,14 +73,7 @@ builder.Services.AddCors(options =>
 });
 
 
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
-    options.AddPolicy("SuperAdminOnly", policy => policy.RequireRole("SuperAdmin"));
-    options.AddPolicy("AdminOrSuperAdmin", policy =>
-        policy.RequireAssertion(context =>
-            context.User.IsInRole("Admin") || context.User.IsInRole("SuperAdmin")));
-});
+
 
 builder.Services.AddHttpContextAccessor();
 

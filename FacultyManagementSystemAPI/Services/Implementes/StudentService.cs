@@ -10,181 +10,37 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FacultyManagementSystemAPI.Services.Implementes
 {
-    public class StudentService(IStudentRepository studentRepository, IFileService fileService, IMapper mapper,
-        UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IEmailService emailService) : IStudentService
+    public class StudentService(IStudentRepository studentRepository, IFileService fileService, IMapper mapper
+        ) : IStudentService
     {
         private readonly IStudentRepository _studentRepository = studentRepository;
         private readonly IFileService _fileService = fileService;
         private readonly IMapper _mapper = mapper;
-        private readonly UserManager<ApplicationUser> _userManager = userManager;
-        private readonly RoleManager<IdentityRole> _roleManager = roleManager;
-        private readonly IEmailService _emailService = emailService;
-
-
-
-        //public async Task AddAsync(CreateStudentDto createStudentDto)
-        //{
-        //    if (createStudentDto == null)
-        //        throw new ArgumentNullException(nameof(createStudentDto), "البيانات المدخلة لا يمكن أن تكون فارغة");
-
-        //    await ValidateStudentData(createStudentDto);
-
-        //    var student = _mapper.Map<Student>(createStudentDto);
-
-        //    await _studentRepository.AddAsync(student);
-
-        //    var existingUser = await _userManager.FindByEmailAsync(createStudentDto.Email);
-        //    if (existingUser != null)
-        //        throw new Exception("A user with this email already exists");
-
-        //    var password = GenerateRandomPassword();
-
-        //    var user = new ApplicationUser
-        //    {
-        //        UserName = createStudentDto.Email,
-        //        Email = createStudentDto.Email,
-        //        StudentId = student.Id,
-        //        Password = password,
-        //        UserType = "Student"
-        //    };
-        //    //user.PasswordHash = _userManager.PasswordHasher.HashPassword(user, password);
-
-        //    var result = await _userManager.CreateAsync(user, password);
-
-        //    if (!result.Succeeded)
-        //    {
-        //        //throw new Exception("InValid Email Or Password!");
-        //        var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-        //        throw new Exception($"User creation failed: {errors}");
-        //    }
-
-        //    await _userManager.AddToRoleAsync(user, "Student");
-
-        //    // var student = _mapper.Map<Student>(createStudentDto);
-
-        //    student.ApplicationUserId = user.Id;
-        //    student.ImagePath = _fileService.SaveFile(createStudentDto.Image, "Students");
-
-        //    //try
-        //    //{
-        //    //    await _studentRepository.AddAsync(student);
-        //    //}
-        //    //catch (DbUpdateException ex)
-        //    //{
-        //    //    throw new Exception($"فشل تحديث قاعدة البيانات: {ex.InnerException?.Message}");
-        //    //}
-        //    //catch (Exception ex)
-        //    //{
-        //    //    throw new Exception($"حدث خطأ غير متوقع: {ex.Message}");
-        //    //}
-
-        //}
-
+      
         public async Task AddAsync(CreateStudentDto createStudentDto)
         {
             if (createStudentDto == null)
                 throw new ArgumentNullException(nameof(createStudentDto), "البيانات المدخلة لا يمكن أن تكون فارغة");
 
-            // التحقق مما إذا كان الطالب موجودًا مسبقًا عبر البريد الإلكتروني
-            var existingUser = await _userManager.FindByEmailAsync(createStudentDto.Email);
-            if (existingUser != null)
-                throw new Exception("يوجد مستخدم بهذا البريد الإلكتروني بالفعل");
 
-            // إنشاء كلمة مرور عشوائية
-            var password = GenerateRandomPassword();
+            await ValidateStudentData(createStudentDto);
 
-            // 1️⃣ إنشاء المستخدم أولاً
-            var user = new ApplicationUser
-            {
-                UserName = createStudentDto.Name,
-                PhoneNumber = createStudentDto.Phone,
-                Email = createStudentDto.Email,
-                UserType = "Student",
-                StudentId = null, // سيتم تحديثه لاحقًا
-                IsActive = true, // الحساب مفعل افتراضيًا
-                RefreshToken = null,
-                RefreshTokenExpiryTime = null,
-                LastLoginDate = null,
-                LastLoginIp = null,
-                LastLoginDevice = null,
-                DeactivationDate = null,
-               
-            };
-
-            var result = await _userManager.CreateAsync(user, password);
-            if (!result.Succeeded)
-            {
-                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-                throw new Exception($"فشل إنشاء المستخدم: {errors}");
-            }
-
-            await _userManager.AddToRoleAsync(user, "Student");
-
-            // 2️⃣ إنشاء الطالب وربطه بالمستخدم
             var student = _mapper.Map<Student>(createStudentDto);
-            student.ApplicationUserId = user.Id;
-            student.ImagePath = _fileService.SaveFile(createStudentDto.Image, "Students");
 
+            student.ImagePath = _fileService.SaveFile(createStudentDto.Image, "Students");
             try
             {
                 await _studentRepository.AddAsync(student);
-
-                // 3️⃣ تحديث معرف الطالب في المستخدم بعد إضافته
-                user.StudentId = student.Id;
-                await _userManager.UpdateAsync(user);
             }
             catch (DbUpdateException ex)
             {
-                // حذف المستخدم إذا فشلت إضافة الطالب
-                await _userManager.DeleteAsync(user);
                 throw new Exception($"فشل تحديث قاعدة البيانات: {ex.InnerException?.Message}");
             }
             catch (Exception ex)
             {
-                // حذف المستخدم إذا فشلت إضافة الطالب
-                await _userManager.DeleteAsync(user);
                 throw new Exception($"حدث خطأ غير متوقع: {ex.Message}");
             }
 
-            // 4️⃣ إرسال البريد الإلكتروني للمستخدم الجديد
-            string subject = "تفاصيل حسابك";
-
-            string body = $@"
-                        <h2>مرحبًا بك في نظام إدارة الكلية</h2>
-                        <p style='font-family: Arial, sans-serif; color: #333;'>عزيزي {createStudentDto.Name}،</p>
-                        <p style='font-family: Arial, sans-serif; color: #333;'>تم إنشاء حسابك بنجاح. فيما يلي بيانات تسجيل الدخول الخاصة بك:</p>
-
-                        <div style='background-color: #f4f4f9; padding: 15px; border-radius: 8px; margin-bottom: 10px;'>
-                            <p style='font-family: Arial, sans-serif; color: #333;'><strong>البريد الإلكتروني:</strong> {createStudentDto.Email}</p>
-                            <p style='font-family: Arial, sans-serif; color: #333;'><strong>كلمة المرور:</strong> {password}</p>
-                        </div>
-
-                        <div style='background-color: #fff8e1; padding: 15px; border-radius: 8px; margin-bottom: 10px;'>
-                            <h3 style='color: #d32f2f;'>إرشادات أمنية:</h3>
-                            <ul>
-          
-                                <li>لا تشارك بيانات الدخول مع أي شخص</li>
-                                <li>ستتلقى إشعارات عند تسجيل الدخول من أجهزة جديدة</li>
-                            </ul>
-                        </div>
-
-                        <p style='font-family: Arial, sans-serif; color: #e74c3c; font-weight: bold;'>⚠ يرجى الاحتفاظ بهذه المعلومات بشكل آمن.</p>
-                        <p style='font-family: Arial, sans-serif; color: #333;'>تحياتنا،</p>
-                        <p style='font-family: Arial, sans-serif; color: #333;'><strong>إدارة النظام</strong></p>";
-
-            try
-            {
-                bool emailSent = await _emailService.SendEmailAsync(user.Email, subject, body);
-                if (!emailSent)
-                {
-                    throw new Exception("تم إنشاء الحساب بنجاح، ولكن فشل إرسال البريد الإلكتروني.");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("❌ خطأ في إرسال البريد: " + ex.Message);
-                // يمكنك اختيارياً تسجيل الخطأ في نظام التسجيل (Logging) هنا
-            }
         }
 
 

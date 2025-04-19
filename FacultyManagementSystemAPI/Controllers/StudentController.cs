@@ -13,7 +13,7 @@ namespace FacultyManagementSystemAPI.Controllers
         private readonly ICourseService _courseService = courseService;
         private readonly IEnrollmentService _enrollmentService = enrollmentService;
 
-        [Authorize(Roles = "Student")]
+        //[Authorize(Roles = "Student")]
         [HttpGet("AllStudents")]
         public async Task<IActionResult> GetAllWithDepartmentName()
         {
@@ -89,6 +89,7 @@ namespace FacultyManagementSystemAPI.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
 
         [HttpPost("AddStudent")]
         public async Task<IActionResult> Add([FromForm] CreateStudentDto createStudentDto)

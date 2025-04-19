@@ -50,8 +50,6 @@ namespace FacultyManagementSystemAPI.Models.Entities
 
         public List<Class> Classes { get; set; } = new List<Class>();
 
-        public string ApplicationUserId { get; set; }
-        [ForeignKey(nameof(ApplicationUserId))]
-        public ApplicationUser ApplicationUser { get; set; }
+       
     }
 }

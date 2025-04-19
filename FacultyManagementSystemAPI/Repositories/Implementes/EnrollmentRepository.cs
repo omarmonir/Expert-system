@@ -6,128 +6,90 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FacultyManagementSystemAPI.Repositories.Implementes
 {
-    public class EnrollmentRepository(AppDbContext dbContext) : GenericRepository<Enrollment>(dbContext), IEnrollmentRepository
+    public class EnrollmentRepository : GenericRepository<Enrollment>, IEnrollmentRepository
     {
-        private readonly AppDbContext _dbContext = dbContext;
+        private readonly AppDbContext _dbContext;
+
+        public EnrollmentRepository(AppDbContext dbContext) : base(dbContext)
+        {
+            _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+        }
 
         public async Task<IEnumerable<EnrollmentDto>> GetAllIncludeStudentNameCourseNameAsync()
         {
-            var enrollments = await _dbContext.Enrollments
+            return await _dbContext.Enrollments
+                .AsNoTracking()
                 .Select(e => new EnrollmentDto
                 {
                     Id = e.Id,
                     StudentID = e.StudentId,
-                    StudentName = _dbContext.Students
-                        .Where(s => s.Id == e.StudentId)
-                        .Select(s => s.Name)
-                        .FirstOrDefault() ?? "غير معروف",
-
-                    CourseCode = _dbContext.Courses
-                        .Where(c => c.Id == e.CourseId)
-                        .Select(c => c.Code)
-                        .FirstOrDefault() ?? "غير معروف",
-
-                    CourseName = _dbContext.Courses
-                        .Where(c => c.Id == e.CourseId)
-                        .Select(c => c.Name)
-                        .FirstOrDefault() ?? "غير معروف",
-
+                    StudentName = e.Student.Name ?? "غير معروف",
+                    CourseCode = e.Course.Code ?? "غير معروف",
+                    CourseName = e.Course.Name ?? "غير معروف",
                     EnrollmentDate = e.AddedEnrollmentDate,
                     EnrollmentStatus = e.IsCompleted,
                     Semester = e.Semester
                 })
                 .ToListAsync();
-
-            return enrollments;
         }
 
         public async Task<EnrollmentDto> GetByIdIncludeStudentNameCourseNameAsync(int id)
         {
-            var enrollmentDto = await _dbContext.Enrollments
-                 .AsNoTrackingWithIdentityResolution()
+            return await _dbContext.Enrollments
+                .AsNoTracking()
                 .Where(e => e.Id == id)
                 .Select(e => new EnrollmentDto
                 {
+                    Id = e.Id,
                     StudentID = e.StudentId,
-                    StudentName = _dbContext.Students
-                        .Where(s => s.Id == e.StudentId)
-                        .Select(s => s.Name)
-                        .FirstOrDefault() ?? "غير معروف",
-
-                    CourseCode = _dbContext.Courses
-                        .Where(c => c.Id == e.CourseId)
-                        .Select(c => c.Code)
-                        .FirstOrDefault() ?? "غير معروف",
-
-                    CourseName = _dbContext.Courses
-                        .Where(c => c.Id == e.CourseId)
-                        .Select(c => c.Name)
-                        .FirstOrDefault() ?? "غير معروف",
-
+                    StudentName = e.Student.Name ?? "غير معروف",
+                    CourseCode = e.Course.Code ?? "غير معروف",
+                    CourseName = e.Course.Name ?? "غير معروف",
                     EnrollmentDate = e.AddedEnrollmentDate,
                     EnrollmentStatus = e.IsCompleted,
                     Semester = e.Semester
                 })
                 .FirstOrDefaultAsync();
-
-            return enrollmentDto;
         }
 
         public async Task<IEnumerable<EnrollmentDto>> GetBySemesterAsync(string name)
         {
-            var enrollments = await _dbContext.Enrollments
-                .Where(e => e.Semester.Contains(name))
-                .AsNoTrackingWithIdentityResolution()
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException("يجب تحديد اسم الفصل الدراسي", nameof(name));
+
+            // استخدام طريقة EF.Functions.Like للبحث بشكل أفضل
+            return await _dbContext.Enrollments
+                .Where(e => EF.Functions.Like(e.Semester, $"%{name}%"))
+                .AsNoTracking()
                 .Select(e => new EnrollmentDto
                 {
+                    Id = e.Id,
                     StudentID = e.StudentId,
-                    StudentName = _dbContext.Students
-                        .Where(s => s.Id == e.StudentId)
-                        .Select(s => s.Name)
-                        .FirstOrDefault() ?? "غير معروف",
-
-                    CourseCode = _dbContext.Courses
-                        .Where(c => c.Id == e.CourseId)
-                        .Select(c => c.Code)
-                        .FirstOrDefault() ?? "غير معروف",
-
-                    CourseName = _dbContext.Courses
-                        .Where(c => c.Id == e.CourseId)
-                        .Select(c => c.Name)
-                        .FirstOrDefault() ?? "غير معروف",
-
+                    StudentName = e.Student.Name ?? "غير معروف",
+                    CourseCode = e.Course.Code ?? "غير معروف",
+                    CourseName = e.Course.Name ?? "غير معروف",
                     EnrollmentDate = e.AddedEnrollmentDate,
                     EnrollmentStatus = e.IsCompleted,
                     Semester = e.Semester
                 })
                 .ToListAsync();
-
-            return enrollments;
         }
 
         public async Task<IEnumerable<EnrollmentDto>> GetByStudentIdAsync(int studentId)
         {
+            if (studentId <= 0)
+                throw new ArgumentException("رقم الطالب يجب أن يكون أكبر من صفر", nameof(studentId));
+
             return await _dbContext.Enrollments
-                .AsNoTrackingWithIdentityResolution()
+                .AsNoTracking()
                 .Where(e => e.StudentId == studentId)
                 .Select(e => new EnrollmentDto
                 {
+                    Id = e.Id,
                     StudentID = e.StudentId,
-                    StudentName = _dbContext.Students
-                        .Where(s => s.Id == e.StudentId)
-                        .Select(s => s.Name)
-                        .FirstOrDefault() ?? "غير معروف",
-
-                    CourseCode = _dbContext.Courses
-                        .Where(c => c.Id == e.CourseId)
-                        .Select(c => c.Code)
-                        .FirstOrDefault() ?? "غير معروف",
-
-                    CourseName = _dbContext.Courses
-                        .Where(c => c.Id == e.CourseId)
-                        .Select(c => c.Name)
-                        .FirstOrDefault() ?? "غير معروف",
-
+                    StudentName = e.Student.Name ?? "غير معروف",
+                    CourseCode = e.Course.Code ?? "غير معروف",
+                    CourseName = e.Course.Name ?? "غير معروف",
                     EnrollmentDate = e.AddedEnrollmentDate,
                     EnrollmentStatus = e.IsCompleted,
                     Semester = e.Semester
@@ -137,27 +99,19 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
 
         public async Task<IEnumerable<EnrollmentDto>> GetByCourseIdAsync(int courseId)
         {
+            if (courseId <= 0)
+                throw new ArgumentException("رقم المقرر يجب أن يكون أكبر من صفر", nameof(courseId));
+
             return await _dbContext.Enrollments
-                .AsNoTrackingWithIdentityResolution()
+                .AsNoTracking()
                 .Where(e => e.CourseId == courseId)
                 .Select(e => new EnrollmentDto
                 {
+                    Id = e.Id,
                     StudentID = e.StudentId,
-                    StudentName = _dbContext.Students
-                        .Where(s => s.Id == e.StudentId)
-                        .Select(s => s.Name)
-                        .FirstOrDefault() ?? "غير معروف",
-
-                    CourseCode = _dbContext.Courses
-                        .Where(c => c.Id == e.CourseId)
-                        .Select(c => c.Code)
-                        .FirstOrDefault() ?? "غير معروف",
-
-                    CourseName = _dbContext.Courses
-                        .Where(c => c.Id == e.CourseId)
-                        .Select(c => c.Name)
-                        .FirstOrDefault() ?? "غير معروف",
-
+                    StudentName = e.Student.Name ?? "غير معروف",
+                    CourseCode = e.Course.Code ?? "غير معروف",
+                    CourseName = e.Course.Name ?? "غير معروف",
                     EnrollmentDate = e.AddedEnrollmentDate,
                     EnrollmentStatus = e.IsCompleted,
                     Semester = e.Semester
@@ -165,125 +119,113 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                 .ToListAsync();
         }
 
-        public async Task<int> CountAsync()
-        {
-            return await _dbContext.Enrollments.CountAsync();
-        }
+        public async Task<int> CountAsync() => await _dbContext.Enrollments.CountAsync();
 
-        public async Task<int> GetCompletedEnrollmentCountAsync()
-        {
-            return await _dbContext.Enrollments.CountAsync(e => e.IsCompleted == "ناجح");
-        }
+        public async Task<int> GetCompletedEnrollmentCountAsync() =>
+            await _dbContext.Enrollments.CountAsync(e => e.IsCompleted == "ناجح");
 
+        public async Task<int> GetAllWaitEnrollmentStudentsCountAsync() =>
+            await _dbContext.Enrollments.CountAsync(e => e.IsCompleted == "قيد الدراسة");
 
-        public async Task<int> GetAllWaitEnrollmentStudentsCountAsync()
-        {
-            return await _dbContext.Enrollments.CountAsync(e => e.IsCompleted == "قيد الدراسة");
-        }
+        public async Task<int> CountDeletedAsync() =>
+            await _dbContext.Enrollments.CountAsync(e => e.DeletedEnrollmentDate != null);
 
-        public async Task<int> CountDeletedAsync()
-        {
-            return await _dbContext.Enrollments.CountAsync(e => e.DeletedEnrollmentDate != null);
-        }
-
-        public async Task<int> GetAllEnrollmentStudentsCountAsync()
-        {
-            return await _dbContext.Enrollments
+        public async Task<int> GetAllEnrollmentStudentsCountAsync() =>
+            await _dbContext.Enrollments
                 .Select(e => e.StudentId)
                 .Distinct()
                 .CountAsync();
-        }
+
         public async Task<Enrollment> GetByStudentAndCourseIdAsync(int studentId, int courseId)
         {
+            if (studentId <= 0)
+                throw new ArgumentException("رقم الطالب يجب أن يكون أكبر من صفر", nameof(studentId));
+
+            if (courseId <= 0)
+                throw new ArgumentException("رقم المقرر يجب أن يكون أكبر من صفر", nameof(courseId));
+
             return await _dbContext.Enrollments
                 .FirstOrDefaultAsync(e => e.StudentId == studentId && e.CourseId == courseId);
         }
 
         public async Task UpdateAsync(Enrollment enrollment)
         {
+            if (enrollment == null)
+                throw new ArgumentNullException(nameof(enrollment));
+
             _dbContext.Enrollments.Update(enrollment);
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<EnrollmentDto>> GetFilteredEnrollmentsAsync(string? studentName, string? courseName, string? enrollmentStatus, string? semester)
+        public async Task<IEnumerable<EnrollmentDto>> GetFilteredEnrollmentsAsync(
+            string? studentName, string? courseName, string? enrollmentStatus, string? semester)
         {
-            var enrollmentQuery = _dbContext.Enrollments
-                .AsNoTracking()
-                .Select(e => new EnrollmentDto
-                {
-                    StudentID = e.StudentId,
-                    StudentName = e.Student.Name,
-                    CourseCode = e.Course.Code,
-                    CourseName = e.Course.Name,
-                    EnrollmentDate = e.AddedEnrollmentDate,
-                    EnrollmentStatus = e.IsCompleted,
-                    Semester = e.Semester
-                });
+            var query = _dbContext.Enrollments.AsNoTracking();
 
-            // تنفيذ الفلترة على مستوى قاعدة البيانات فقط
+            // تطبيق الفلاتر على مستوى قاعدة البيانات حيثما أمكن
             if (!string.IsNullOrWhiteSpace(enrollmentStatus))
             {
-                enrollmentQuery = enrollmentQuery.Where(e => e.EnrollmentStatus == enrollmentStatus);
-            }
-
-            // جلب البيانات إلى الذاكرة قبل تطبيق الفلاتر النصية
-            var enrollments = await enrollmentQuery.ToListAsync();
-
-            // تنفيذ الفلترة النصية على مستوى الذاكرة
-            if (!string.IsNullOrWhiteSpace(studentName))
-            {
-                studentName = NormalizeArabicText(studentName);
-                enrollments = enrollments
-                    .Where(e => NormalizeArabicText(e.StudentName).Contains(studentName))
-                    .ToList();
-            }
-
-            if (!string.IsNullOrWhiteSpace(courseName))
-            {
-                courseName = NormalizeArabicText(courseName);
-                enrollments = enrollments
-                    .Where(e => NormalizeArabicText(e.CourseName).Contains(courseName))
-                    .ToList();
+                query = query.Where(e => e.IsCompleted == enrollmentStatus);
             }
 
             if (!string.IsNullOrWhiteSpace(semester))
             {
-                semester = NormalizeArabicText(semester);
-                enrollments = enrollments
-                    .Where(e => NormalizeArabicText(e.Semester).Contains(semester))
-                    .ToList();
+                var normalizedSemester = NormalizeArabicText(semester);
+                query = query.Where(e => EF.Functions.Like(e.Semester, $"%{semester}%"));
             }
 
-            return enrollments;
+            if (!string.IsNullOrWhiteSpace(studentName))
+            {
+                var normalizedStudentName = NormalizeArabicText(studentName);
+                query = query.Where(e => EF.Functions.Like(e.Student.Name, $"%{studentName}%"));
+            }
+
+            if (!string.IsNullOrWhiteSpace(courseName))
+            {
+                var normalizedCourseName = NormalizeArabicText(courseName);
+                query = query.Where(e => EF.Functions.Like(e.Course.Name, $"%{courseName}%"));
+            }
+
+            // جلب البيانات مع تضمين العلاقات المطلوبة واستخدام التعيين المباشر
+            return await query
+                .Include(e => e.Student)
+                .Include(e => e.Course)
+                .Select(e => new EnrollmentDto
+                {
+                    Id = e.Id,
+                    StudentID = e.StudentId,
+                    StudentName = e.Student.Name ?? "غير معروف",
+                    CourseCode = e.Course.Code ?? "غير معروف",
+                    CourseName = e.Course.Name ?? "غير معروف",
+                    EnrollmentDate = e.AddedEnrollmentDate,
+                    EnrollmentStatus = e.IsCompleted,
+                    Semester = e.Semester
+                })
+                .ToListAsync();
         }
 
         private string NormalizeArabicText(string text)
         {
+            if (string.IsNullOrWhiteSpace(text))
+                return string.Empty;
+
             return text.Replace('أ', 'ا')
                        .Replace('إ', 'ا')
                        .Replace('آ', 'ا')
                        .Replace('ى', 'ي')
-                       .Replace('ه', 'ة');
+                       .Replace('ة', 'ه');
         }
 
-        public async Task<IEnumerable<string>> GetAllEnrollmentsStatusesAsync()
-        {
-            var status = await _dbContext.Enrollments
-               .Select(d => d.IsCompleted)
-               .Distinct()
-               .ToListAsync();
+        public async Task<IEnumerable<string>> GetAllEnrollmentsStatusesAsync() =>
+            await _dbContext.Enrollments
+                .Select(d => d.IsCompleted)
+                .Distinct()
+                .ToListAsync();
 
-            return status;
-        }
-
-        public async Task<IEnumerable<string>> GetAllEnrollmentsSemsterAsync()
-        {
-            var status = await _dbContext.Enrollments
-               .Select(d => d.Semester)
-               .Distinct()
-               .ToListAsync();
-
-            return status;
-        }
+        public async Task<IEnumerable<string>> GetAllEnrollmentsSemsterAsync() =>
+            await _dbContext.Enrollments
+                .Select(d => d.Semester)
+                .Distinct()
+                .ToListAsync();
     }
 }

@@ -109,9 +109,7 @@ namespace FacultyManagementSystemAPI.Models.Entities
         public List<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
         public List<Attendance> Attendances { get; set; } = new List<Attendance>();
 
-        public string ApplicationUserId { get; set; }
-        [ForeignKey(nameof(ApplicationUserId))]
-        public ApplicationUser ApplicationUser { get; set; }
+      
     }
 
 }

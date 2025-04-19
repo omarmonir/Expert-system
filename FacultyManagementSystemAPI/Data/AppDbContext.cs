@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FacultyManagementSystemAPI.Data
 {
-    public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbContext<ApplicationUser>(options)
+    public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
     {
         public DbSet<Student> Students { get; set; }
         public DbSet<Department> Departments { get; set; }
@@ -21,52 +21,7 @@ namespace FacultyManagementSystemAPI.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Seed Roles
-
-            var studentId = "0c20a355-12dd-449d-a8d5-6e33960c45ee";
-            var professorId = "393f1091-b175-4cca-a1df-19971e86e2a3";
-            var adminId = "7d090697-295a-43bf-bb0b-3a19843fb528";
-            var superAdminId = "8b2fbfe2-0a51-4f8e-b57f-4504d20a3739";
-
-            var roles = new List<IdentityRole>
-         {
-             new IdentityRole
-             {
-                 Id = studentId,
-                 ConcurrencyStamp =studentId,
-                 Name = "Student",
-                 NormalizedName = "Student".ToUpper()
-             },
-             new IdentityRole
-             {
-                 Id = professorId,
-                 ConcurrencyStamp =professorId,
-                 Name = "Professor",
-                 NormalizedName = "Professor".ToUpper()
-             },
-             new IdentityRole
-             {
-                 Id = adminId,
-                 ConcurrencyStamp =adminId,
-                 Name = "Admin",
-                 NormalizedName = "Admin".ToUpper()
-             },
-             new IdentityRole
-             {
-                 Id = superAdminId,
-                 ConcurrencyStamp =superAdminId,
-                 Name = "SuperAdmin",
-                 NormalizedName = "SuperAdmin".ToUpper()
-             }
-                    };
-
-            modelBuilder.Entity<ApplicationUser>(entity =>
-            {
-                entity.Property(e => e.UserName)
-                      .HasColumnType("nvarchar(256)"); // استخدم NVARCHAR للأحرف العربية
-            });
-
-            modelBuilder.Entity<IdentityRole>().HasData(roles);
+           
 
 
             // تخصيص Sequence واحدة لجميع الـ IDs
@@ -119,18 +74,7 @@ namespace FacultyManagementSystemAPI.Data
 
             // Relationships
 
-            modelBuilder.Entity<Student>()
-           .HasOne(s => s.ApplicationUser)
-           .WithOne(u => u.Student)
-           .HasForeignKey<ApplicationUser>(u => u.StudentId)
-           .OnDelete(DeleteBehavior.Cascade); // حذف المستخدم عند حذف الطالب
-
-            // العلاقة بين Professor و ApplicationUser (واحد إلى واحد)
-            modelBuilder.Entity<Professor>()
-                .HasOne(p => p.ApplicationUser)
-                .WithOne(u => u.Professor)
-                .HasForeignKey<ApplicationUser>(u => u.ProfessorId)
-                .OnDelete(DeleteBehavior.Cascade); // حذف المستخدم عند حذف الأستاذ
+           
 
 
             // Enrollment With Student (1-M)
