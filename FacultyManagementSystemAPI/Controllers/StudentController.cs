@@ -1,17 +1,17 @@
 ﻿using FacultyManagementSystemAPI.Models.DTOs.Student;
 using FacultyManagementSystemAPI.Services.Interfaces;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FacultyManagementSystemAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    //public class StudentController(IStudentService studentService) : ControllerBase
     public class StudentController(IStudentService studentService, ICourseService courseService, IEnrollmentService enrollmentService) : ControllerBase
     {
         private readonly IStudentService _studentService = studentService;
-        private readonly ICourseService _courseService = courseService;
-        private readonly IEnrollmentService _enrollmentService = enrollmentService;
+        //private readonly ICourseService _courseService = courseService;
+        //private readonly IEnrollmentService _enrollmentService = enrollmentService;
 
         //[Authorize(Roles = "Student")]
         [HttpGet("AllStudents")]
@@ -21,7 +21,6 @@ namespace FacultyManagementSystemAPI.Controllers
             {
                 return BadRequest(ModelState);
             }
-
             try
             {
                 var studentsDto = await _studentService.GetAllWithDepartmentNameAsync();
@@ -92,6 +91,7 @@ namespace FacultyManagementSystemAPI.Controllers
 
 
         [HttpPost("AddStudent")]
+        //[Authorize(Roles = "Admin, SuperAdmin")]
         public async Task<IActionResult> Add([FromForm] CreateStudentDto createStudentDto)
         {
             try
@@ -103,6 +103,38 @@ namespace FacultyManagementSystemAPI.Controllers
 
                 await _studentService.AddAsync(createStudentDto);
                 return StatusCode(201);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        [HttpPost("AddMultipleStudents")]
+        //[Authorize(Roles = "Admin, SuperAdmin")]
+        public async Task<IActionResult> AddMultiple([FromBody] List<CreateStudentDto> students)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                List<string> results = new List<string>();
+                foreach (var student in students)
+                {
+                    try
+                    {
+                        await _studentService.AddMultipleAsync(student);
+                        results.Add($"تم إضافة الطالب {student.Name} بنجاح");
+                    }
+                    catch (Exception ex)
+                    {
+                        results.Add($"فشل إضافة الطالب {student.Name}: {ex.Message}");
+                    }
+                }
+
+                return Ok(new { Message = "تمت معالجة إضافة الطلاب", Results = results });
             }
             catch (Exception ex)
             {
@@ -289,38 +321,38 @@ namespace FacultyManagementSystemAPI.Controllers
             }
         }
 
-        [HttpGet("CountOfStudentsAndCourses")]
-        public async Task<IActionResult> GetStudentCount()
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            try
-            {
-                var countOfAllStudents = await _studentService.GetStudentCountAsync();
-                var countOfAllCourses = await _courseService.GetCourseCountAsync();
+        //[HttpGet("CountOfStudentsAndCourses")]
+        //public async Task<IActionResult> GetStudentCount()
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return BadRequest(ModelState);
+        //    }
+        //    try
+        //    {
+        //        var countOfAllStudents = await _studentService.GetStudentCountAsync();
+        //        var countOfAllCourses = await _courseService.GetCourseCountAsync();
 
-                int countOfStudents = await _studentService.GetStudentCountAsync();
-                int countOfEnrollments = await _enrollmentService.GetAllEnrollmentStudentsCountAsync();
+        //        int countOfStudents = await _studentService.GetStudentCountAsync();
+        //        int countOfEnrollments = await _enrollmentService.GetAllEnrollmentStudentsCountAsync();
 
-                var total = ((decimal)countOfEnrollments / countOfStudents) * 100;
-                total = Math.Round(total, 2);
+        //        var total = ((decimal)countOfEnrollments / countOfStudents) * 100;
+        //        total = Math.Round(total, 2);
 
-                
-                return Ok(new
-                {
-                    countOfStudents = countOfAllStudents,
-                    countOfCourses = countOfAllCourses,
-                    enrollmentPercentage = total,
-                   
-                });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
+
+        //        return Ok(new
+        //        {
+        //            countOfStudents = countOfAllStudents,
+        //            countOfCourses = countOfAllCourses,
+        //            enrollmentPercentage = total,
+
+        //        });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest(ex.Message);
+        //    }
+        //}
 
         [HttpGet("CountOfAllEnrollmentStudents")]
         public async Task<IActionResult> GetEnrollmentStudents()

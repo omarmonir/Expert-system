@@ -1,5 +1,4 @@
-﻿using FacultyManagementSystemAPI.Models.DTOs.Department;
-using FacultyManagementSystemAPI.Services.Interfaces;
+﻿using FacultyManagementSystemAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FacultyManagementSystemAPI.Controllers
@@ -57,42 +56,6 @@ namespace FacultyManagementSystemAPI.Controllers
             {
                 var department = await _departmentService.GetByIdAsync(id);
                 return Ok(department);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpPut("updateProfessorCount/{id}")]
-        public async Task<IActionResult> UpdateProfessorCount(int id, [FromBody] UpdateProfessorCountDto dto)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            try
-            {
-                await _departmentService.UpdateProfessorCountAsync(id, dto.ProfessorCount);
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        [HttpPut("UpdateHeadOfDepartment/{id}")]
-        public async Task<IActionResult> UpdateHeadOfDepartment(int id, [FromBody] UpdateHeadOfDepartmentDto dto)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            try
-            {
-                await _departmentService.UpdateHeadOfDepartmentAsync(id, dto.HeadOfDepartment);
-                return NoContent();
             }
             catch (Exception ex)
             {

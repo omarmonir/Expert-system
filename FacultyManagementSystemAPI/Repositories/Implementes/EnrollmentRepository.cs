@@ -204,6 +204,21 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                 .ToListAsync();
         }
 
+        public async Task<Course?> GetCourseByIdAsync(int id)
+        {
+            return await _dbContext.Courses.FindAsync(id);
+        }
+
+        public async Task<Student?> GetStudentByIdAsync(int id)
+        {
+            return await _dbContext.Students.FindAsync(id);
+        }
+
+        public async Task<bool> ExistsAsync(int studentId, int courseId)
+        {
+            return await _dbContext.Enrollments
+                .AnyAsync(e => e.StudentId == studentId && e.CourseId == courseId);
+        }
         private string NormalizeArabicText(string text)
         {
             if (string.IsNullOrWhiteSpace(text))

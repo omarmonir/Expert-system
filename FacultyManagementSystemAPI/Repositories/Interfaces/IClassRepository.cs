@@ -1,10 +1,9 @@
 ﻿using FacultyManagementSystemAPI.Models.DTOs.Classes;
-using FacultyManagementSystemAPI.Models.DTOs.Courses;
 using FacultyManagementSystemAPI.Models.Entities;
 
 namespace FacultyManagementSystemAPI.Repositories.Interfaces
 {
-    public interface IClassRepository : IGenericRepository<Class>
+    public partial interface IClassRepository : IGenericRepository<Class>
     {
         Task<IEnumerable<ClassDto>> GetAllClassesWithProfNameAndCourseNameAsync();
         Task<ClassDto> GetClassByIdAsync(int courseId);

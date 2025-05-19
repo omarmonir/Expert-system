@@ -11,7 +11,6 @@ namespace FacultyManagementSystemAPI.Models.Entities
         [MaxLength(50)]
         public string Semester { get; set; }
 
-
         [Required]
         public int NumberOFSemster { get; set; }
 
@@ -24,14 +23,11 @@ namespace FacultyManagementSystemAPI.Models.Entities
             }
         }
 
-
         [Column(TypeName = "decimal(10,2)")]
         public decimal? Exam1Grade { get; set; }
 
-
         [Column(TypeName = "decimal(10,2)")]
         public decimal? Exam2Grade { get; set; }
-
 
         [Column(TypeName = "decimal(10,2)")]
         public decimal? Grade { get; set; }

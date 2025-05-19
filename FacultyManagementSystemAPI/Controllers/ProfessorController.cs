@@ -9,7 +9,58 @@ namespace FacultyManagementSystemAPI.Controllers
     public class ProfessorController(IProfessorService professorService) : ControllerBase
     {
         private readonly IProfessorService _professorService = professorService;
+        [HttpPost("AddProfessor")]
+        //[Authorize(Roles = "Admin, SuperAdmin")]
+        public async Task<IActionResult> Add([FromForm] CreateProfessorDto createProfessorDto)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
 
+                await _professorService.AddAsync(createProfessorDto);
+                return StatusCode(201);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("AddMultipleProfessors")]
+        //[Authorize(Roles = "Admin, SuperAdmin")]
+        public async Task<IActionResult> AddMultiple([FromBody] List<CreateProfessorDto> professors)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                List<string> results = new List<string>();
+                foreach (var professor in professors)
+                {
+                    try
+                    {
+                        await _professorService.AddMultipleAsync(professor);
+                        results.Add($"تم إضافة الدكتور {professor.FullName} بنجاح");
+                    }
+                    catch (Exception ex)
+                    {
+                        results.Add($"فشل إضافة الدكتور {professor.FullName}: {ex.Message}");
+                    }
+                }
+
+                return Ok(new { Message = "تمت معالجة إضافة الأساتذة", Results = results });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
         [HttpPost("RegisterProfessor")]
         public async Task<IActionResult> CreateProfessor([FromForm] CreateProfessorDto createProfessorDto)

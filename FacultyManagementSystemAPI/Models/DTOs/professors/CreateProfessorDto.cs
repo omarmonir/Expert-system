@@ -52,13 +52,13 @@ namespace FacultyManagementSystemAPI.Models.DTOs.professors
         [DefaultValue("أستاذ مساعد")]
         public string Position { get; set; }
 
-        [Required(ErrorMessage = "مسار الصورة مطلوب")]
         [DefaultValue("default.jpg")]
-        public IFormFile Image { get; set; }
+        public IFormFile? Image { get; set; }
 
         // Navigation Properties
-        [Required(ErrorMessage = "رقم القسم مطلوب")]
-        [DefaultValue(1000)]
-        public int DepartmentId { get; set; }
+        [Required(ErrorMessage = "اسم القسم مطلوب")]
+        [MaxLength(100, ErrorMessage = "يجب ألا يتجاوز اسم القسم 100 حرف")]
+        [DefaultValue("قسم الرياضيات")]
+        public string DepartmentName { get; set; }
     }
 }

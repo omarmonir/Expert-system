@@ -26,19 +26,20 @@ namespace FacultyManagementSystemAPI.Models.Entities
         [Required]
         public byte Semester { get; set; }
 
-        public int? PreCourseId { get; set; }
-        [ForeignKey(nameof(PreCourseId))]
-        public virtual Course PreCourse { get; set; }
-
         [Required]
         public int MaxSeats { get; set; }
 
         public int CurrentEnrolledStudents { get; set; } = 0;
 
+        public int DepartmentId { get; set; }
+        [ForeignKey(nameof(DepartmentId))]
+        public Department Department { get; set; }
+
         // Navigation Properties
         public List<Class> Classes { get; set; } = new List<Class>();
         public List<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
-        public List<CourseDepartment> CourseDepartments { get; set; } = new List<CourseDepartment>();
+        public List<CourseDivision> CourseDivisions { get; set; } = new List<CourseDivision>();
+        public List<CoursePrerequisite> Prerequisites { get; set; } = new List<CoursePrerequisite>();
+        public List<CoursePrerequisite> IsPrerequisiteFor { get; set; } = new List<CoursePrerequisite>();
     }
-
 }

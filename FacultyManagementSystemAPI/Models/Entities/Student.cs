@@ -48,11 +48,11 @@ namespace FacultyManagementSystemAPI.Models.Entities
             get
             {
                 var gpas = new List<decimal?> { GPA1, GPA2, GPA3, GPA4, GPA5, GPA6, GPA7, GPA8 }
-                            .Where(gpa => gpa.HasValue) // إزالة القيم null
-                            .Select(gpa => gpa.Value)   // تحويل إلى decimal
+                            .Where(gpa => gpa.HasValue)
+                            .Select(gpa => gpa.Value)
                             .ToList();
 
-                return gpas.Any() ? gpas.Average() : 0; // حساب المتوسط إذا وُجدت قيم
+                return gpas.Any() ? gpas.Average() : 0;
             }
         }
 
@@ -79,8 +79,8 @@ namespace FacultyManagementSystemAPI.Models.Entities
 
         [Column(TypeName = "decimal(10,2)")]
         public decimal? GPA8 { get; set; }
-        [Required]
 
+        [Required]
         [Column(TypeName = "decimal(10,2)")]
         public decimal High_School_degree { get; set; }
 
@@ -100,16 +100,17 @@ namespace FacultyManagementSystemAPI.Models.Entities
         [Required]
         public string ImagePath { get; set; }
 
-        // Navigation Properties
-        public int DepartmentId { get; set; }
-        [ForeignKey(nameof(DepartmentId))]
-        public Department Department { get; set; } // العلاقة مع القسم
+        public int DivisionId { get; set; }
+        [ForeignKey(nameof(DivisionId))]
+        public Division Division { get; set; }
 
-        // Many-to-Many with Course By Enrollment
         public List<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
         public List<Attendance> Attendances { get; set; } = new List<Attendance>();
+        public virtual ICollection<AcademicWarning> AcademicWarnings { get; set; } = new List<AcademicWarning>();
 
-      
+
+        public string ApplicationUserId { get; set; }
+        [ForeignKey(nameof(ApplicationUserId))]
+        public ApplicationUser ApplicationUser { get; set; }
     }
-
 }

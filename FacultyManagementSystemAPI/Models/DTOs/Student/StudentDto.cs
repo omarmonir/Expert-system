@@ -33,6 +33,7 @@
 
         //public int DepartmentId { get; set; }
         public string DepartmentName { get; set; }
+        public string DivisionName { get; set; }
 
         public string ImagePath { get; set; }
         public string status { get; set; }

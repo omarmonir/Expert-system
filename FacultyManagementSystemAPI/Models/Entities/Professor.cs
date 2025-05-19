@@ -44,12 +44,17 @@ namespace FacultyManagementSystemAPI.Models.Entities
         [MaxLength(255)]
         public string ImagePath { get; set; }
 
+        [Required]
+        public bool IsHeadOfDepartment { get; set; }
+
         public int DepartmentId { get; set; }
         [ForeignKey(nameof(DepartmentId))]
         public Department Department { get; set; }
 
         public List<Class> Classes { get; set; } = new List<Class>();
 
-       
+        public string ApplicationUserId { get; set; }
+        [ForeignKey(nameof(ApplicationUserId))]
+        public ApplicationUser ApplicationUser { get; set; }
     }
 }

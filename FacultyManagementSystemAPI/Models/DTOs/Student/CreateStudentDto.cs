@@ -39,13 +39,13 @@ namespace FacultyManagementSystemAPI.Models.DTOs.Student
         [Required(ErrorMessage = "البريد الإلكتروني مطلوب")]
         [EmailAddress(ErrorMessage = "تنسيق البريد الإلكتروني غير صحيح")]
         [MaxLength(100, ErrorMessage = "يجب ألا يتجاوز البريد الإلكتروني 100 حرف")]
-        [DefaultValue("user@example.com")]
+        [DefaultValue("user@gmail.com")]
         public string Email { get; set; }
 
-		[Required(ErrorMessage = "رقم الهاتف مطلوب")]
-		[Phone(ErrorMessage = "تنسيق رقم الهاتف غير صحيح")]
-		[DefaultValue("+201234567890")]
-		public string Phone { get; set; }
+        [Required(ErrorMessage = "رقم الهاتف مطلوب")]
+        [Phone(ErrorMessage = "تنسيق رقم الهاتف غير صحيح")]
+        [DefaultValue("+201234567890")]
+        public string Phone { get; set; }
 
         [Required(ErrorMessage = "الفصل الدراسي مطلوب")]
         [Range(1, 8, ErrorMessage = "يجب أن يكون الفصل الدراسي بين 1 و 8")]
@@ -83,8 +83,7 @@ namespace FacultyManagementSystemAPI.Models.DTOs.Student
         [DefaultValue(50)]
         public int CreditsCompleted { get; set; }
 
-        [Required(ErrorMessage = "الصورة مطلوبة")]
-        public IFormFile Image { get; set; }
+        public IFormFile? Image { get; set; }
 
         [Required(ErrorMessage = "السنة الدراسية")]
         [MaxLength(50, ErrorMessage = "يجب ألا يتجاوز مرحلة الطالب 50 حرفًا")]
@@ -92,9 +91,14 @@ namespace FacultyManagementSystemAPI.Models.DTOs.Student
         public string StudentLevel { get; set; }
 
         // Navigation Properties
-        [Required(ErrorMessage = "رقم القسم مطلوب")]
-        [DefaultValue(1111)]
-        public int DepartmentId { get; set; }
+        //[Required(ErrorMessage = "رقم اشعبة مطلوب")]
+        //[DefaultValue(1000)]
+        //public int DivisionId { get; set; }
+
+        [Required(ErrorMessage = "اسم الشعبة مطلوب")]
+        [MaxLength(100, ErrorMessage = "يجب ألا يتجاوز اسم الشعبة 100 حرف")]
+        [DefaultValue("مجموعة العلوم الطبيعية")]
+        public string DivisionName { get; set; }
     }
 }
 

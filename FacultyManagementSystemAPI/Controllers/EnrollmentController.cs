@@ -47,6 +47,23 @@ namespace FacultyManagementSystemAPI.Controllers
             }
         }
 
+        [HttpPost("AddEnrollment")]
+        public async Task<IActionResult> AddEnrollment([FromBody] CreateEnrollmentDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            try
+            {
+                await _enrollmentService.AddAsync(dto);
+                return StatusCode(201);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpGet("EnrollmentByStudentId/{studentId}")]
         public async Task<IActionResult> GetByStudentId(int studentId)
         {

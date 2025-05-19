@@ -1,12 +1,12 @@
 ﻿using FacultyManagementSystemAPI.Models.DTOs.Courses;
 using FacultyManagementSystemAPI.Models.DTOs.professors;
-using FacultyManagementSystemAPI.Models.DTOs.Student;
 
 namespace FacultyManagementSystemAPI.Services.Interfaces
 {
     public interface IProfessorService
     {
         Task AddAsync(CreateProfessorDto createProfessorDto);
+        Task AddMultipleAsync(CreateProfessorDto createProfessorDto);
         Task UpdateAsync(int id, UpdateProfessorDto updateProfessorDto);
         Task DeleteAsync(int id);
         Task<IEnumerable<ProfessorDto>> GetAllAsync();

@@ -4,6 +4,8 @@ namespace FacultyManagementSystemAPI.Services.Interfaces
 {
     public interface IEnrollmentService
     {
+
+        Task AddAsync(CreateEnrollmentDto enrollmentDto);
         Task<IEnumerable<EnrollmentDto>> GetAllIncludeStudentNameCourseNameAsync();
         Task<EnrollmentDto> GetByIdIncludeStudentNameCourseNameAsync(int id);
         Task<IEnumerable<EnrollmentDto>> GetBySemesterAsync(string name);

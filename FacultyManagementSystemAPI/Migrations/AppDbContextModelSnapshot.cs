@@ -131,6 +131,62 @@ namespace FacultyManagementSystemAPI.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("FacultyManagementSystemAPI.Models.Entities.AcademicWarning", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ActionRequired")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime>("IssueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ResolvedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Semester")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("WarningLevel")
+                        .HasColumnType("int");
+
+                    b.Property<string>("WarningType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudentId");
+
+                    b.ToTable("AcademicWarnings");
+                });
+
             modelBuilder.Entity("FacultyManagementSystemAPI.Models.Entities.Attendance", b =>
                 {
                     b.Property<int>("Id")
@@ -215,6 +271,9 @@ namespace FacultyManagementSystemAPI.Migrations
                     b.Property<int>("CurrentEnrolledStudents")
                         .HasColumnType("int");
 
+                    b.Property<int>("DepartmentId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(250)
@@ -228,9 +287,6 @@ namespace FacultyManagementSystemAPI.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<int?>("PreCourseId")
-                        .HasColumnType("int");
-
                     b.Property<byte>("Semester")
                         .HasColumnType("tinyint");
 
@@ -241,14 +297,12 @@ namespace FacultyManagementSystemAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PreCourseId")
-                        .IsUnique()
-                        .HasFilter("[PreCourseId] IS NOT NULL");
+                    b.HasIndex("DepartmentId");
 
                     b.ToTable("Courses");
                 });
 
-            modelBuilder.Entity("FacultyManagementSystemAPI.Models.Entities.CourseDepartment", b =>
+            modelBuilder.Entity("FacultyManagementSystemAPI.Models.Entities.CourseDivision", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -258,7 +312,7 @@ namespace FacultyManagementSystemAPI.Migrations
                     b.Property<int>("CourseId")
                         .HasColumnType("int");
 
-                    b.Property<int>("DepartmentId")
+                    b.Property<int>("DivisionId")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsMandatory")
@@ -268,9 +322,31 @@ namespace FacultyManagementSystemAPI.Migrations
 
                     b.HasIndex("CourseId");
 
-                    b.HasIndex("DepartmentId");
+                    b.HasIndex("DivisionId");
 
-                    b.ToTable("CourseDepartments");
+                    b.ToTable("CourseDivisions");
+                });
+
+            modelBuilder.Entity("FacultyManagementSystemAPI.Models.Entities.CoursePrerequisite", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValueSql("NEXT VALUE FOR dbo.CommonSequence");
+
+                    b.Property<int>("CourseId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PrerequisiteCourseId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CourseId");
+
+                    b.HasIndex("PrerequisiteCourseId");
+
+                    b.ToTable("CoursePrerequisites");
                 });
 
             modelBuilder.Entity("FacultyManagementSystemAPI.Models.Entities.Department", b =>
@@ -280,22 +356,36 @@ namespace FacultyManagementSystemAPI.Migrations
                         .HasColumnType("int")
                         .HasDefaultValueSql("NEXT VALUE FOR dbo.CommonSequence");
 
-                    b.Property<string>("HeadOfDepartment")
+                    b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Departments");
+                });
+
+            modelBuilder.Entity("FacultyManagementSystemAPI.Models.Entities.Division", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValueSql("NEXT VALUE FOR dbo.CommonSequence");
+
+                    b.Property<int>("DepartmentId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<int>("ProfessorCount")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
-                    b.ToTable("Departments");
+                    b.HasIndex("DepartmentId");
+
+                    b.ToTable("Divisions");
                 });
 
             modelBuilder.Entity("FacultyManagementSystemAPI.Models.Entities.Enrollment", b =>
@@ -347,6 +437,30 @@ namespace FacultyManagementSystemAPI.Migrations
                     b.ToTable("Enrollments");
                 });
 
+            modelBuilder.Entity("FacultyManagementSystemAPI.Models.Entities.EnrollmentPeriod", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Semester")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EnrollmentPeriods");
+                });
+
             modelBuilder.Entity("FacultyManagementSystemAPI.Models.Entities.Professor", b =>
                 {
                     b.Property<int>("Id")
@@ -387,6 +501,9 @@ namespace FacultyManagementSystemAPI.Migrations
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
+
+                    b.Property<bool>("IsHeadOfDepartment")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime>("Join_Date")
                         .HasColumnType("DATE");
@@ -433,7 +550,7 @@ namespace FacultyManagementSystemAPI.Migrations
                     b.Property<DateTime>("DateOfBirth")
                         .HasColumnType("DATE");
 
-                    b.Property<int>("DepartmentId")
+                    b.Property<int>("DivisionId")
                         .HasColumnType("int");
 
                     b.Property<string>("Email")
@@ -516,7 +633,7 @@ namespace FacultyManagementSystemAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DepartmentId");
+                    b.HasIndex("DivisionId");
 
                     b.ToTable("Students");
                 });
@@ -701,6 +818,17 @@ namespace FacultyManagementSystemAPI.Migrations
                     b.Navigation("Student");
                 });
 
+            modelBuilder.Entity("FacultyManagementSystemAPI.Models.Entities.AcademicWarning", b =>
+                {
+                    b.HasOne("FacultyManagementSystemAPI.Models.Entities.Student", "Student")
+                        .WithMany("AcademicWarnings")
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Student");
+                });
+
             modelBuilder.Entity("FacultyManagementSystemAPI.Models.Entities.Attendance", b =>
                 {
                     b.HasOne("FacultyManagementSystemAPI.Models.Entities.Class", "Class")
@@ -741,29 +869,60 @@ namespace FacultyManagementSystemAPI.Migrations
 
             modelBuilder.Entity("FacultyManagementSystemAPI.Models.Entities.Course", b =>
                 {
-                    b.HasOne("FacultyManagementSystemAPI.Models.Entities.Course", "PreCourse")
-                        .WithOne()
-                        .HasForeignKey("FacultyManagementSystemAPI.Models.Entities.Course", "PreCourseId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                    b.HasOne("FacultyManagementSystemAPI.Models.Entities.Department", "Department")
+                        .WithMany("Courses")
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
-                    b.Navigation("PreCourse");
+                    b.Navigation("Department");
                 });
 
-            modelBuilder.Entity("FacultyManagementSystemAPI.Models.Entities.CourseDepartment", b =>
+            modelBuilder.Entity("FacultyManagementSystemAPI.Models.Entities.CourseDivision", b =>
                 {
                     b.HasOne("FacultyManagementSystemAPI.Models.Entities.Course", "Course")
-                        .WithMany("CourseDepartments")
+                        .WithMany("CourseDivisions")
                         .HasForeignKey("CourseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("FacultyManagementSystemAPI.Models.Entities.Department", "Department")
-                        .WithMany("CourseDepartments")
-                        .HasForeignKey("DepartmentId")
+                    b.HasOne("FacultyManagementSystemAPI.Models.Entities.Division", "Division")
+                        .WithMany("CourseDivisions")
+                        .HasForeignKey("DivisionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Course");
+
+                    b.Navigation("Division");
+                });
+
+            modelBuilder.Entity("FacultyManagementSystemAPI.Models.Entities.CoursePrerequisite", b =>
+                {
+                    b.HasOne("FacultyManagementSystemAPI.Models.Entities.Course", "Course")
+                        .WithMany("Prerequisites")
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("FacultyManagementSystemAPI.Models.Entities.Course", "PrerequisiteCourse")
+                        .WithMany("IsPrerequisiteFor")
+                        .HasForeignKey("PrerequisiteCourseId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Course");
+
+                    b.Navigation("PrerequisiteCourse");
+                });
+
+            modelBuilder.Entity("FacultyManagementSystemAPI.Models.Entities.Division", b =>
+                {
+                    b.HasOne("FacultyManagementSystemAPI.Models.Entities.Department", "Department")
+                        .WithMany("Divisions")
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("Department");
                 });
@@ -800,13 +959,13 @@ namespace FacultyManagementSystemAPI.Migrations
 
             modelBuilder.Entity("FacultyManagementSystemAPI.Models.Entities.Student", b =>
                 {
-                    b.HasOne("FacultyManagementSystemAPI.Models.Entities.Department", "Department")
+                    b.HasOne("FacultyManagementSystemAPI.Models.Entities.Division", "Division")
                         .WithMany("Students")
-                        .HasForeignKey("DepartmentId")
+                        .HasForeignKey("DivisionId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Department");
+                    b.Navigation("Division");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -869,16 +1028,27 @@ namespace FacultyManagementSystemAPI.Migrations
                 {
                     b.Navigation("Classes");
 
-                    b.Navigation("CourseDepartments");
+                    b.Navigation("CourseDivisions");
 
                     b.Navigation("Enrollments");
+
+                    b.Navigation("IsPrerequisiteFor");
+
+                    b.Navigation("Prerequisites");
                 });
 
             modelBuilder.Entity("FacultyManagementSystemAPI.Models.Entities.Department", b =>
                 {
-                    b.Navigation("CourseDepartments");
+                    b.Navigation("Courses");
+
+                    b.Navigation("Divisions");
 
                     b.Navigation("Professors");
+                });
+
+            modelBuilder.Entity("FacultyManagementSystemAPI.Models.Entities.Division", b =>
+                {
+                    b.Navigation("CourseDivisions");
 
                     b.Navigation("Students");
                 });
@@ -893,6 +1063,8 @@ namespace FacultyManagementSystemAPI.Migrations
 
             modelBuilder.Entity("FacultyManagementSystemAPI.Models.Entities.Student", b =>
                 {
+                    b.Navigation("AcademicWarnings");
+
                     b.Navigation("ApplicationUser")
                         .IsRequired();
 

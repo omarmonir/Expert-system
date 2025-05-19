@@ -45,6 +45,8 @@ namespace FacultyManagementSystemAPI.Mappings
             CreateMap<UpdateGradeDto, Enrollment>()
                 .ForMember(dest => dest.FinalGrade, opt => opt.Ignore());
 
+            CreateMap<CreateEnrollmentDto, Enrollment>();
+
             CreateMap<Class, ClassDto>();
             CreateMap<CreateClassDto, Class>();
             CreateMap<UpdateClassDto, Class>();

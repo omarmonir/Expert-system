@@ -10,40 +10,310 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FacultyManagementSystemAPI.Services.Implementes
 {
-    public class StudentService(IStudentRepository studentRepository, IFileService fileService, IMapper mapper
-        ) : IStudentService
+    public class StudentService(IStudentRepository studentRepository, IFileService fileService, IMapper mapper, IDivisionRepository divisionRepository,
+        UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IEmailService emailService) : IStudentService
     {
         private readonly IStudentRepository _studentRepository = studentRepository;
+        private readonly IDivisionRepository _divisionRepository = divisionRepository;
         private readonly IFileService _fileService = fileService;
         private readonly IMapper _mapper = mapper;
-      
+        private readonly UserManager<ApplicationUser> _userManager = userManager;
+        private readonly RoleManager<IdentityRole> _roleManager = roleManager;
+        private readonly IEmailService _emailService = emailService;
+
+
+        //    public async Task AddAsync(CreateStudentDto createStudentDto)
+        //    {
+        //        if (createStudentDto == null)
+        //            throw new ArgumentNullException(nameof(createStudentDto), "البيانات المدخلة لا يمكن أن تكون فارغة");
+
+
+        //        await ValidateStudentData(createStudentDto);
+
+        //        var student = _mapper.Map<Student>(createStudentDto);
+
+        //        student.ImagePath = _fileService.SaveFile(createStudentDto.Image, "Students");
+        //        try
+        //        {
+        //            await _studentRepository.AddAsync(student);
+        //        }
+        //        catch (DbUpdateException ex)
+        //        {
+        //            throw new Exception($"فشل تحديث قاعدة البيانات: {ex.InnerException?.Message}");
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            throw new Exception($"حدث خطأ غير متوقع: {ex.Message}");
+        //        }
+
+        //    }
+
         public async Task AddAsync(CreateStudentDto createStudentDto)
         {
             if (createStudentDto == null)
                 throw new ArgumentNullException(nameof(createStudentDto), "البيانات المدخلة لا يمكن أن تكون فارغة");
 
+            // التحقق مما إذا كان الطالب موجودًا مسبقًا عبر البريد الإلكتروني
+            var existingUser = await _userManager.FindByEmailAsync(createStudentDto.Email);
+            if (existingUser != null)
+                throw new Exception("يوجد مستخدم بهذا البريد الإلكتروني بالفعل");
 
-            await ValidateStudentData(createStudentDto);
+            // إنشاء كلمة مرور عشوائية
+            var password = GenerateRandomPassword();
 
+            // 1️⃣ إنشاء المستخدم أولاً
+            var user = new ApplicationUser
+            {
+                UserName = createStudentDto.Email, // تعديل: استخدام البريد الإلكتروني كاسم مستخدم
+                PhoneNumber = createStudentDto.Phone,
+                Email = createStudentDto.Email,
+                UserType = "Student",
+                StudentId = null, // سيتم تحديثه لاحقًا
+                IsActive = true, // الحساب مفعل افتراضيًا
+                RefreshToken = null,
+                RefreshTokenExpiryTime = null,
+                LastLoginDate = null,
+                LastLoginIp = null,
+                LastLoginDevice = null,
+                DeactivationDate = null,
+            };
+
+            var result = await _userManager.CreateAsync(user, password);
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                throw new Exception($"فشل إنشاء المستخدم: {errors}");
+            }
+
+            await _userManager.AddToRoleAsync(user, "Student");
+
+            // 2️⃣ إنشاء الطالب وربطه بالمستخدم
             var student = _mapper.Map<Student>(createStudentDto);
+            student.ApplicationUserId = user.Id;
 
-            student.ImagePath = _fileService.SaveFile(createStudentDto.Image, "Students");
+            // إضافة معالجة الصورة
+            if (createStudentDto.Image != null)
+            {
+                student.ImagePath = _fileService.SaveFile(createStudentDto.Image, "Students");
+            }
+            else
+            {
+                student.ImagePath = "Students/default.png"; // مسار افتراضي للصورة
+            }
+
+            // إضافة القيم الافتراضية للحقول الناقصة
+            student.GPA1 = createStudentDto.GPA; // استخدام GPA كقيمة مبدئية للفصل الدراسي الحالي
+
+            //// تحديد رقم القسم (DivisionId) من DepartmentId
+            //student.DivisionId = createStudentDto.DivisionId;
+
+            // تعيين حالة الطالب
+            if (string.IsNullOrEmpty(student.status))
+            {
+                student.status = createStudentDto.status;
+            }
+
+            var division = await _divisionRepository.GetByNameAsync(createStudentDto.DivisionName)
+                ?? throw new Exception("اسم الشعبة غير موجود في النظام");
+            var divisionId = division.Id;
+
+            student.DivisionId = divisionId;
             try
             {
                 await _studentRepository.AddAsync(student);
+
+                // 3️⃣ تحديث معرف الطالب في المستخدم بعد إضافته
+                user.StudentId = student.Id;
+                await _userManager.UpdateAsync(user);
             }
             catch (DbUpdateException ex)
             {
+                // حذف المستخدم إذا فشلت إضافة الطالب
+                await _userManager.DeleteAsync(user);
                 throw new Exception($"فشل تحديث قاعدة البيانات: {ex.InnerException?.Message}");
             }
             catch (Exception ex)
             {
+                // حذف المستخدم إذا فشلت إضافة الطالب
+                await _userManager.DeleteAsync(user);
                 throw new Exception($"حدث خطأ غير متوقع: {ex.Message}");
             }
 
+            // 4️⃣ إرسال البريد الإلكتروني للمستخدم الجديد
+            string subject = "مرحباً بك في نظام إدارة الكلية - تفاصيل حسابك";
+            string body = $@"
+<!DOCTYPE html>
+<html dir='rtl' lang='ar'>
+<head>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+    <title>تفاصيل حسابك</title>
+</head>
+<body style='margin: 0; padding: 0; font-family: Arial, Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f4f8; direction: rtl; text-align: right;'>
+    <div style='max-width: 600px; margin: 0 auto; background-color: #ffffff; box-shadow: 0 0 15px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden;'>
+        <!-- Header -->
+        <div style='background-color: #003366; padding: 25px; text-align: center;'>
+            <h1 style='color: #ffffff; margin: 0; font-size: 26px; font-weight: 600;'>نظام إدارة الكلية</h1>
+        </div>
+
+        <!-- Content -->
+        <div style='padding: 35px 25px;'>
+            <h2 style='color: #003366; margin-top: 0; font-size: 22px; text-align: right;'>مرحباً بك في نظام إدارة الكلية</h2>
+            <p style='color: #333; line-height: 1.7; font-size: 16px; text-align: right;'>عزيزي <strong>{createStudentDto.Name}</strong>،</p>
+            <p style='color: #333; line-height: 1.7; font-size: 16px; text-align: right;'>تم إنشاء حسابك بنجاح. فيما يلي بيانات تسجيل الدخول الخاصة بك:</p>
+    
+            <!-- Login Info Box -->
+            <div style='background-color: #eef4fa; border-right: 4px solid #4a7fbf; padding: 22px; margin: 25px 0; border-radius: 6px; text-align: right;'>
+                <p style='margin: 10px 0; font-size: 16px;'><strong style='color: #003366;'>البريد الإلكتروني:</strong> {createStudentDto.Email}</p>
+                <p style='margin: 10px 0; font-size: 16px;'><strong style='color: #003366;'>كلمة المرور:</strong> {password}</p>
+            </div>
+    
+            <!-- Student Info -->
+            <div style='background-color: #f5f7fa; padding: 22px; margin: 25px 0; border-radius: 6px; border: 1px solid #e0e5eb; text-align: right;'>
+                <h3 style='color: #003366; margin-top: 0; font-size: 18px;'>بيانات الطالب:</h3>
+                <p style='margin: 8px 0; font-size: 16px;'><strong style='color: #4a7fbf;'>الاسم:</strong> {createStudentDto.Name}</p>
+                <p style='margin: 8px 0; font-size: 16px;'><strong style='color: #4a7fbf;'>رقم الهاتف:</strong> {createStudentDto.Phone}</p>
+                <p style='margin: 8px 0; font-size: 16px;'><strong style='color: #4a7fbf;'>الفصل الدراسي:</strong> {createStudentDto.Semester}</p>
+                <p style='margin: 8px 0; font-size: 16px;'><strong style='color: #4a7fbf;'>المستوى الدراسي:</strong> {createStudentDto.StudentLevel}</p>
+            </div>
+
+            <!-- Security Alert -->
+            <div style='background-color: #fff8e8; border-right: 4px solid #f0b400; padding: 22px; margin: 25px 0; border-radius: 6px; text-align: right;'>
+                <h3 style='color: #003366; margin-top: 0; font-size: 18px;'>إرشادات أمنية مهمة:</h3>
+                <ul style='padding-right: 20px; margin-bottom: 0; color: #444; text-align: right;'>
+                    <li style='margin-bottom: 10px; line-height: 1.6;'>لا تشارك بيانات الدخول مع أي شخص</li>
+                    <li style='margin-bottom: 10px; line-height: 1.6;'>ستتلقى إشعارات عند تسجيل الدخول من أجهزة جديدة</li>
+                    <li style='margin-bottom: 0; line-height: 1.6;'>تأكد من تسجيل الخروج عند استخدام جهاز عام</li>
+                </ul>
+            </div>
+    
+            <!-- Warning -->
+            <p style='font-weight: bold; color: #d93025; margin-top: 30px; text-align: center; font-size: 16px; padding: 10px; background-color: #feeae9; border-radius: 4px;'>⚠ يرجى الاحتفاظ بهذه المعلومات بشكل آمن</p>
+    
+            <!-- Need Help -->
+            <div style='background-color: #eef4fa; padding: 20px; border-radius: 6px; margin-top: 25px; border: 1px solid #d0e0f0; text-align: right;'>
+                <p style='margin: 0; color: #003366; font-size: 16px;'>هل تحتاج إلى مساعدة؟ يمكنك التواصل مع الدعم الفني عبر البريد الإلكتروني: <a href='mailto:support@college.edu' style='color: #4a7fbf; text-decoration: none; font-weight: bold;'>support@college.edu</a></p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div style='background-color: #003366; padding: 25px; text-align: center; border-top: 1px solid #002755;'>
+            <p style='margin: 0; color: #ffffff; font-size: 16px;'>مع تحيات،<br><strong>إدارة نظام الكلية</strong></p>
+            <p style='margin-top: 15px; color: #a0b8d9; font-size: 14px;'>© 2025 نظام إدارة الكلية. جميع الحقوق محفوظة.</p>
+        </div>
+    </div>
+</body>
+</html>";
+            try
+            {
+                bool emailSent = await _emailService.SendEmailAsync(user.Email, subject, body);
+                if (!emailSent)
+                {
+                    throw new Exception("تم إنشاء الحساب بنجاح، ولكن فشل إرسال البريد الإلكتروني.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("❌ خطأ في إرسال البريد: " + ex.Message);
+                // يمكنك اختيارياً تسجيل الخطأ في نظام التسجيل (Logging) هنا
+            }
         }
 
+        public async Task AddMultipleAsync(CreateStudentDto createStudentDto)
+        {
+            if (createStudentDto == null)
+                throw new ArgumentNullException(nameof(createStudentDto), "البيانات المدخلة لا يمكن أن تكون فارغة");
 
+            // التحقق مما إذا كان الطالب موجودًا مسبقًا عبر البريد الإلكتروني
+            var existingUser = await _userManager.FindByEmailAsync(createStudentDto.Email);
+            if (existingUser != null)
+                throw new Exception("يوجد مستخدم بهذا البريد الإلكتروني بالفعل");
+
+            // إنشاء كلمة مرور عشوائية
+            var password = GenerateRandomPassword();
+
+            // 1️⃣ إنشاء المستخدم أولاً
+            var user = new ApplicationUser
+            {
+                UserName = createStudentDto.Email, // تعديل: استخدام البريد الإلكتروني كاسم مستخدم
+                PhoneNumber = createStudentDto.Phone,
+                Email = createStudentDto.Email,
+                UserType = "Student",
+                StudentId = null, // سيتم تحديثه لاحقًا
+                IsActive = true, // الحساب مفعل افتراضيًا
+                RefreshToken = null,
+                RefreshTokenExpiryTime = null,
+                LastLoginDate = null,
+                LastLoginIp = null,
+                LastLoginDevice = null,
+                DeactivationDate = null,
+            };
+
+            var result = await _userManager.CreateAsync(user, password);
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                throw new Exception($"فشل إنشاء المستخدم: {errors}");
+            }
+
+            await _userManager.AddToRoleAsync(user, "Student");
+
+            // 2️⃣ إنشاء الطالب وربطه بالمستخدم
+            var student = _mapper.Map<Student>(createStudentDto);
+            student.ApplicationUserId = user.Id;
+
+            // إضافة معالجة الصورة
+            if (createStudentDto.Image != null)
+            {
+                student.ImagePath = _fileService.SaveFile(createStudentDto.Image, "Students");
+            }
+            else
+            {
+                student.ImagePath = "Students/default.png"; // مسار افتراضي للصورة
+            }
+
+            // إضافة القيم الافتراضية للحقول الناقصة
+            student.GPA1 = createStudentDto.GPA; // استخدام GPA كقيمة مبدئية للفصل الدراسي الحالي
+
+            //// تحديد رقم القسم (DivisionId) من DepartmentId
+            //student.DivisionId = createStudentDto.DivisionId;
+
+            // تعيين حالة الطالب
+            if (string.IsNullOrEmpty(student.status))
+            {
+                student.status = createStudentDto.status;
+            }
+
+            var division = await _divisionRepository.GetByNameAsync(createStudentDto.DivisionName)
+                ?? throw new Exception("اسم الشعبة غير موجود في النظام");
+            var divisionId = division.Id;
+
+            student.DivisionId = divisionId;
+
+            try
+            {
+                await _studentRepository.AddAsync(student);
+
+                // 3️⃣ تحديث معرف الطالب في المستخدم بعد إضافته
+                user.StudentId = student.Id;
+                await _userManager.UpdateAsync(user);
+            }
+            catch (DbUpdateException ex)
+            {
+                // حذف المستخدم إذا فشلت إضافة الطالب
+                await _userManager.DeleteAsync(user);
+                throw new Exception($"فشل تحديث قاعدة البيانات: {ex.InnerException?.Message}");
+            }
+            catch (Exception ex)
+            {
+                // حذف المستخدم إذا فشلت إضافة الطالب
+                await _userManager.DeleteAsync(user);
+                throw new Exception($"حدث خطأ غير متوقع: {ex.Message}");
+            }
+
+            // لا تقم بإرسال البريد الإلكتروني في وضع الاختبار المجمّع
+            // Console.WriteLine($"✅ تم إنشاء حساب للطالب {createStudentDto.Name} بنجاح، البريد: {createStudentDto.Email}، كلمة المرور: {password}");
+        }
 
         public async Task<IEnumerable<StudentDto>> GetAllWithDepartmentNameAsync()
         {
@@ -322,11 +592,6 @@ namespace FacultyManagementSystemAPI.Services.Implementes
         }
         private async Task ValidateStudentData(CreateStudentDto studentDto)
         {
-            if (!await _studentRepository.DepartmentExistsAsync(studentDto.DepartmentId))
-            {
-                throw new KeyNotFoundException("لم يتم العثور على القسم");
-            }
-
             if (await _studentRepository.EmailExistsAsync(studentDto.Email))
             {
                 throw new InvalidOperationException("البريد الإلكتروني مستخدم من قبل");
@@ -442,5 +707,32 @@ namespace FacultyManagementSystemAPI.Services.Implementes
             return new string(password.OrderBy(_ => random.Next()).ToArray());
         }
 
+        public Task<IEnumerable<StudentDto>> GetAllAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<StudentDto> GetByIdAsync(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        //private string GenerateRandomPassword()
+        //{
+        //    const string allChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        //    const string digitChars = "0123456789";
+
+        //    var random = new Random();
+        //    var passwordChars = new List<char>();
+
+        //    passwordChars.Add(digitChars[random.Next(digitChars.Length)]);
+
+        //    for (int i = 0; i < 7; i++)
+        //    {
+        //        passwordChars.Add(allChars[random.Next(allChars.Length)]);
+        //    }
+
+        //    return new string(passwordChars.OrderBy(x => random.Next()).ToArray());
+        //}
     }
 }

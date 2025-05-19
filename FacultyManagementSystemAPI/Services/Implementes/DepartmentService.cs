@@ -43,28 +43,6 @@ namespace FacultyManagementSystemAPI.Services.Implementes
             return names;
         }
 
-        public async Task UpdateHeadOfDepartmentAsync(int departmentId, string headOfDepartment)
-        {
-            if (departmentId <= 0)
-                throw new ArgumentException("يجب أن يكون معرف القسم رقمًا موجبا");
-
-            var department = await _departmentRepository.GetByIdAsync(departmentId) ??
-            throw new Exception("القسم غير موجود");
-
-            await _departmentRepository.UpdateHeadOfDepartmentAsync(departmentId, headOfDepartment);
-        }
-
-        public async Task UpdateProfessorCountAsync(int departmentId, int professorCount)
-        {
-            if (departmentId <= 0)
-                throw new ArgumentException("يجب أن يكون معرف القسم رقمًا موجبا");
-
-            var department = await _departmentRepository.GetByIdAsync(departmentId) ??
-            throw new Exception("القسم غير موجود");
-
-            await _departmentRepository.UpdateProfessorCountAsync(departmentId, professorCount);
-        }
-
         public async Task<int?> GetIdOfDepartmentByNameAsync(string DepartmentName)
         {
             int? departmentId = await _departmentRepository.GetIdOfDepartmentByNameAsync(DepartmentName);

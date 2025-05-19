@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using FacultyManagementSystemAPI.Models.DTOs.Enrollment;
+using FacultyManagementSystemAPI.Models.Entities;
 using FacultyManagementSystemAPI.Repositories.Interfaces;
 using FacultyManagementSystemAPI.Services.Interfaces;
 
@@ -15,6 +16,28 @@ namespace FacultyManagementSystemAPI.Services.Implementes
         private readonly ICourseRepository _courseRepository = courseRepository;
         private readonly IMapper _mapper = mapper;
 
+
+        public async Task AddAsync(CreateEnrollmentDto enrollmentDto)
+        {
+            if (enrollmentDto == null)
+                throw new ArgumentNullException("البيانات المدخلة لا يمكن أن تكون فارغة.");
+
+            // التأكد من وجود الطالب
+            var student = await _enrollmentRepository.GetStudentByIdAsync(enrollmentDto.StudentId)
+                ?? throw new KeyNotFoundException($"الطالب غير موجود.");
+
+            // التأكد من وجود الكورس
+            var course = await _enrollmentRepository.GetCourseByIdAsync(enrollmentDto.CourseId)
+                ?? throw new KeyNotFoundException($"الكورس غير موجود.");
+
+            // التحقق من عدم تكرار التسجيل
+            if (await _enrollmentRepository.ExistsAsync(student.Id, course.Id))
+                throw new Exception("هذا الطالب مسجل بالفعل في هذا الكورس.");
+
+            var enrollment = _mapper.Map<Enrollment>(enrollmentDto);
+
+            await _enrollmentRepository.AddAsync(enrollment);
+        }
 
         public async Task DeleteAsync(int id)
         {

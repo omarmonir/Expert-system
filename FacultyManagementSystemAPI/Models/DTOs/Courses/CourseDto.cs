@@ -19,10 +19,10 @@
 
         public int CurrentEnrolledStudents { get; set; }
 
-        public string? PreCourseName { get; set; }
+        public List<string>? PreCourseName { get; set; }
         public string ProfessorName { get; set; }
         public string DepartmentName { get; set; }
-      
+
         public double? AttendanceRate { get; set; }
         public decimal? AverageFinalGrade { get; set; }
     }

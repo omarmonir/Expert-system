@@ -77,18 +77,31 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
         {
             return await _context.Classes
                 .Where(c => c.ProfessorId == professorId)
-                .Select(c => new CourseDto
+                .Select(c => c.Course) // select the course
+                .Distinct()
+                .Select(course => new CourseDto
                 {
-                    Id = c.Course.Id,
-                    Name = c.Course.Name,
-                    Credits = c.Course.Credits,
-                    Description = c.Course.Description,
-                    Status = c.Course.Status,
-                    Semester = c.Course.Semester,
-                    PreCourseName = c.Course.PreCourse.Name,
-                    //ProfessorName = c.Professor.FullName
-                }).Distinct().ToListAsync();
+                    Id = course.Id,
+                    Name = course.Name,
+                    Credits = course.Credits,
+                    Description = course.Description,
+                    Status = course.Status,
+                    Semester = course.Semester,
+                    Code = course.Code,
+                    MaxSeats = course.MaxSeats,
+                    CurrentEnrolledStudents = course.CurrentEnrolledStudents,
+                    PreCourseName = course.Prerequisites
+                        .Select(p => p.PrerequisiteCourse.Name)
+                        .ToList(),
+                    ProfessorName = course.Classes
+                        .Where(cls => cls.ProfessorId == professorId)
+                        .Select(cls => cls.Professor.FullName)
+                        .FirstOrDefault(),
+                    DepartmentName = course.Department.Name
+                })
+                .ToListAsync();
         }
+
 
         public async Task<bool> ProfessorExistsAsync(string professorName)
         {
@@ -103,6 +116,12 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
           .ToListAsync();
 
             return names;
+        }
+
+        public async Task<Department?> GetDepartmentByNameAsync(string name)
+        {
+            return await _context.Departments
+                .FirstOrDefaultAsync(d => d.Name.ToLower() == name.ToLower());
         }
     }
 }
