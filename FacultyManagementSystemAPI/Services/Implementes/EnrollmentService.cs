@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FacultyManagementSystemAPI.Models.DTOs;
 using FacultyManagementSystemAPI.Models.DTOs.Enrollment;
 using FacultyManagementSystemAPI.Models.Entities;
 using FacultyManagementSystemAPI.Repositories.Interfaces;
@@ -50,16 +51,26 @@ namespace FacultyManagementSystemAPI.Services.Implementes
             await _enrollmentRepository.DeleteAsync(id);
         }
 
-        public async Task<IEnumerable<EnrollmentDto>> GetAllIncludeStudentNameCourseNameAsync()
+        //public async Task<IEnumerable<EnrollmentDto>> GetAllIncludeStudentNameCourseNameAsync()
+        //{
+        //    var enrollmentListDto = await _enrollmentRepository.GetAllIncludeStudentNameCourseNameAsync();
+
+
+        //    if (!enrollmentListDto.Any() || enrollmentListDto == null)
+        //        throw new KeyNotFoundException("لم يتم العثور على أي سجلات تسجيل.");
+
+        //    return enrollmentListDto;
+        //}
+        public async Task<IEnumerable<EnrollmentDto>> GetAllIncludeStudentNameCourseNameAsync(int pageNumber)
         {
-            var enrollmentListDto = await _enrollmentRepository.GetAllIncludeStudentNameCourseNameAsync();
+            var data = await _enrollmentRepository.GetAllIncludeStudentNameCourseNameAsync(pageNumber);
 
-
-            if (!enrollmentListDto.Any() || enrollmentListDto == null)
+            if (!data.Any())
                 throw new KeyNotFoundException("لم يتم العثور على أي سجلات تسجيل.");
 
-            return enrollmentListDto;
+            return data;
         }
+
 
         public async Task<IEnumerable<EnrollmentDto>> GetByCourseIdAsync(int courseId)
         {

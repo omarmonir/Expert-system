@@ -18,10 +18,6 @@ namespace FacultyManagementSystemAPI.Models.DTOs.Attendance
         [Range(1, int.MaxValue, ErrorMessage = "يجب أن يكون معرف الطالب رقمًا صالحًا.")]
         [DefaultValue(1111)]
         public int StudentId { get; set; }
-
-        [Required(ErrorMessage = "معرف الفصل مطلوب")]
-        [Range(1, int.MaxValue, ErrorMessage = "يجب أن يكون معرف الفصل رقمًا صالحًا.")]
-        [DefaultValue(1111)]
-        public int ClassesId { get; set; }
+        public string CourseName { get; set; }
     }
 }

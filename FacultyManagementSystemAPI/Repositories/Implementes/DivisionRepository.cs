@@ -13,6 +13,14 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
             return await _dbContext.Divisions
                 .FirstOrDefaultAsync(d => d.Name.ToLower() == name.ToLower());
         }
+        public async Task<IEnumerable<string>> GetAllDivisionNameAsync()
+        {
+            var names = await _dbContext.Divisions
+                .Select(d => d.Name)
+                .ToListAsync();
+
+            return names;
+        }
 
     }
 }

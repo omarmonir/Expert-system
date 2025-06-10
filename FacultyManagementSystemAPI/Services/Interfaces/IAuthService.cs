@@ -10,10 +10,12 @@ namespace FacultyManagementSystemAPI.Services.Interfaces
         Task<string> DeactivateAccountAsync(string email);
         Task<string> ReactivateAccountAsync(string email);
         Task<string> AssignRoleAsync(string email, string roleName);
-        Task<IEnumerable<UserDto>> GetUsersAsync();
+        Task<IEnumerable<UserDto>> GetUsersAsync(int pageNumber);
         Task<UserDto> GetUserByEmailAsync(string email);
         Task<UserDto> GetUserByIdAsync(string Id);
         Task UpdateUserAsync(string Id, UpdateUserDto model);
+        Task AddAsync(UserCreateDto userCreateDto);
+        Task DeleteAsync(string id);
 
         //Task<IEnumerable<string>> GetAllRolesAsync();
     }

@@ -4,7 +4,7 @@ namespace FacultyManagementSystemAPI.Repositories.Interfaces
 {
     public interface IReportRepository
     {
-        Task<IEnumerable<StudentPerDepartmentDto>> GetStudentsPerDepartmentAsync();
+        //Task<IEnumerable<StudentPerDepartmentDto>> GetStudentsPerDepartmentAsync();
         Task<IEnumerable<AcademicWarningDto>> GetAcademicWarningsAsync();
         Task<IEnumerable<StudentPerCourseDto>> GetStudentsPerCourseAsync();
         Task<IEnumerable<CourseEnrollmentDto>> GetCourseEnrollmentTrendsAsync();

@@ -315,9 +315,9 @@ namespace FacultyManagementSystemAPI.Services.Implementes
             // Console.WriteLine($"✅ تم إنشاء حساب للطالب {createStudentDto.Name} بنجاح، البريد: {createStudentDto.Email}، كلمة المرور: {password}");
         }
 
-        public async Task<IEnumerable<StudentDto>> GetAllWithDepartmentNameAsync()
+        public async Task<IEnumerable<StudentDto>> GetAllWithDepartmentNameAsync(int pageNumber)
         {
-            var studentsDto = await _studentRepository.GetAllWithDepartmentNameAsync();
+            var studentsDto = await _studentRepository.GetAllWithDepartmentNameAsync(pageNumber);
             if (studentsDto == null || !studentsDto.Any())
                 throw new Exception("لا يوجد طلاب");
 
@@ -528,9 +528,14 @@ namespace FacultyManagementSystemAPI.Services.Implementes
             return query;
         }
 
-        public async Task<IEnumerable<StudentDto>> GetStudentsByDepartmentAndNameAsync(string? departmentName, string? studentName, string? studentStatus)
+        public async Task<IEnumerable<StudentDto>> GetStudentsByDepartmentAndNameAsync(
+                 string? departmentName,
+                 string? studentName,
+                 string? studentStatus,
+                 string? divisionName)
         {
-            var studentListDto = await _studentRepository.GetStudentsByDepartmentAndNameAsync(departmentName, studentName, studentStatus);
+            var studentListDto = await _studentRepository
+                .GetStudentsByDepartmentAndNameAsync(departmentName, studentName, studentStatus, divisionName);
 
             if (studentListDto == null || !studentListDto.Any())
                 throw new Exception("لا يوجد طلاب");
@@ -707,14 +712,19 @@ namespace FacultyManagementSystemAPI.Services.Implementes
             return new string(password.OrderBy(_ => random.Next()).ToArray());
         }
 
-        public Task<IEnumerable<StudentDto>> GetAllAsync()
-        {
-            throw new NotImplementedException();
-        }
+       
 
         public Task<StudentDto> GetByIdAsync(int id)
         {
             throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<StudentExamGradesDto>> GetStudentGradesByStudentIdAsync(int studentId)
+        {
+            var grades = _studentRepository.GetStudentGradesByStudentIdAsync(studentId);
+            if(grades == null)
+                throw new Exception("لا يوجد تسجيلات لهذا الطالب");
+            return grades;
         }
 
         //private string GenerateRandomPassword()

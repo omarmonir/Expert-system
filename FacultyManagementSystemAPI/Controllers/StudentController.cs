@@ -15,7 +15,7 @@ namespace FacultyManagementSystemAPI.Controllers
 
         //[Authorize(Roles = "Student")]
         [HttpGet("AllStudents")]
-        public async Task<IActionResult> GetAllWithDepartmentName()
+        public async Task<IActionResult> GetAllWithDepartmentName([FromQuery] int pageNumber = 1)
         {
             if (!ModelState.IsValid)
             {
@@ -23,7 +23,7 @@ namespace FacultyManagementSystemAPI.Controllers
             }
             try
             {
-                var studentsDto = await _studentService.GetAllWithDepartmentNameAsync();
+                var studentsDto = await _studentService.GetAllWithDepartmentNameAsync(pageNumber);
                 return Ok(studentsDto);
             }
             catch (Exception ex)
@@ -445,12 +445,18 @@ namespace FacultyManagementSystemAPI.Controllers
             }
         }
 
-        [HttpGet("FilterByStudentNameAndDepartmentNameAndStudentStatus")]
-        public async Task<IActionResult> GetStudentsByDepartmentAndName([FromQuery] string? departmentName, [FromQuery] string? studentName, [FromQuery] string? studentStatus)
+        [HttpGet("FilterByStudentNameAndDepartmentNameAndStudentStatusAndDivisionName")]
+        public async Task<IActionResult> GetStudentsByDepartmentAndName(
+         [FromQuery] string? departmentName,
+         [FromQuery] string? studentName,
+         [FromQuery] string? studentStatus,
+         [FromQuery] string? divisionName)
         {
             try
             {
-                var students = await _studentService.GetStudentsByDepartmentAndNameAsync(departmentName, studentName, studentStatus);
+                var students = await _studentService
+                    .GetStudentsByDepartmentAndNameAsync(departmentName, studentName, studentStatus, divisionName);
+
                 return Ok(students);
             }
             catch (Exception ex)
@@ -458,6 +464,7 @@ namespace FacultyManagementSystemAPI.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
 
         [HttpGet("AllStudentStatuses")]
         public async Task<IActionResult> GetAllStudentStatuses()
@@ -542,5 +549,18 @@ namespace FacultyManagementSystemAPI.Controllers
             }
         }
 
+        [HttpGet("GetGradesByStudentId/{studentId}")]
+        public async Task<IActionResult> GetGradesByStudentId(int studentId)
+        {
+            try
+            {
+                var result = await _studentService.GetStudentGradesByStudentIdAsync(studentId);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

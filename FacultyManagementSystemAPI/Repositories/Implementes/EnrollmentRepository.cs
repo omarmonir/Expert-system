@@ -15,9 +15,28 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
             _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
-        public async Task<IEnumerable<EnrollmentDto>> GetAllIncludeStudentNameCourseNameAsync()
+        //public async Task<IEnumerable<EnrollmentDto>> GetAllIncludeStudentNameCourseNameAsync()
+        //{
+        //    return await _dbContext.Enrollments
+        //        .AsNoTracking()
+        //        .Select(e => new EnrollmentDto
+        //        {
+        //            Id = e.Id,
+        //            StudentID = e.StudentId,
+        //            StudentName = e.Student.Name ?? "غير معروف",
+        //            CourseCode = e.Course.Code ?? "غير معروف",
+        //            CourseName = e.Course.Name ?? "غير معروف",
+        //            EnrollmentDate = e.AddedEnrollmentDate,
+        //            EnrollmentStatus = e.IsCompleted,
+        //            Semester = e.Semester
+        //        })
+        //        .ToListAsync();
+        //}
+        public async Task<IEnumerable<EnrollmentDto>> GetAllIncludeStudentNameCourseNameAsync(int pageNumber)
         {
-            return await _dbContext.Enrollments
+            int pageSize = 20;
+
+            var query = _dbContext.Enrollments
                 .AsNoTracking()
                 .Select(e => new EnrollmentDto
                 {
@@ -29,9 +48,18 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                     EnrollmentDate = e.AddedEnrollmentDate,
                     EnrollmentStatus = e.IsCompleted,
                     Semester = e.Semester
-                })
+                });
+
+            int totalCount = await query.CountAsync();
+
+            var pagedData = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
+
+            return pagedData;
         }
+
 
         public async Task<EnrollmentDto> GetByIdIncludeStudentNameCourseNameAsync(int id)
         {

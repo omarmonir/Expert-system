@@ -10,9 +10,10 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
     {
         private readonly AppDbContext _context = context;
 
-        public async Task<IEnumerable<ProfessorDto>> GetAllProfessorsAsync()
+        public async Task<IEnumerable<ProfessorDto>> GetAllProfessorsAsync(int pageNumber)
         {
-            return await _context.Professors
+            int pageSize = 20;
+            var query = _context.Professors
                 .AsNoTracking()
                 .Select(p => new ProfessorDto
                 {
@@ -28,7 +29,15 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                     Position = p.Position,
                     ImagePath = p.ImagePath,
                     DepartmentName = p.Department.Name
-                }).ToListAsync();
+                });
+            int totalCount = await query.CountAsync();
+
+            var pagedData = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return pagedData;
         }
 
         public async Task<ProfessorDto?> GetProfessorByIdAsync(int id)
@@ -90,9 +99,9 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                     Code = course.Code,
                     MaxSeats = course.MaxSeats,
                     CurrentEnrolledStudents = course.CurrentEnrolledStudents,
-                    PreCourseName = course.Prerequisites
-                        .Select(p => p.PrerequisiteCourse.Name)
-                        .ToList(),
+                    PreCourseName = course.Prerequisites.Any()
+                        ? string.Join("، ", course.Prerequisites.Select(p => p.PrerequisiteCourse.Name))
+                        : "لا يوجد مقرر مطلوب لهذا المقرر",
                     ProfessorName = course.Classes
                         .Where(cls => cls.ProfessorId == professorId)
                         .Select(cls => cls.Professor.FullName)

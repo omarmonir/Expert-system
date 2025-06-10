@@ -2,6 +2,7 @@
 using AutoMapper;
 using FacultyManagementSystemAPI.Data;
 using FacultyManagementSystemAPI.Models.DTOs.Attendance;
+using FacultyManagementSystemAPI.Models.DTOs.Auth;
 using FacultyManagementSystemAPI.Models.DTOs.Classes;
 using FacultyManagementSystemAPI.Models.DTOs.Courses;
 using FacultyManagementSystemAPI.Models.DTOs.Department;
@@ -48,10 +49,11 @@ namespace FacultyManagementSystemAPI.Mappings
             CreateMap<CreateEnrollmentDto, Enrollment>();
 
             CreateMap<Class, ClassDto>();
-            CreateMap<CreateClassDto, Class>();
+            CreateMap<CreateClassByNameDto, Class>();
             CreateMap<UpdateClassDto, Class>();
 
-           
+            CreateMap<UserDto, ApplicationUser>().ReverseMap();
+            CreateMap<UpdateUserDto, ApplicationUser>().ReverseMap();
         }
     }
 }

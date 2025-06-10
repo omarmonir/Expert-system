@@ -11,23 +11,40 @@ namespace FacultyManagementSystemAPI.Controllers
         private readonly IEnrollmentService _enrollmentService = enrollmentService;
         private readonly IStudentService _studentService = studentService;
 
+        //[HttpGet("AllEnrollments")]
+        //public async Task<IActionResult> GetAll()
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return BadRequest(ModelState);
+        //    }
+        //    try
+        //    {
+        //        var enrollments = await _enrollmentService.GetAllIncludeStudentNameCourseNameAsync();
+        //        return Ok(enrollments);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest(ex.Message);
+        //    }
+        //}
         [HttpGet("AllEnrollments")]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] int pageNumber = 1)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
+
             try
             {
-                var enrollments = await _enrollmentService.GetAllIncludeStudentNameCourseNameAsync();
-                return Ok(enrollments);
+                var result = await _enrollmentService.GetAllIncludeStudentNameCourseNameAsync(pageNumber);
+                return Ok(result);
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
         }
+
 
         [HttpGet("EnrollmentById/{id}")]
         public async Task<IActionResult> GetById(int id)

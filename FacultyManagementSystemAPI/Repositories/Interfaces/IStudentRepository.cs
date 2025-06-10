@@ -8,7 +8,7 @@ namespace FacultyManagementSystemAPI.Repositories.Interfaces
     {
 
         // Customer Interfaces
-        Task<IEnumerable<StudentDto>> GetAllWithDepartmentNameAsync();
+        Task<IEnumerable<StudentDto>> GetAllWithDepartmentNameAsync(int pageNumber);
         Task<StudentDto> GetByIdWithDepartmentNameAsync(int id);
         Task<IEnumerable<StudentDto>> GetByNameWithDepartmentNameAsync(string name);
         Task<bool> DepartmentExistsAsync(int departmentId);
@@ -30,7 +30,7 @@ namespace FacultyManagementSystemAPI.Repositories.Interfaces
         // Filtering
 
         Task<IEnumerable<StudentDto>> GetFilteredStudentsAsync(StudentFilterDto filter);
-        Task<IEnumerable<StudentDto>> GetStudentsByDepartmentAndNameAsync(string? departmentName, string? studentName, string? studentStatus);
+        Task<IEnumerable<StudentDto>> GetStudentsByDepartmentAndNameAsync(string? departmentName, string? studentName, string? studentStatus, string? divisionName);
         Task<IEnumerable<StudentDto>> GetAllByDepartmentIdAsync(int departmentId);
         Task<IEnumerable<StudentDto>> GetStudentsByDepartmentNameAsync(string departmentName);
         Task<int> CountCanceledEnrolledStudentsAsync();
@@ -44,5 +44,6 @@ namespace FacultyManagementSystemAPI.Repositories.Interfaces
         Task<IEnumerable<string>> GetAllStudentGenderAsync();
 
         Task UpdateStudentStatusAsync(int studentId, string newStatus);
+        Task<IEnumerable<StudentExamGradesDto>> GetStudentGradesByStudentIdAsync(int studentId);
     }
 }

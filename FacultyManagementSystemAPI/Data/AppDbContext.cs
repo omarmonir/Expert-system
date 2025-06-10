@@ -68,7 +68,7 @@ namespace FacultyManagementSystemAPI.Data
                 .HasOne(e => e.Course)
                 .WithMany(c => c.Enrollments)
                 .HasForeignKey(e => e.CourseId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Student>()
                 .HasOne(s => s.Division)
@@ -92,13 +92,13 @@ namespace FacultyManagementSystemAPI.Data
                 .HasOne(cp => cp.Course)
                 .WithMany(c => c.Prerequisites)
                 .HasForeignKey(cp => cp.CourseId)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<CoursePrerequisite>()
                 .HasOne(cp => cp.PrerequisiteCourse)
                 .WithMany(c => c.IsPrerequisiteFor)
                 .HasForeignKey(cp => cp.PrerequisiteCourseId)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<CourseDivision>()
                 .HasOne(cd => cd.Course)

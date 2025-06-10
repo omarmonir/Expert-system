@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using FacultyManagementSystemAPI.Models.DTOs.Courses;
+using FacultyManagementSystemAPI.Models.Entities;
 using FacultyManagementSystemAPI.Repositories.Interfaces;
 using FacultyManagementSystemAPI.Services.Interfaces;
 
@@ -9,56 +11,72 @@ namespace FacultyManagementSystemAPI.Services.Implementes
         private readonly IMapper _mapper = mapper;
         private readonly ICourseRepository _courseRepository = courseRepository;
 
-        //public async Task CreateCourseAsync(CreateCourseDto createCourseDto)
-        //{
-        //    try
-        //    {
-        //        if (createCourseDto == null)
-        //            throw new ArgumentNullException("البيانات المدخلة لا يمكن أن تكون فارغة.");
+        public async Task CreateCourseAsync(CreateCourseDto dto)
+        {
+            var department = await _courseRepository.GetDepartmentByNameAsync(dto.DepartmentName);
+            if (department == null)
+                throw new Exception("القسم المحدد غير موجود.");
 
-        //        if (await _courseRepository.CourseExistsAsync(createCourseDto.Name))
-        //            throw new Exception("المقرر موجود بالفعل.");
+            var divisions = await _courseRepository.GetDivisionsByNamesAsync(dto.DivisionNames);
+            var missingDivisions = dto.DivisionNames.Except(divisions.Select(d => d.Name)).ToList();
+            if (missingDivisions.Any())
+                throw new Exception($"الأقسام التالية غير موجودة: {string.Join(", ", missingDivisions)}");
 
-        //        if (!await _courseRepository.CourseExistsAsync(createCourseDto.PreCourseId) && createCourseDto.PreCourseId != null)
-        //        {
-        //            throw new KeyNotFoundException("لم يتم العثور على المقرر");
-        //        }
+            var prerequisites = await _courseRepository.GetCoursesByNamesPreAsync(dto.PrerequisiteCourseNames);
+            var missingPrereqs = dto.PrerequisiteCourseNames.Except(prerequisites.Select(p => p.Name)).ToList();
+            if (missingPrereqs.Any())
+                throw new Exception($"المقررات السابقة التالية غير موجودة: {string.Join(", ", missingPrereqs)}");
 
-        //        var course = _mapper.Map<Course>(createCourseDto);
-        //        await _courseRepository.AddAsync(course);
+            var course = new Course
+            {
+                Name = dto.Name,
+                Code = dto.Code,
+                Description = dto.Description,
+                Credits = dto.Credits,
+                Status = dto.Status,
+                Semester = dto.Semester,
+                MaxSeats = dto.MaxSeats,
+                DepartmentId = department.Id,
+                CourseDivisions = divisions
+                    .Select(d => new CourseDivision { DivisionId = d.Id }).ToList(),
+                Prerequisites = prerequisites
+                    .Select(p => new CoursePrerequisite { PrerequisiteCourseId = p.Id }).ToList()
+            };
 
-        //    }
-        //    catch (DbUpdateException dbEx)
-        //    {
-        //        throw new Exception($"خطأ في قاعدة البيانات: {dbEx.InnerException?.Message}", dbEx);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception($"حدث خطأ أثناء إضافة الحضور: {ex.Message}", ex);
-        //    }
-        //}
+            await _courseRepository.AddCourseAsync(course);
+            await _courseRepository.SaveChangesAsync();
 
-        //public async Task DeleteCourseAsync(int id)
-        //{
-        //    var course = await _courseRepository.GetByIdAsync(id)
-        //        ?? throw new KeyNotFoundException($"لم يتم العثور على المقرر برقم {id}.");
-        //    await _courseRepository.DeleteAsync(id);
-        //}
+        }
 
-        //public async Task<IEnumerable<CourseDto>> GetAllWithPreCourseNameAsync()
-        //{
-        //    var coursesDto = await _courseRepository.GetAllWithPreCourseNameAsync();
-        //    if (coursesDto == null || !coursesDto.Any())
-        //        throw new KeyNotFoundException("لم يتم العثور على أي مقررات.");
-        //    return coursesDto;
-        //}
+        public async Task DeleteCourseAsync(int id)
+        {
+            var course = await _courseRepository.GetByIdWithEnrollmentsAsync(id)
+                ?? throw new KeyNotFoundException($"لم يتم العثور على المقرر برقم {id}.");
 
-        //public async Task<CourseDto> GetByIdWithPreCourseNameAsync(int id)
-        //{
-        //    var courseDto = await _courseRepository.GetByIdWithPreCourseNameAsync(id)
-        //        ?? throw new KeyNotFoundException($"لم يتم العثور على المقرر برقم {id}.");
-        //    return courseDto;
-        //}
+            if (course.Enrollments.Any())
+                throw new InvalidOperationException("لا يمكن حذف هذا المقرر لأنه يوجد طلاب مسجلين فيه.");
+
+            if (course.IsPrerequisiteFor.Any())
+                throw new InvalidOperationException("لا يمكن حذف الكورس لأنه مستخدم كمقرر تمهيدي لكورسات أخرى.");
+
+            await _courseRepository.DeleteAsync(id);
+        }
+
+
+        public async Task<IEnumerable<CourseDto>> GetAllWithPreCourseNameAsync(int pageNumber)
+        {
+            var coursesDto = await _courseRepository.GetAllWithPreCourseNameAsync(pageNumber);
+            if (coursesDto == null || !coursesDto.Any())
+                throw new KeyNotFoundException("لم يتم العثور على أي مقررات.");
+            return coursesDto;
+        }
+
+        public async Task<CourseDto> GetByIdWithPreCourseNameAsync(int id)
+        {
+            var courseDto = await _courseRepository.GetByIdWithPreCourseNameAsync(id)
+                ?? throw new KeyNotFoundException($"لم يتم العثور على المقرر برقم {id}.");
+            return courseDto;
+        }
 
         //public async Task<IEnumerable<CourseDto>> GetCoursesByDepartmentIdWithPreCourseNameAsync(int departmentId)
         //{
@@ -68,13 +86,13 @@ namespace FacultyManagementSystemAPI.Services.Implementes
         //    return coursesDto;
         //}
 
-        //public async Task<IEnumerable<CourseDto>> GetCoursesByProfessorIdWithPreCourseNameAsync(int professorId)
-        //{
-        //    var coursesDto = await _courseRepository.GetCoursesByProfessorIdWithPreCourseNameAsync(professorId);
-        //    if (coursesDto == null || !coursesDto.Any())
-        //        throw new Exception("لا توجد مقررات لهذا الدكتور.");
-        //    return coursesDto;
-        //}
+        public async Task<IEnumerable<CourseDto>> GetCoursesByProfessorIdWithPreCourseNameAsync(int professorId)
+        {
+            var coursesDto = await _courseRepository.GetCoursesByProfessorIdWithPreCourseNameAsync(professorId);
+            if (coursesDto == null || !coursesDto.Any())
+                throw new Exception("لا توجد مقررات لهذا الدكتور.");
+            return coursesDto;
+        }
 
         //public async Task<IEnumerable<CourseDto>> GetCoursesBySemesterWithPreCourseNameAsync(byte semester)
         //{
@@ -92,29 +110,29 @@ namespace FacultyManagementSystemAPI.Services.Implementes
         //    return coursesDto;
         //}
 
-        //public async Task UpdateCourseAsync(int id, UpdateCourseDto updateCourseDto)
-        //{
-        //    if (updateCourseDto == null)
-        //        throw new ArgumentNullException("البيانات المدخلة لا يمكن أن تكون فارغة.");
+        public async Task UpdateCourseAsync(int id, UpdateCourseDto updateCourseDto)
+        {
+            if (updateCourseDto == null)
+                throw new ArgumentNullException("البيانات المدخلة لا يمكن أن تكون فارغة.");
 
-        //    var course = await _courseRepository.GetByIdAsync(id)
-        //        ?? throw new KeyNotFoundException($"لم يتم العثور على المقرر برقم {id}.");
+            var course = await _courseRepository.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException($"لم يتم العثور على المقرر برقم {id}.");
 
-        //    //if (await _courseRepository.CourseExistsAsync(updateCourseDto.Name))
-        //    //    throw new Exception("المقرر موجود بالفعل.");
+            //if (await _courseRepository.CourseExistsAsync(updateCourseDto.Name))
+            //    throw new Exception("المقرر موجود بالفعل.");
 
-        //    var courseUpdate = _mapper.Map(updateCourseDto, course);
-        //    await _courseRepository.UpdateAsync(id, courseUpdate);
-        //}
+            var courseUpdate = _mapper.Map(updateCourseDto, course);
+            await _courseRepository.UpdateAsync(id, courseUpdate);
+        }
 
-        //public async Task<int> GetCourseCountAsync()
-        //{
-        //    int count = await _courseRepository.CountAsync();
-        //    if (count == 0)
-        //        throw new Exception("لا يوجد كورسات.");
+        public async Task<int> GetCourseCountAsync()
+        {
+            int count = await _courseRepository.CountAsync();
+            if (count == 0)
+                throw new Exception("لا يوجد كورسات.");
 
-        //    return count;
-        //}
+            return count;
+        }
 
         //public async Task<int> GetCourseCountByStatusAsync()
         //{
@@ -137,18 +155,18 @@ namespace FacultyManagementSystemAPI.Services.Implementes
         //    return preRequisiteCourses;
         //}
 
-        //public async Task<IEnumerable<CourseDto>> GetCoursesByStudentIdAsync(int studentId)
-        //{
-        //    if (studentId <= 0)
-        //        throw new ArgumentException("رقم الطالب غير صالح.");
+        public async Task<IEnumerable<CourseDto>> GetCoursesByStudentIdAsync(int studentId)
+        {
+            if (studentId <= 0)
+                throw new ArgumentException("رقم الطالب غير صالح.");
 
-        //    var courses = await _courseRepository.GetCoursesByStudentIdAsync(studentId);
+            var courses = await _courseRepository.GetCoursesByStudentIdAsync(studentId);
 
-        //    if (courses == null || !courses.Any())
-        //        throw new InvalidOperationException("هذا الطالب لم يسجل في أي مادة حتى الآن.");
+            if (courses == null || !courses.Any())
+                throw new InvalidOperationException("هذا الطالب لم يسجل في أي مادة حتى الآن.");
 
-        //    return courses;
-        //}
+            return courses;
+        }
         //public async Task<IEnumerable<CourseRegistrationStatsDto>> GetCourseRegistrationStatsByCourseOverTimeAsync(int courseId)
         //{
         //    if (courseId <= 0)
@@ -188,38 +206,38 @@ namespace FacultyManagementSystemAPI.Services.Implementes
         //    await _courseRepository.DeleteAsync(id);
         //}
 
-        //public async Task<IEnumerable<string>> GetAllCoursesNameAsync()
-        //{
-        //    var names = await _courseRepository.GetAllCoursesNameAsync();
+        public async Task<IEnumerable<string>> GetAllCoursesNameAsync()
+        {
+            var names = await _courseRepository.GetAllCoursesNameAsync();
 
-        //    if (names == null || !names.Any())
-        //        throw new Exception("لا يوجد أي كورسات");
+            if (names == null || !names.Any())
+                throw new Exception("لا يوجد أي كورسات");
 
-        //    return names;
-        //}
+            return names;
+        }
 
-        //public async Task<IEnumerable<FilterCourseDto>> GetFilteredCoursesAsync(string? courseName, string? departmentName, string? courseStatus)
-        //{
-        //    var courses = await _courseRepository.GetFilteredCoursesAsync(courseName, departmentName, courseStatus);
+        public async Task<IEnumerable<FilterCourseDto>> GetFilteredCoursesAsync(string? courseName, string? departmentName, string? courseStatus, string? divisionName)
+        {
+            var courses = await _courseRepository.GetFilteredCoursesAsync(courseName, departmentName, courseStatus, divisionName);
 
-        //    if (!courses.Any())
-        //        throw new KeyNotFoundException("لا يوجد كورسات مطابقة للمعايير المحددة.");
+            if (!courses.Any())
+                throw new KeyNotFoundException("لا يوجد كورسات مطابقة للمعايير المحددة.");
 
-        //    return courses;
-        //}
+            return courses;
+        }
 
-        //public async Task<CourseStatisticsDto> GetCourseStatisticsAsync(int courseId)
-        //{
-        //    bool courseExists = await _courseRepository.CourseExistsAsync(courseId);
-        //    if (!courseExists)
-        //    {
-        //        throw new KeyNotFoundException($"لا توجد مادة بالمعرف {courseId}");
-        //    }
+        public async Task<CourseStatisticsDto> GetCourseStatisticsAsync(int courseId)
+        {
+            bool courseExists = await _courseRepository.CourseExistsAsync(courseId);
+            if (!courseExists)
+            {
+                throw new KeyNotFoundException($"لا توجد مادة بالمعرف {courseId}");
+            }
 
-        //    // جلب الإحصائيات من الريبوزيتوري
-        //    var statistics = await _courseRepository.GetCourseStatisticsAsync(courseId);
-        //    return statistics;
-        //}
+            // جلب الإحصائيات من الريبوزيتوري
+            var statistics = await _courseRepository.GetCourseStatisticsAsync(courseId);
+            return statistics;
+        }
 
         //public async Task<int> CountActiveCourseAsync()
         //{

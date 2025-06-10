@@ -15,5 +15,7 @@
         public string ProfessorName { get; set; }
 
         public string CourseName { get; set; }
+        public string DivisionName { get; set; }
+        public string Level { get; set; }
     }
 }

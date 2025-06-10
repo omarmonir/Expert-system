@@ -5,7 +5,8 @@ namespace FacultyManagementSystemAPI.Repositories.Interfaces
 {
     public interface IEnrollmentRepository : IGenericRepository<Enrollment>
     {
-        Task<IEnumerable<EnrollmentDto>> GetAllIncludeStudentNameCourseNameAsync();
+        //Task<IEnumerable<EnrollmentDto>> GetAllIncludeStudentNameCourseNameAsync();
+        Task<IEnumerable<EnrollmentDto>> GetAllIncludeStudentNameCourseNameAsync(int pageNumber);
         Task<EnrollmentDto> GetByIdIncludeStudentNameCourseNameAsync(int id);
         Task<IEnumerable<EnrollmentDto>> GetBySemesterAsync(string name);
         Task<IEnumerable<EnrollmentDto>> GetByStudentIdAsync(int studentId);

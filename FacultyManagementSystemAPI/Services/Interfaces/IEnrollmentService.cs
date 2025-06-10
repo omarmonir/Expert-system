@@ -1,4 +1,5 @@
-﻿using FacultyManagementSystemAPI.Models.DTOs.Enrollment;
+﻿using FacultyManagementSystemAPI.Models.DTOs;
+using FacultyManagementSystemAPI.Models.DTOs.Enrollment;
 
 namespace FacultyManagementSystemAPI.Services.Interfaces
 {
@@ -6,7 +7,8 @@ namespace FacultyManagementSystemAPI.Services.Interfaces
     {
 
         Task AddAsync(CreateEnrollmentDto enrollmentDto);
-        Task<IEnumerable<EnrollmentDto>> GetAllIncludeStudentNameCourseNameAsync();
+        Task<IEnumerable<EnrollmentDto>> GetAllIncludeStudentNameCourseNameAsync(int pageNumber);
+        //Task<PaginatedResult<EnrollmentDto>> GetAllIncludeStudentNameCourseNameAsync(int pageNumber);
         Task<EnrollmentDto> GetByIdIncludeStudentNameCourseNameAsync(int id);
         Task<IEnumerable<EnrollmentDto>> GetBySemesterAsync(string name);
         Task<IEnumerable<EnrollmentDto>> GetByStudentIdAsync(int studentId);

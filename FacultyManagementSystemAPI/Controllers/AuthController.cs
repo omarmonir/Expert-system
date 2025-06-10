@@ -1,4 +1,6 @@
 ﻿using FacultyManagementSystemAPI.Models.DTOs.Auth;
+using FacultyManagementSystemAPI.Models.DTOs.Student;
+using FacultyManagementSystemAPI.Services.Implementes;
 using FacultyManagementSystemAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,6 +14,25 @@ namespace FacultyManagementSystemAPI.Controllers
     {
         private readonly IAuthService _authService = authService;
 
+        [HttpPost("AddUser")]
+        //[Authorize(Roles = "Admin, SuperAdmin")]
+        public async Task<IActionResult> Add([FromBody] UserCreateDto userCreateDto)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                await _authService.AddAsync(userCreateDto);
+                return StatusCode(201);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
         [HttpPost("Login")]
         public async Task<IActionResult> Login([FromBody] RequestLoginDto request)
@@ -112,11 +133,11 @@ namespace FacultyManagementSystemAPI.Controllers
         }
 
         [HttpGet("GetUsers")]
-        public async Task<IActionResult> GetUsers()
+        public async Task<IActionResult> GetUsers([FromQuery] int pageNumber = 1)
         {
             try
             {
-                var users = await _authService.GetUsersAsync();
+                var users = await _authService.GetUsersAsync(pageNumber);
                 return Ok(users);
             }
             catch (Exception ex)
@@ -160,6 +181,23 @@ namespace FacultyManagementSystemAPI.Controllers
             {
                 await _authService.UpdateUserAsync(Id, model);
                 return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        [HttpDelete("DeleteUser/{id}")]
+        public async Task<IActionResult> DeleteById(string id)
+        {
+            try
+            {
+                await _authService.DeleteAsync(id);
+                return NoContent(); // 204 No Content
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message); // 404
             }
             catch (Exception ex)
             {

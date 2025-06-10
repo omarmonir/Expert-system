@@ -902,13 +902,13 @@ namespace FacultyManagementSystemAPI.Migrations
                     b.HasOne("FacultyManagementSystemAPI.Models.Entities.Course", "Course")
                         .WithMany("Prerequisites")
                         .HasForeignKey("CourseId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("FacultyManagementSystemAPI.Models.Entities.Course", "PrerequisiteCourse")
                         .WithMany("IsPrerequisiteFor")
                         .HasForeignKey("PrerequisiteCourseId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Course");
@@ -932,7 +932,7 @@ namespace FacultyManagementSystemAPI.Migrations
                     b.HasOne("FacultyManagementSystemAPI.Models.Entities.Course", "Course")
                         .WithMany("Enrollments")
                         .HasForeignKey("CourseId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("FacultyManagementSystemAPI.Models.Entities.Student", "Student")

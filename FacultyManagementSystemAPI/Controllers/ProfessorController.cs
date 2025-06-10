@@ -101,7 +101,7 @@ namespace FacultyManagementSystemAPI.Controllers
         }
 
         [HttpGet("GetAllProfessors")]
-        public async Task<IActionResult> GetAllProfessors()
+        public async Task<IActionResult> GetAllProfessors([FromQuery] int pageNumber = 1)
         {
             if (!ModelState.IsValid)
             {
@@ -110,7 +110,7 @@ namespace FacultyManagementSystemAPI.Controllers
 
             try
             {
-                var professorDto = await _professorService.GetAllAsync();
+                var professorDto = await _professorService.GetAllAsync(pageNumber);
                 return Ok(professorDto);
             }
             catch (Exception ex)

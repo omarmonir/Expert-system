@@ -1,5 +1,6 @@
 ﻿using FacultyManagementSystemAPI.Models.DTOs.Attendance;
 using FacultyManagementSystemAPI.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FacultyManagementSystemAPI.Controllers
@@ -16,11 +17,11 @@ namespace FacultyManagementSystemAPI.Controllers
         }
 
         [HttpGet("AllAttendances")]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] int pageNumber = 1)
         {
             try
             {
-                var result = await _attendanceService.GetAllAttendancesAsync();
+                var result = await _attendanceService.GetAllAttendancesAsync(pageNumber);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -48,11 +49,14 @@ namespace FacultyManagementSystemAPI.Controllers
         }
 
         [HttpPost("AddAttendance")]
+        [Authorize(Roles = "Professor")]
         public async Task<IActionResult> Create([FromBody] CreateAttendanceDto createAttendanceDto)
         {
             try
             {
-                await _attendanceService.AddAttendanceAsync(createAttendanceDto);
+                var professorId = int.Parse(User.FindFirst("ProfessorId").Value); // حسب الكليم
+
+                await _attendanceService.AddAttendanceAsync(createAttendanceDto, professorId);
                 return StatusCode(201);
             }
             catch (Exception ex)
@@ -62,11 +66,14 @@ namespace FacultyManagementSystemAPI.Controllers
         }
 
         [HttpPut("UpdateAttendance/{id}")]
+        [Authorize(Roles = "Professor")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateAttendanceDto updateAttendanceDto)
         {
             try
             {
-                await _attendanceService.UpdateAttendanceAsync(id, updateAttendanceDto);
+                var professorId = int.Parse(User.FindFirst("ProfessorId").Value); // أو الكليم المستخدم في التوكن
+
+                await _attendanceService.UpdateAttendanceAsync(id, updateAttendanceDto, professorId);
                 return NoContent();
             }
             catch (KeyNotFoundException ex)
@@ -78,6 +85,7 @@ namespace FacultyManagementSystemAPI.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
 
         [HttpDelete("DeleteAttendance/{id}")]
         public async Task<IActionResult> Delete(int id)
@@ -98,11 +106,11 @@ namespace FacultyManagementSystemAPI.Controllers
         }
 
         [HttpGet("AttendancesByStudentId/{studentId}")]
-        public async Task<IActionResult> GetByStudentId(int studentId)
+        public async Task<IActionResult> GetByStudentId(int studentId, [FromQuery] int pageNumber = 1)
         {
             try
             {
-                var result = await _attendanceService.GetAttendancesByStudentIdAsync(studentId);
+                var result = await _attendanceService.GetAttendancesByStudentIdAsync(studentId, pageNumber);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -112,11 +120,11 @@ namespace FacultyManagementSystemAPI.Controllers
         }
 
         [HttpGet("AttendancesByClassID/{classId}")]
-        public async Task<IActionResult> GetByClassId(int classId)
+        public async Task<IActionResult> GetByClassId( int classId, [FromQuery] int pageNumber = 1)
         {
             try
             {
-                var result = await _attendanceService.GetAttendancesByClassIdAsync(classId);
+                var result = await _attendanceService.GetAttendancesByClassIdAsync(classId, pageNumber);
                 return Ok(result);
             }
             catch (Exception ex)

@@ -9,7 +9,7 @@ namespace FacultyManagementSystemAPI.Services.Interfaces
         Task AddMultipleAsync(CreateProfessorDto createProfessorDto);
         Task UpdateAsync(int id, UpdateProfessorDto updateProfessorDto);
         Task DeleteAsync(int id);
-        Task<IEnumerable<ProfessorDto>> GetAllAsync();
+        Task<IEnumerable<ProfessorDto>> GetAllAsync(int pageNumber);
         Task<ProfessorDto?> GetByIdAsync(int id);
         Task<IEnumerable<ProfessorDto>> GetByDepartmentIdAsync(int departmentId);
         Task<IEnumerable<CourseDto>> GetCoursesByProfessorIdAsync(int professorId);

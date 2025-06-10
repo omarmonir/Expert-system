@@ -45,7 +45,10 @@ namespace FacultyManagementSystemAPI.Models.DTOs.Courses
         [DefaultValue(0)]
         public int CurrentEnrolledStudents { get; set; } = 0;
 
-        [DefaultValue(1111)]
-        public int? PreCourseId { get; set; }
+        [Required]
+        public string DepartmentName { get; set; }
+
+        public List<string> DivisionNames { get; set; } = new();
+        public List<string> PrerequisiteCourseNames { get; set; } = new();
     }
 }

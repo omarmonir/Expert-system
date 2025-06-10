@@ -4,75 +4,107 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FacultyManagementSystemAPI.Controllers
 {
-    //[Route("api/[controller]")]
-    //[ApiController]
-    //public class ReportsController(IReportService reportService, IStudentService studentService) : ControllerBase
-    //{
-    //    private readonly IReportService _reportService = reportService;
-    //    private readonly IStudentService _studentService = studentService;
-        
+    [Route("api/[controller]")]
+    [ApiController]
+    public class ReportsController(IReportService reportService, IStudentService studentService, ICourseService courseService) : ControllerBase
+    {
+        private readonly IReportService _reportService = reportService;
+        private readonly IStudentService _studentService = studentService;
+        private readonly ICourseService _courseService = courseService;
 
-    //    [HttpGet("students-per-department/excel")]
-    //    public async Task<IActionResult> ExportStudentsPerDepartmentToExcel()
-    //    {
-    //        var data = await _reportService.GetStudentsPerDepartmentAsync();
-    //        var fileBytes = await _reportService.ExportToExcelAsync(data, "StudentsPerDepartment");
-    //        return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "StudentsPerDepartment.xlsx");
-    //    }
 
-    //    [HttpGet("AcademicWarning/excel")]
-    //    public async Task<IActionResult> ExportAcademicWarningToExcel()
-    //    {
-    //        var data = await _reportService.GetAcademicWarningsAsync();
-    //        var fileBytes = await _reportService.ExportToExcelAsync(data, "AcademicWarnings");
-    //        return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "AcademicWarnings.xlsx");
-    //    }
+        //    [HttpGet("students-per-department/excel")]
+        //    public async Task<IActionResult> ExportStudentsPerDepartmentToExcel()
+        //    {
+        //        var data = await _reportService.GetStudentsPerDepartmentAsync();
+        //        var fileBytes = await _reportService.ExportToExcelAsync(data, "StudentsPerDepartment");
+        //        return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "StudentsPerDepartment.xlsx");
+        //    }
 
-    //    [HttpGet("AllStudents/excel")]
-    //    public async Task<IActionResult> ExportAllStudentsToExcel()
-    //    {
-    //        var data = await _studentService.GetAllWithDepartmentNameAsync();
-    //        var fileBytes = await _reportService.ExportToExcelAsync(data, "Students Data");
-    //        return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Students Data.xlsx");
-    //    }
-    //    [HttpGet("ProfessorCourses/excel")]
-    //    public async Task<IActionResult> ExportProfessorCoursesToExcel()
-    //    {
-    //        var data = await _reportService.GetProfessorCoursesAsync();
-    //        var fileBytes = await _reportService.ExportToExcelAsync(data, "ProfessorCourses");
-    //        return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ProfessorCourses.xlsx");
-    //    }
+        //    [HttpGet("AcademicWarning/excel")]
+        //    public async Task<IActionResult> ExportAcademicWarningToExcel()
+        //    {
+        //        var data = await _reportService.GetAcademicWarningsAsync();
+        //        var fileBytes = await _reportService.ExportToExcelAsync(data, "AcademicWarnings");
+        //        return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "AcademicWarnings.xlsx");
+        //    }
 
-    //    [HttpGet("AllStudents/pdf")]
-    //    public async Task<IActionResult> ExportAllStudentsToPdf()
-    //    {
-    //        var data = await _studentService.GetAllWithDepartmentNameAsync();
-    //        var fileBytes = await _reportService.ExportToPdfAsync(data, "Students Data Report");
-    //        return File(fileBytes, "application/pdf", "Students Data.pdf");
-    //    }  
-        
-    //    [HttpGet("ProfessorCourses/pdf")]
-    //    public async Task<IActionResult> ExportProfessorCoursesToPdf()
-    //    {
-    //        var data = await _reportService.GetProfessorCoursesAsync();
-    //        var fileBytes = await _reportService.ExportToPdfAsync(data, "Professor Courses Report");
-    //        return File(fileBytes, "application/pdf", "ProfessorCourses.pdf");
-    //    } 
-        
-    //    [HttpGet("students-per-department/pdf")]
-    //    public async Task<IActionResult> ExportStudentsPerDepartmentToPdf()
-    //    {
-    //        var data = await _reportService.GetStudentsPerDepartmentAsync();
-    //        var fileBytes = await _reportService.ExportToPdfAsync(data, "Students Per Department Report");
-    //        return File(fileBytes, "application/pdf", "StudentsPerDepartment.pdf");
-    //    }
-        
-    //    [HttpGet("AcademicWarnings/pdf")]
-    //    public async Task<IActionResult> ExportAcademicWarningsToPdf()
-    //    {
-    //        var data = await _reportService.GetAcademicWarningsAsync();
-    //        var fileBytes = await _reportService.ExportToPdfAsync(data, "Academic Warnings Report");
-    //        return File(fileBytes, "application/pdf", "AcademicWarnings.pdf");
-    //    }
-    //}
+        //    [HttpGet("AllStudents/excel")]
+        //    public async Task<IActionResult> ExportAllStudentsToExcel()
+        //    {
+        //        var data = await _studentService.GetAllWithDepartmentNameAsync();
+        //        var fileBytes = await _reportService.ExportToExcelAsync(data, "Students Data");
+        //        return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Students Data.xlsx");
+        //    }
+        //    [HttpGet("ProfessorCourses/excel")]
+        //    public async Task<IActionResult> ExportProfessorCoursesToExcel()
+        //    {
+        //        var data = await _reportService.GetProfessorCoursesAsync();
+        //        var fileBytes = await _reportService.ExportToExcelAsync(data, "ProfessorCourses");
+        //        return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ProfessorCourses.xlsx");
+        //    }
+
+        //    [HttpGet("AllStudents/pdf")]
+        //    public async Task<IActionResult> ExportAllStudentsToPdf()
+        //    {
+        //        var data = await _studentService.GetAllWithDepartmentNameAsync();
+        //        var fileBytes = await _reportService.ExportToPdfAsync(data, "Students Data Report");
+        //        return File(fileBytes, "application/pdf", "Students Data.pdf");
+        //    }  
+
+        //    [HttpGet("ProfessorCourses/pdf")]
+        //    public async Task<IActionResult> ExportProfessorCoursesToPdf()
+        //    {
+        //        var data = await _reportService.GetProfessorCoursesAsync();
+        //        var fileBytes = await _reportService.ExportToPdfAsync(data, "Professor Courses Report");
+        //        return File(fileBytes, "application/pdf", "ProfessorCourses.pdf");
+        //    } 
+
+        //    [HttpGet("students-per-department/pdf")]
+        //    public async Task<IActionResult> ExportStudentsPerDepartmentToPdf()
+        //    {
+        //        var data = await _reportService.GetStudentsPerDepartmentAsync();
+        //        var fileBytes = await _reportService.ExportToPdfAsync(data, "Students Per Department Report");
+        //        return File(fileBytes, "application/pdf", "StudentsPerDepartment.pdf");
+        //    }
+
+        //    [HttpGet("AcademicWarnings/pdf")]
+        //    public async Task<IActionResult> ExportAcademicWarningsToPdf()
+        //    {
+        //        var data = await _reportService.GetAcademicWarningsAsync();
+        //        var fileBytes = await _reportService.ExportToPdfAsync(data, "Academic Warnings Report");
+        //        return File(fileBytes, "application/pdf", "AcademicWarnings.pdf");
+        //    } 
+
+
+        [HttpGet("GetStudentsByDepartmentAndName/pdf")]
+        public async Task<IActionResult> GetStudentsByDepartmentAndName(
+        [FromQuery]
+        string? departmentName,
+
+        [FromQuery] string? studentName,
+
+        [FromQuery] string? studentStatus,
+
+        [FromQuery] string? divisionName)
+        {
+            var data = await _studentService 
+                .GetStudentsByDepartmentAndNameAsync(departmentName, studentName, studentStatus, divisionName);
+            var fileBytes = await _reportService.ExportToPdfAsync(data, "Student Data");
+            return File(fileBytes, "application/pdf", "StudentData.pdf");
+        }
+
+        [HttpGet("FilterCourses/pdf")]
+        public async Task<IActionResult> GetFilteredCourses(
+                                         [FromQuery] string? courseName,
+                                         [FromQuery] string? departmentName,
+                                         [FromQuery] string? courseStatus,
+                                         [FromQuery] string? divisionName)
+        {
+           
+            var data = await _courseService.GetFilteredCoursesAsync(courseName, departmentName, courseStatus, divisionName);
+            var fileBytes = await _reportService.ExportToPdfAsync(data, "Course Data");
+            return File(fileBytes, "application/pdf", "CourseData.pdf");
+        }
+    }
 }

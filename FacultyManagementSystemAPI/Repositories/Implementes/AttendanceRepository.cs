@@ -3,6 +3,7 @@ using FacultyManagementSystemAPI.Models.DTOs.Attendance;
 using FacultyManagementSystemAPI.Models.Entities;
 using FacultyManagementSystemAPI.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace FacultyManagementSystemAPI.Repositories.Implementes
 {
@@ -10,10 +11,12 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
     {
         private readonly AppDbContext _dbContext = dbContext;
 
-        public async Task<IEnumerable<AttendanceDto>> GetAllAttendancesAsync()
+        public async Task<IEnumerable<AttendanceDto>> GetAllAttendancesAsync(int pageNumber)
         {
-            var attendances = await _dbContext.Attendances
-                .AsNoTrackingWithIdentityResolution()
+            int pageSize = 20;
+
+            var attendances =  _dbContext.Attendances
+                .AsNoTracking()
                 .Select(a => new AttendanceDto
                 {
                     Id = a.Id,
@@ -24,9 +27,15 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                     StudentName = a.Student.Name,
                     CourseName = a.Class.Course.Name
                 })
+                ;
+            int totalCount = await attendances.CountAsync();
+
+            var pagedData = await attendances
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
 
-            return attendances;
+            return pagedData;
         }
 
         public async Task<AttendanceDto> GetAttendanceByIdAsync(int id)
@@ -62,9 +71,10 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
         }
 
 
-        public async Task<IEnumerable<AttendanceDto>> GetAttendancesByClassIdAsync(int classId)
+        public async Task<IEnumerable<AttendanceDto>> GetAttendancesByClassIdAsync(int classId, int pageNumber)
         {
-            var attendances = await _dbContext.Attendances
+            int pageSize = 20;
+            var attendances =  _dbContext.Attendances
                 .Where(a => a.ClassesId == classId)
                 .Select(a => new AttendanceDto
                 {
@@ -76,14 +86,22 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                     StudentName = a.Student.Name,
                     CourseName = a.Class.Course.Name
                 })
+                ;
+
+            int totalCount = await attendances.CountAsync();
+
+            var pagedData = await attendances
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
 
-            return attendances;
+            return pagedData;
         }
 
-        public async Task<IEnumerable<AttendanceDto>> GetAttendancesByStudentIdAsync(int studentId)
+        public async Task<IEnumerable<AttendanceDto>> GetAttendancesByStudentIdAsync(int studentId, int pageNumber)
         {
-            var attendances = await _dbContext.Attendances
+            int pageSize = 20;
+            var attendances =  _dbContext.Attendances
                 .Where(a => a.StudentId == studentId)
                 .Select(a => new AttendanceDto
                 {
@@ -95,9 +113,16 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                     StudentName = a.Student.Name,
                     CourseName = a.Class.Course.Name
                 })
+                ;
+
+            int totalCount = await attendances.CountAsync();
+
+            var pagedData = await attendances
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
 
-            return attendances;
+            return pagedData;
         }
 
         public async Task<bool> StudentExistsAsync(int studentId)
@@ -119,5 +144,16 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
         {
             return await _dbContext.Attendances.CountAsync(a => a.Status == false);
         }
+        public async Task<Course> GetCourseByNameAsync(string name)
+        {
+            return await _dbContext.Courses.FirstOrDefaultAsync(c => c.Name == name);
+        }
+
+        public async Task<Class> GetClassByProfessorAndCourseAsync(int professorId, int courseId)
+        {
+            return await _dbContext.Classes
+                .FirstOrDefaultAsync(c => c.ProfessorId == professorId && c.CourseId == courseId);
+        }
+
     }
 }

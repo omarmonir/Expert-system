@@ -6,9 +6,9 @@ namespace FacultyManagementSystemAPI.Models.DTOs.Auth
     public class UpdateUserDto
     {
 
-        [MaxLength(100, ErrorMessage = "Full Name cannot exceed 100 characters.")]
-        [DefaultValue("أسم المستخدم")]
-        public string? UserName { get; set; }
+        //[MaxLength(100, ErrorMessage = "Full Name cannot exceed 100 characters.")]
+        //[DefaultValue("أسم المستخدم")]
+        //public string? UserName { get; set; }
 
 
         [EmailAddress(ErrorMessage = "Invalid email format.")]

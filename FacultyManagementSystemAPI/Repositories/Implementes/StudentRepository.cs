@@ -11,9 +11,10 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
     {
         private readonly AppDbContext _dbContext = dbContext;
 
-        public async Task<IEnumerable<StudentDto>> GetAllWithDepartmentNameAsync()
+        public async Task<IEnumerable<StudentDto>> GetAllWithDepartmentNameAsync(int pageNumber)
         {
-            return await _dbContext.Students
+            int pageSize = 20;
+            var query = _dbContext.Students
                  .AsNoTrackingWithIdentityResolution()
                  .Select(s => new StudentDto
                  {
@@ -37,7 +38,15 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                      ImagePath = s.ImagePath,
                      DivisionName = s.Division.Name,
                      DepartmentName = s.Division.Department.Name
-                 }).ToListAsync();
+                 });
+            int totalCount = await query.CountAsync();
+
+            var pagedData = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return pagedData;
         }
 
         public async Task<StudentDto> GetByIdWithDepartmentNameAsync(int id)
@@ -384,17 +393,19 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
             return students;
         }
 
-        public async Task<IEnumerable<StudentDto>> GetStudentsByDepartmentAndNameAsync(string? departmentName, string? studentName, string? studentStatus)
+        public async Task<IEnumerable<StudentDto>> GetStudentsByDepartmentAndNameAsync(
+    string? departmentName,
+    string? studentName,
+    string? studentStatus,
+    string? divisionName)
         {
             var studentQuery = _dbContext.Students.AsNoTrackingWithIdentityResolution();
 
-            // فلترة حسب حالة الطالب (إذا كانت محددة)
             if (!string.IsNullOrWhiteSpace(studentStatus))
             {
                 studentQuery = studentQuery.Where(s => s.status == studentStatus);
             }
 
-            // جلب البيانات أولًا إلى الذاكرة ثم تطبيق الفلترة
             var students = await studentQuery
                 .Select(s => new StudentDto
                 {
@@ -419,25 +430,38 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                     DepartmentName = _dbContext.Departments
                         .Where(d => d.Id == s.Division.Department.Id)
                         .Select(d => d.Name)
-                        .FirstOrDefault()
+                        .FirstOrDefault(),
+                    DivisionName = s.Division.Name
                 })
-                .ToListAsync(); // تحويل الاستعلام إلى List وإحضاره إلى الذاكرة
+                .ToListAsync();
 
-            // تطبيق الفلترة بعد جلب البيانات إلى الذاكرة
             if (!string.IsNullOrWhiteSpace(departmentName))
             {
                 departmentName = NormalizeArabicText(departmentName);
-                students = students.Where(s => NormalizeArabicText(s.DepartmentName).Contains(departmentName)).ToList();
+                students = students
+                    .Where(s => NormalizeArabicText(s.DepartmentName).Contains(departmentName))
+                    .ToList();
             }
 
             if (!string.IsNullOrWhiteSpace(studentName))
             {
                 studentName = NormalizeArabicText(studentName);
-                students = students.Where(s => NormalizeArabicText(s.Name).Contains(studentName)).ToList();
+                students = students
+                    .Where(s => NormalizeArabicText(s.Name).Contains(studentName))
+                    .ToList();
+            }
+
+            if (!string.IsNullOrWhiteSpace(divisionName))
+            {
+                divisionName = NormalizeArabicText(divisionName);
+                students = students
+                    .Where(s => NormalizeArabicText(s.DivisionName).Contains(divisionName))
+                    .ToList();
             }
 
             return students;
         }
+
 
         // دالة استبدال الأحرف
         private string NormalizeArabicText(string? text)
@@ -620,6 +644,27 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
             _dbContext.Students.Update(student);
             await _dbContext.SaveChangesAsync();
         }
+        public async Task<IEnumerable<StudentExamGradesDto>> GetStudentGradesByStudentIdAsync(int studentId)
+        {
+            return await _dbContext.Enrollments
+                .Where(e => e.StudentId == studentId && e.AddedEnrollmentDate != null)
+                .Include(e => e.Course)
+                .OrderBy(e => e.Semester)
+                .Select(e => new StudentExamGradesDto
+                {
+                    StudentId = e.StudentId,
+                    CourseName = e.Course.Name,
+                    Code = e.Course.Code,
+                    StudentName = e.Student.Name,
+                    Exam1Grade = e.Exam1Grade ?? 0.0m,
+                    Exam2Grade = e.Exam2Grade ?? 0.0m,
+                    Grade = e.Grade ?? 0.0m,
+                    FinalGrade = e.FinalGrade ?? 0.0m,
+                    Semster = e.NumberOFSemster
+                })
+                .ToListAsync();
+        }
+
     }
 
 

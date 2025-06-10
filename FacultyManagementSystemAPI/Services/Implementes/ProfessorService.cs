@@ -39,7 +39,7 @@ namespace FacultyManagementSystemAPI.Services.Implementes
                 UserName = createProfessorDto.Email,
                 PhoneNumber = createProfessorDto.Phone,
                 Email = createProfessorDto.Email,
-                UserType = "Professor",
+                UserType = ConstantRoles.Professor,
                 ProfessorId = null, // Will be updated later
                 IsActive = true,
                 RefreshToken = null,
@@ -57,7 +57,7 @@ namespace FacultyManagementSystemAPI.Services.Implementes
                 throw new Exception($"فشل إنشاء المستخدم: {errors}");
             }
 
-            await _userManager.AddToRoleAsync(user, "Professor");
+            await _userManager.AddToRoleAsync(user, ConstantRoles.Professor);
 
             // 2️⃣ Create professor and link to user
             var professor = _mapper.Map<Professor>(createProfessorDto);
@@ -66,7 +66,7 @@ namespace FacultyManagementSystemAPI.Services.Implementes
             professor.IsHeadOfDepartment = false; // Default value
 
             var department = await _professorRepository.GetDepartmentByNameAsync(createProfessorDto.DepartmentName)
-               ?? throw new Exception("القسم المحدد غير موجو");
+               ?? throw new Exception("القسم المحدد غير موجود");
             var departmentId = department.Id;
 
             professor.DepartmentId = departmentId;
@@ -74,7 +74,7 @@ namespace FacultyManagementSystemAPI.Services.Implementes
             // Handle image processing
             if (createProfessorDto.Image != null)
             {
-                professor.ImagePath = _fileService.SaveFile(createProfessorDto.Image, "Professors");
+                professor.ImagePath = _fileService.SaveFile(createProfessorDto.Image, ConstantRoles.Professor);
             }
             else
             {
@@ -202,7 +202,7 @@ namespace FacultyManagementSystemAPI.Services.Implementes
                 UserName = createProfessorDto.Email,
                 PhoneNumber = createProfessorDto.Phone,
                 Email = createProfessorDto.Email,
-                UserType = "Professor",
+                UserType = ConstantRoles.Professor,
                 ProfessorId = null, // Will be updated later
                 IsActive = true,
                 RefreshToken = null,
@@ -220,7 +220,7 @@ namespace FacultyManagementSystemAPI.Services.Implementes
                 throw new Exception($"فشل إنشاء المستخدم: {errors}");
             }
 
-            await _userManager.AddToRoleAsync(user, "Professor");
+            await _userManager.AddToRoleAsync(user, ConstantRoles.Professor);
 
             // 2️⃣ Create professor and link to user
             var professor = _mapper.Map<Professor>(createProfessorDto);
@@ -237,7 +237,7 @@ namespace FacultyManagementSystemAPI.Services.Implementes
             // Handle image processing
             if (createProfessorDto.Image != null)
             {
-                professor.ImagePath = _fileService.SaveFile(createProfessorDto.Image, "Professors");
+                professor.ImagePath = _fileService.SaveFile(createProfessorDto.Image, ConstantRoles.Professor);
             }
             else
             {
@@ -296,9 +296,9 @@ namespace FacultyManagementSystemAPI.Services.Implementes
             await _professorRepository.DeleteAsync(id);
         }
 
-        public async Task<IEnumerable<ProfessorDto>> GetAllAsync()
+        public async Task<IEnumerable<ProfessorDto>> GetAllAsync(int pageNumber)
         {
-            var professorsDto = await _professorRepository.GetAllProfessorsAsync();
+            var professorsDto = await _professorRepository.GetAllProfessorsAsync(pageNumber);
             if (professorsDto == null || !professorsDto.Any())
                 throw new KeyNotFoundException("لم يتم العثور على أي دكتور.");
             return professorsDto;
@@ -398,7 +398,7 @@ namespace FacultyManagementSystemAPI.Services.Implementes
         //}
         private string GenerateRandomPassword()
         {
-            const string allChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            const string allChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
             const string digitChars = "0123456789";
 
             var random = new Random();

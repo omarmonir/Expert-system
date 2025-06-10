@@ -4,15 +4,15 @@ namespace FacultyManagementSystemAPI.Services.Interfaces
 {
     public interface IStudentService
     {
-        Task<IEnumerable<StudentDto>> GetAllAsync();
         Task<StudentDto> GetByIdAsync(int id);
         Task AddAsync(CreateStudentDto createStudentDto);
         Task AddMultipleAsync(CreateStudentDto createStudentDto);
         Task UpdateAsync(int id, UpdateStudentDto updateStudentDto);
         Task DeleteAsync(int id);
+        Task<IEnumerable<StudentExamGradesDto>> GetStudentGradesByStudentIdAsync(int studentId);
 
         // Customer Interfaces
-        Task<IEnumerable<StudentDto>> GetAllWithDepartmentNameAsync();
+        Task<IEnumerable<StudentDto>> GetAllWithDepartmentNameAsync(int pageNumber);
         Task<StudentDto> GetByIdWithDepartmentNameAsync(int id);
         Task<IEnumerable<StudentDto>> GetByNameWithDepartmentNameAsync(string name);
         Task<StudentWithGradesDto> GetByIdWithHisGradeAsync(int id);
@@ -28,8 +28,11 @@ namespace FacultyManagementSystemAPI.Services.Interfaces
 
         Task<IEnumerable<StudentDto>> GetFilteredStudentsAsync(StudentFilterDto filter);
 
-        Task<IEnumerable<StudentDto>> GetStudentsByDepartmentAndNameAsync(string? departmentName, string? studentName, string? studentStatus);
-
+        Task<IEnumerable<StudentDto>> GetStudentsByDepartmentAndNameAsync(
+           string? departmentName,
+           string? studentName,
+           string? studentStatus,
+           string? divisionName);
         Task<IEnumerable<StudentDto>> GetAllByDepartmentIdAsync(int departmentId);
         Task<IEnumerable<StudentDto>> GetStudentsByDepartmentNameAsync(string departmentName);
 

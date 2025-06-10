@@ -5,7 +5,7 @@ namespace FacultyManagementSystemAPI.Repositories.Interfaces
 {
     public partial interface IClassRepository : IGenericRepository<Class>
     {
-        Task<IEnumerable<ClassDto>> GetAllClassesWithProfNameAndCourseNameAsync();
+        Task<IEnumerable<ClassDto>> GetAllClassesWithProfNameAndCourseNameAsync(int pageNumber);
         Task<ClassDto> GetClassByIdAsync(int courseId);
         Task<Professor> GetProfessorByNameAsync(string professorName);
         Task<Class> GetClassByProfessorNameAsync(string professorName);
@@ -16,5 +16,8 @@ namespace FacultyManagementSystemAPI.Repositories.Interfaces
         Task<bool> IsTimeAndLocationConflictAsync(TimeSpan startTime, TimeSpan endTime, string day, string location);
         Task<int> CountAsync();
         Task<IEnumerable<string>> GetAllLocationsNameAsync();
+        Task<IEnumerable<ClassDto>> GetAllClassesWithProfNameAndCourseNameAsync(
+                string? divisionName = null,
+                 byte? semester = null);
     }
 }
