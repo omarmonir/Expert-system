@@ -213,5 +213,70 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
 
             return classDtos;
         }
+        public async Task<IEnumerable<ClassDto>> GetProfessorClassesAsync(int professorId)
+        {
+            var query = _dbContext.Classes
+                .Where(c => c.ProfessorId == professorId)
+                .Include(c => c.Professor)
+                .Include(c => c.Course)
+                    .ThenInclude(c => c.CourseDivisions)
+                        .ThenInclude(cd => cd.Division)
+                .Include(c => c.Course)
+                    
+              ;
+
+            return await query
+                .Select(c => new ClassDto
+                {
+                    Id = c.Id,
+                    StartTime = c.StartTime,
+                    EndTime = c.EndTime,
+                    Day = c.Day,
+                    Location = c.Location,
+                    CourseName = c.Course.Name,
+                    ProfessorName = c.Professor.FullName,
+
+                    DivisionName = c.Course.CourseDivisions.Any()
+                        ? string.Join("، ", c.Course.CourseDivisions.Select(cd => cd.Division.Name))
+                        : "لا يوجد شُعب مسجّلة",
+                    Level = GetLevelFromSemester(c.Course.Semester)
+                })
+                .ToListAsync();
+        }
+        public async Task<IEnumerable<ClassDto>> GetStudentClassesAsync(int studentId)
+        {
+            var student = await _dbContext.Students
+                .Include(s => s.Enrollments)
+                    .ThenInclude(e => e.Course)
+                        .ThenInclude(c => c.Classes)
+                            .ThenInclude(cl => cl.Professor)
+                .FirstOrDefaultAsync(s => s.Id == studentId);
+            if (student == null)
+                throw new KeyNotFoundException("الطالب غير موجود");
+            var currentSemester = student.Semester;
+
+            var classes = student.Enrollments
+                .Where(e => e.NumberOFSemster == currentSemester && e.Course.Classes != null)
+                .SelectMany(e => e.Course.Classes)
+                .Select(c => new ClassDto
+                {
+                    Id = c.Id,
+                    StartTime = c.StartTime,
+                    EndTime = c.EndTime,
+                    Day = c.Day,
+                    Location = c.Location,
+                    CourseName = c.Course.Name,
+                    ProfessorName = c.Professor.FullName,
+                    DivisionName = c.Course.CourseDivisions != null && c.Course.CourseDivisions.Any()
+                        ? string.Join("، ", c.Course.CourseDivisions.Select(cd => cd.Division.Name))
+                        : "لا يوجد شُعب مسجّلة",
+                    Level = GetLevelFromSemester(c.Course.Semester)
+                })
+                .ToList();
+
+            return classes;
+        }
+
     }
+
 }

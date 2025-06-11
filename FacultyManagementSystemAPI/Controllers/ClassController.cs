@@ -175,5 +175,31 @@ namespace FacultyManagementSystemAPI.Controllers
                 return BadRequest(ex.Message);
             }
         }
+        [HttpGet("ProfessorClasse")]
+        public async Task<IActionResult> GetMyClasses()
+        {
+            var professorIdClaim = User.FindFirst("ProfessorId");
+            if (professorIdClaim == null)
+                return Unauthorized("Invalid token: ProfessorId not found");
+
+            int professorId = int.Parse(professorIdClaim.Value);
+
+            var classes = await _classService.GetProfessorClassesAsync(professorId);
+
+            return Ok(classes);
+        }
+
+        [HttpGet("StudentClasses")]
+        public async Task<IActionResult> GetClasses()
+        {
+            var studentIdClaim = User.FindFirst("StudentId");
+            if (studentIdClaim == null)
+                return Unauthorized("Invalid token: StudentId not found");
+
+            int studentId = int.Parse(studentIdClaim.Value);
+            var classes = await _classService.GetStudentClassesAsync(studentId);
+            return Ok(classes);
+        }
+
     }
 }

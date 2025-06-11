@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using FacultyManagementSystemAPI.Models.DTOs.Courses;
+using FacultyManagementSystemAPI.Models.DTOs.Student;
 using FacultyManagementSystemAPI.Models.Entities;
 using FacultyManagementSystemAPI.Repositories.Interfaces;
 using FacultyManagementSystemAPI.Services.Interfaces;
@@ -155,7 +156,7 @@ namespace FacultyManagementSystemAPI.Services.Implementes
         //    return preRequisiteCourses;
         //}
 
-        public async Task<IEnumerable<CourseDto>> GetCoursesByStudentIdAsync(int studentId)
+        public async Task<IEnumerable<CourseStudentDto>> GetCoursesByStudentIdAsync(int studentId)
         {
             if (studentId <= 0)
                 throw new ArgumentException("رقم الطالب غير صالح.");

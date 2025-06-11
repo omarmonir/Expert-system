@@ -3,6 +3,9 @@ using FacultyManagementSystemAPI.Repositories.Interfaces;
 using FacultyManagementSystemAPI.Services.Interfaces;
 using iTextSharp.text.pdf;
 using iTextSharp.text;
+using FacultyManagementSystemAPI.Models.DTOs.Courses;
+using FacultyManagementSystemAPI.Repositories.Implementes;
+using FacultyManagementSystemAPI.Models.DTOs.Classes;
 
 namespace FacultyManagementSystemAPI.Services.Implementes
 {
@@ -27,7 +30,10 @@ namespace FacultyManagementSystemAPI.Services.Implementes
         {
             return await _pdfService.GeneratePdfAsync(data, title);
         }
-
+        public async Task<byte[]> GenerateProfessorSchedulePdfAsync(IEnumerable<ClassDto> classes, string professorName)
+        {
+            return await _pdfService.GenerateProfessorSchedulePdfAsync(classes, professorName);
+        }
         public async Task<IEnumerable<AcademicWarningDto>> GetAcademicWarningsAsync()
         {
             return await _reportRepository.GetAcademicWarningsAsync();
@@ -62,6 +68,15 @@ namespace FacultyManagementSystemAPI.Services.Implementes
         //{
         //    return await _reportRepository.GetStudentsPerDepartmentAsync();
         //}
+        public async Task<IEnumerable<FilterDto>> GetFilteredCoursesAsync(string? courseName, string? departmentName, string? courseStatus, string? divisionName)
+        {
+            var courses = await _reportRepository.GetFilteredCoursesAsync(courseName, departmentName, courseStatus, divisionName);
+
+            if (!courses.Any())
+                throw new KeyNotFoundException("لا يوجد كورسات مطابقة للمعايير المحددة.");
+
+            return courses;
+        }
     }
 
 }

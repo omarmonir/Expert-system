@@ -11,5 +11,7 @@ namespace FacultyManagementSystemAPI.Repositories.Interfaces
         Task<IEnumerable<CourseGradeReportDto>> GetCourseGradesAsync();
         Task<IEnumerable<ProfessorCoursesDto>> GetProfessorCoursesAsync();
         Task<IEnumerable<StudentAttendanceDto>> GetStudentAttendanceAsync();
+        Task<IEnumerable<FilterDto>> GetFilteredCoursesAsync
+            (string? courseName, string? departmentName, string? courseStatus, string? divisionName);
     }
 }

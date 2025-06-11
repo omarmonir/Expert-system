@@ -168,5 +168,23 @@ namespace FacultyManagementSystemAPI.Services.Implementes
 
             return classListDto;
         }
+        public async Task<IEnumerable<ClassDto>> GetProfessorClassesAsync(int professorId)
+        {
+            var classesDto = await _classRepository.GetProfessorClassesAsync(professorId);
+
+            if (classesDto == null || !classesDto.Any())
+                throw new KeyNotFoundException("لم يتم العثور على أي محاضرات.");
+
+            return _mapper.Map<IEnumerable<ClassDto>>(classesDto);
+        }
+        public async Task<IEnumerable<ClassDto>> GetStudentClassesAsync(int studentId)
+        {
+            var classesDto = await _classRepository.GetStudentClassesAsync(studentId);
+
+            if (classesDto == null || !classesDto.Any())
+                throw new KeyNotFoundException("لم يتم العثور على أي محاضرات.");
+
+            return _mapper.Map<IEnumerable<ClassDto>>(classesDto);
+        }
     }
 }

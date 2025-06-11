@@ -1,4 +1,5 @@
 ﻿using FacultyManagementSystemAPI.Models.DTOs.Classes;
+using FacultyManagementSystemAPI.Models.Entities;
 
 namespace FacultyManagementSystemAPI.Services.Interfaces
 {
@@ -15,6 +16,7 @@ namespace FacultyManagementSystemAPI.Services.Interfaces
         Task<IEnumerable<ClassDto>> GetAllClassesWithProfNameAndCourseNameAsync(
                 string? divisionName = null,
                  byte? semester = null);
-
+        Task<IEnumerable<ClassDto>> GetProfessorClassesAsync(int professorId);
+        Task<IEnumerable<ClassDto>> GetStudentClassesAsync(int studentId);
     }
 }

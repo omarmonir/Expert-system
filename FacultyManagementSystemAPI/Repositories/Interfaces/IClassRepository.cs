@@ -19,5 +19,7 @@ namespace FacultyManagementSystemAPI.Repositories.Interfaces
         Task<IEnumerable<ClassDto>> GetAllClassesWithProfNameAndCourseNameAsync(
                 string? divisionName = null,
                  byte? semester = null);
+        Task<IEnumerable<ClassDto>> GetProfessorClassesAsync(int professorId);
+        Task<IEnumerable<ClassDto>> GetStudentClassesAsync(int studentId);
     }
 }

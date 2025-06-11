@@ -1,16 +1,20 @@
-﻿using FacultyManagementSystemAPI.Services.Interfaces;
+﻿using FacultyManagementSystemAPI.Services.Implementes;
+using FacultyManagementSystemAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using static PdfService;
 
 namespace FacultyManagementSystemAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ReportsController(IReportService reportService, IStudentService studentService, ICourseService courseService) : ControllerBase
+    public class ReportsController(IReportService reportService, IStudentService studentService, ICourseService courseService, IClassService classService) : ControllerBase
     {
         private readonly IReportService _reportService = reportService;
         private readonly IStudentService _studentService = studentService;
         private readonly ICourseService _courseService = courseService;
+        private readonly IClassService _classService = classService;
+        private readonly DynamicTitleGenerator _titleGenerator = new DynamicTitleGenerator();
 
 
         //    [HttpGet("students-per-department/excel")]
@@ -88,11 +92,21 @@ namespace FacultyManagementSystemAPI.Controllers
 
         [FromQuery] string? divisionName)
         {
+            var filters = new Dictionary<string, object>
+            {
+                ["departmentName"] = departmentName,
+                ["studentName"] = studentName,
+                ["studentStatus"] = studentStatus,
+                ["divisionName"] = divisionName
+            };
+            var title = _titleGenerator.GenerateTitle("بيانات الطلاب", filters);
+            var fileName = _titleGenerator.GenerateFileName("StudentData", filters);
             var data = await _studentService 
                 .GetStudentsByDepartmentAndNameAsync(departmentName, studentName, studentStatus, divisionName);
-            var fileBytes = await _reportService.ExportToPdfAsync(data, "Student Data");
-            return File(fileBytes, "application/pdf", "StudentData.pdf");
+            var fileBytes = await _reportService.ExportToPdfAsync(data, title);
+            return File(fileBytes, "application/pdf", fileName);
         }
+
 
         [HttpGet("FilterCourses/pdf")]
         public async Task<IActionResult> GetFilteredCourses(
@@ -101,10 +115,51 @@ namespace FacultyManagementSystemAPI.Controllers
                                          [FromQuery] string? courseStatus,
                                          [FromQuery] string? divisionName)
         {
-           
-            var data = await _courseService.GetFilteredCoursesAsync(courseName, departmentName, courseStatus, divisionName);
-            var fileBytes = await _reportService.ExportToPdfAsync(data, "Course Data");
-            return File(fileBytes, "application/pdf", "CourseData.pdf");
+            var filters = new Dictionary<string, object>
+            {
+                ["departmentName"] = departmentName,
+                ["courseName"] = courseName,
+                ["courseStatus"] = courseStatus,
+                ["divisionName"] = divisionName
+            };
+            var title = _titleGenerator.GenerateTitle("بيانات الكورسات", filters);
+            var fileName = _titleGenerator.GenerateFileName("CourseData", filters);
+            var data = await _reportService.GetFilteredCoursesAsync(courseName, departmentName, courseStatus, divisionName);
+            var fileBytes = await _reportService.ExportToPdfAsync(data, title);
+            return File(fileBytes, "application/pdf", fileName);
+        }
+
+        [HttpGet("ProfessorSchedule/pdf")]
+        public async Task<IActionResult> GetProfessorSchedulePdf()
+        {
+            try
+            {
+                var professorIdClaim = User.FindFirst("ProfessorId");
+                if (professorIdClaim == null)
+                    return Unauthorized("Invalid token: ProfessorId not found");
+
+                int professorId = int.Parse(professorIdClaim.Value);
+
+                // الحصول على بيانات المحاضرات
+                var classes = await _classService.GetProfessorClassesAsync(professorId);
+
+                if (!classes.Any())
+                {
+                    return NotFound("لا توجد محاضرات مسجلة لهذا الدكتور");
+                }               
+                var professorName = classes.First().ProfessorName;
+
+                // إنشاء PDF
+
+                var fileBytes = await _reportService.GenerateProfessorSchedulePdfAsync(classes, professorName);
+
+                var fileName = $"جدول_المحاضرات_{professorName.Replace(" ", "_")}_{DateTime.Now:yyyyMMdd}.pdf";
+                return File(fileBytes, "application/pdf", fileName);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"حدث خطأ أثناء إنشاء التقرير: {ex.Message}");
+            }
         }
     }
 }

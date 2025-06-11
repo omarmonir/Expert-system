@@ -1,4 +1,5 @@
 ﻿using FacultyManagementSystemAPI.Models.DTOs.Courses;
+using FacultyManagementSystemAPI.Models.DTOs.Student;
 using FacultyManagementSystemAPI.Models.Entities;
 
 namespace FacultyManagementSystemAPI.Repositories.Interfaces
@@ -12,7 +13,7 @@ namespace FacultyManagementSystemAPI.Repositories.Interfaces
         Task<IEnumerable<CourseDto>> GetCoursesByProfessorIdWithPreCourseNameAsync(int professorId);
         //Task<IEnumerable<CourseDto>> GetCoursesBySemesterWithPreCourseNameAsync(byte semester);
         //Task<IEnumerable<CourseRegistrationStatsDto>> GetCourseRegistrationStatsByCourseOverTimeAsync(int courseId);
-        Task<List<CourseDto>> GetCoursesByStudentIdAsync(int studentId);
+        Task<List<CourseStudentDto>> GetCoursesByStudentIdAsync(int studentId);
         Task<bool> CourseExistsAsync(string courseName);
         Task<Course> GetByIdWithEnrollmentsAsync(int id);
 

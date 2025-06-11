@@ -1,15 +1,27 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using FacultyManagementSystemAPI.Models.DTOs.Classes;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
 using iTextSharp.text.pdf.draw;
 
-public class PdfService
+public partial class PdfService
 {
+    // مسارات الصور - يمكنك تعديلها حسب مكان الصور في مشروعك
+    private readonly string _universityLogoPath;
+    private readonly string _collegeLogoPath;
+
+    public PdfService(string universityLogoPath = null, string collegeLogoPath = null)
+    {
+        _universityLogoPath = universityLogoPath ?? Path.Combine("wwwroot", "images", "university-logo.jpg");
+        _collegeLogoPath = collegeLogoPath ?? Path.Combine("wwwroot", "images", "college-logo.jpg");
+    }
+
     public async Task<byte[]> GeneratePdfAsync<T>(IEnumerable<T> data, string title)
     {
         using var ms = new MemoryStream();
@@ -149,27 +161,52 @@ public class PdfService
 
     private void AddHeader(Document document, string title, Font titleFont, BaseFont baseFont)
     {
-        var headerTable = new PdfPTable(2)
+        // جدول للهيدر مع 3 أعمدة (شعار الكلية، النصوص، شعار الجامعة)
+        var headerTable = new PdfPTable(3)
         {
             RunDirection = PdfWriter.RUN_DIRECTION_RTL,
             WidthPercentage = 100
         };
-        headerTable.SetWidths(new float[] { 3f, 1f });
+        headerTable.SetWidths(new float[] { 1f, 3f, 1f });
 
-        var logoCell = new PdfPCell
+        // خلية شعار الكلية (العمود الأول)
+        var collegeLogoCell = new PdfPCell
         {
             BorderWidth = 0,
             HorizontalAlignment = Element.ALIGN_CENTER,
             VerticalAlignment = Element.ALIGN_MIDDLE,
-            Padding = 5
+            Padding = 10
         };
 
-        var logoPlaceholder = new Paragraph("شعار الجامعة", new Font(baseFont, 12, Font.BOLD))
+        if (File.Exists(_collegeLogoPath))
         {
-            Alignment = Element.ALIGN_CENTER
-        };
-        logoCell.AddElement(logoPlaceholder);
+            try
+            {
+                var collegeLogoImage = Image.GetInstance(_collegeLogoPath);
+                collegeLogoImage.ScaleToFit(60f, 60f); // تحديد حجم الصورة
+                collegeLogoImage.Alignment = Element.ALIGN_CENTER;
+                collegeLogoCell.AddElement(collegeLogoImage);
+            }
+            catch
+            {
+                // في حالة فشل تحميل الصورة، اعرض نص بديل
+                var collegePlaceholder = new Paragraph("شعار الكلية", new Font(baseFont, 10, Font.BOLD))
+                {
+                    Alignment = Element.ALIGN_CENTER
+                };
+                collegeLogoCell.AddElement(collegePlaceholder);
+            }
+        }
+        else
+        {
+            var collegePlaceholder = new Paragraph("شعار الكلية", new Font(baseFont, 10, Font.BOLD))
+            {
+                Alignment = Element.ALIGN_CENTER
+            };
+            collegeLogoCell.AddElement(collegePlaceholder);
+        }
 
+        // خلية النصوص (العمود الأوسط)
         var titleCell = new PdfPCell
         {
             BorderWidth = 0,
@@ -179,7 +216,7 @@ public class PdfService
             PaddingTop = 15
         };
 
-        // تغيير اسم الجامعة إلى جامعة الفيوم
+        // جامعة الفيوم
         var universityParagraph = new Paragraph("جامعة الفيوم", new Font(baseFont, 20, Font.BOLD))
         {
             Alignment = Element.ALIGN_CENTER,
@@ -203,11 +240,51 @@ public class PdfService
         };
         titleCell.AddElement(titleParagraph);
 
+        // خلية شعار الجامعة (العمود الثالث)
+        var universityLogoCell = new PdfPCell
+        {
+            BorderWidth = 0,
+            HorizontalAlignment = Element.ALIGN_CENTER,
+            VerticalAlignment = Element.ALIGN_MIDDLE,
+            Padding = 10
+        };
+
+        if (File.Exists(_universityLogoPath))
+        {
+            try
+            {
+                var universityLogoImage = Image.GetInstance(_universityLogoPath);
+                universityLogoImage.ScaleToFit(60f, 60f); // تحديد حجم الصورة
+                universityLogoImage.Alignment = Element.ALIGN_CENTER;
+                universityLogoCell.AddElement(universityLogoImage);
+            }
+            catch
+            {
+                // في حالة فشل تحميل الصورة، اعرض نص بديل
+                var universityPlaceholder = new Paragraph("شعار الجامعة", new Font(baseFont, 10, Font.BOLD))
+                {
+                    Alignment = Element.ALIGN_CENTER
+                };
+                universityLogoCell.AddElement(universityPlaceholder);
+            }
+        }
+        else
+        {
+            var universityPlaceholder = new Paragraph("شعار الجامعة", new Font(baseFont, 10, Font.BOLD))
+            {
+                Alignment = Element.ALIGN_CENTER
+            };
+            universityLogoCell.AddElement(universityPlaceholder);
+        }
+
+        // إضافة الخلايا للجدول
+        headerTable.AddCell(collegeLogoCell);
         headerTable.AddCell(titleCell);
-        headerTable.AddCell(logoCell);
+        headerTable.AddCell(universityLogoCell);
 
         document.Add(headerTable);
 
+        // خط فاصل
         var lineSeparator = new LineSeparator(1f, 100f, new BaseColor(52, 73, 94), Element.ALIGN_CENTER, -10);
         document.Add(new Chunk(lineSeparator));
         document.Add(Chunk.NEWLINE);
@@ -238,7 +315,6 @@ public class PdfService
             HorizontalAlignment = Element.ALIGN_CENTER
         };
 
-        // تاريخ التقرير بتنسيق صحيح
         var cell3 = new PdfPCell(new Phrase(DateTime.Now.ToString("dd/MM/yyyy", new CultureInfo("ar-EG")), footerFont))
         {
             BorderWidth = 0,
@@ -273,9 +349,543 @@ public class PdfService
             { "CreditsCompleted", "الساعات المكتملة" },
             { "DepartmentName", "اسم القسم" },
             { "status", "الحالة" },
-            { "StudentLevel", "المستوى الدراسي" }
+            { "StudentLevel", "المستوى الدراسي" },
+            { "Credits", "عدد الساعات" },
+            { "Description", "الوصف" },
+            { "Status", "الحالة" },
+            { "MaxSeats", "الحد الاقصى للمقاعد" },
+            { "CurrentEnrolledStudents", "عدد الطلاب المسجلين" },
+            { "DivisionNames", "الشعبة" },
+            { "PreCourseName", "الكورسات السابقة" }
         };
 
         return translations.ContainsKey(englishName) ? translations[englishName] : englishName;
+    }
+
+    public async Task<byte[]> GenerateProfessorSchedulePdfAsync(IEnumerable<ClassDto> classes, string professorName)
+    {
+        // التحقق من وجود بيانات
+        if (!classes.Any())
+        {
+            throw new InvalidOperationException("لا توجد محاضرات للعرض");
+        }
+
+        using var ms = new MemoryStream();
+        var document = new Document(PageSize.A4.Rotate(), 20f, 20f, 20f, 20f);
+        var writer = PdfWriter.GetInstance(document, ms);
+        writer.RunDirection = PdfWriter.RUN_DIRECTION_RTL;
+
+        document.AddCreator("نظام إدارة الطلاب");
+        document.AddAuthor("جامعة الفيوم");
+        document.AddSubject($"جدول محاضرات الدكتور {professorName}");
+        document.AddTitle($"جدول محاضرات الدكتور {professorName}");
+        document.Open();
+
+        // إعداد الخطوط مع تحسين الخط العربي
+        BaseFont baseFont = null;
+        string[] fontPaths = {
+        "C:\\Windows\\Fonts\\arial.ttf",
+        "C:\\Windows\\Fonts\\tahoma.ttf",
+        "C:\\Windows\\Fonts\\calibri.ttf", // خط أفضل للعربية
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/System/Library/Fonts/Arial.ttf" // Mac
+    };
+
+        foreach (var path in fontPaths)
+        {
+            try
+            {
+                if (File.Exists(path))
+                {
+                    baseFont = BaseFont.CreateFont(path, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+                    break;
+                }
+            }
+            catch { continue; }
+        }
+
+        if (baseFont == null)
+        {
+            baseFont = BaseFont.CreateFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.EMBEDDED);
+        }
+
+        var titleFont = new Font(baseFont, 16, Font.BOLD);
+        var subtitleFont = new Font(baseFont, 12, Font.BOLD);
+        var headerFont = new Font(baseFont, 10, Font.BOLD, BaseColor.WHITE);
+        var cellFont = new Font(baseFont, 9, Font.NORMAL); // زيادة حجم الخط قليلاً
+        var dayFont = new Font(baseFont, 10, Font.BOLD);
+
+        // إضافة الهيدر
+        AddScheduleHeader(document, professorName, titleFont, subtitleFont, baseFont);
+
+        // تحويل البيانات إلى جدول أسبوعي
+        var scheduleTable = CreateWeeklyScheduleTable(classes, headerFont, cellFont, dayFont, baseFont);
+        document.Add(scheduleTable);
+
+        // إضافة معلومات إضافية
+        AddScheduleFooterInfo(document, classes, cellFont, baseFont);
+
+        document.Close();
+        return ms.ToArray();
+    }
+
+    private void AddScheduleHeader(Document document, string professorName, Font titleFont, Font subtitleFont, BaseFont baseFont)
+    {
+        // جدول الهيدر
+        var headerTable = new PdfPTable(3)
+        {
+            RunDirection = PdfWriter.RUN_DIRECTION_RTL,
+            WidthPercentage = 100
+        };
+        headerTable.SetWidths(new float[] { 1f, 3f, 1f });
+
+        // شعار الكلية
+        var collegeLogoCell = new PdfPCell
+        {
+            BorderWidth = 0,
+            HorizontalAlignment = Element.ALIGN_CENTER,
+            VerticalAlignment = Element.ALIGN_MIDDLE,
+            Padding = 10
+        };
+
+        if (File.Exists(_collegeLogoPath))
+        {
+            try
+            {
+                var collegeLogoImage = Image.GetInstance(_collegeLogoPath);
+                collegeLogoImage.ScaleToFit(60f, 60f);
+                collegeLogoImage.Alignment = Element.ALIGN_CENTER;
+                collegeLogoCell.AddElement(collegeLogoImage);
+            }
+            catch
+            {
+                var collegePlaceholder = new Paragraph("شعار الكلية", new Font(baseFont, 10, Font.BOLD))
+                {
+                    Alignment = Element.ALIGN_CENTER
+                };
+                collegeLogoCell.AddElement(collegePlaceholder);
+            }
+        }
+
+        // النصوص الوسطى
+        var titleCell = new PdfPCell
+        {
+            BorderWidth = 0,
+            HorizontalAlignment = Element.ALIGN_CENTER,
+            VerticalAlignment = Element.ALIGN_MIDDLE,
+            PaddingBottom = 15,
+            PaddingTop = 15
+        };
+
+        var universityParagraph = new Paragraph("جامعة الفيوم", new Font(baseFont, 18, Font.BOLD))
+        {
+            Alignment = Element.ALIGN_CENTER,
+            SpacingAfter = 3f
+        };
+        titleCell.AddElement(universityParagraph);
+
+        var collegeParagraph = new Paragraph("كلية العلوم", new Font(baseFont, 14, Font.BOLD))
+        {
+            Alignment = Element.ALIGN_CENTER,
+            SpacingAfter = 3f
+        };
+        titleCell.AddElement(collegeParagraph);
+
+        var departmentParagraph = new Paragraph("قسم شئون الطلاب", new Font(baseFont, 12, Font.BOLD))
+        {
+            Alignment = Element.ALIGN_CENTER,
+            SpacingAfter = 5f
+        };
+        titleCell.AddElement(departmentParagraph);
+
+        var semesterParagraph = new Paragraph($"جدول الفصل الدراسي الثاني {DateTime.Now.Year + 1}/{DateTime.Now.Year}", titleFont)
+        {
+            Alignment = Element.ALIGN_CENTER,
+            SpacingAfter = 5f
+        };
+        titleCell.AddElement(semesterParagraph);
+
+        var professorParagraph = new Paragraph($"أ.د/ {professorName}", subtitleFont)
+        {
+            Alignment = Element.ALIGN_CENTER
+        };
+        titleCell.AddElement(professorParagraph);
+
+        // شعار الجامعة
+        var universityLogoCell = new PdfPCell
+        {
+            BorderWidth = 0,
+            HorizontalAlignment = Element.ALIGN_CENTER,
+            VerticalAlignment = Element.ALIGN_MIDDLE,
+            Padding = 10
+        };
+
+        if (File.Exists(_universityLogoPath))
+        {
+            try
+            {
+                var universityLogoImage = Image.GetInstance(_universityLogoPath);
+                universityLogoImage.ScaleToFit(60f, 60f);
+                universityLogoImage.Alignment = Element.ALIGN_CENTER;
+                universityLogoCell.AddElement(universityLogoImage);
+            }
+            catch
+            {
+                var universityPlaceholder = new Paragraph("شعار الجامعة", new Font(baseFont, 10, Font.BOLD))
+                {
+                    Alignment = Element.ALIGN_CENTER
+                };
+                universityLogoCell.AddElement(universityPlaceholder);
+            }
+        }
+
+        headerTable.AddCell(collegeLogoCell);
+        headerTable.AddCell(titleCell);
+        headerTable.AddCell(universityLogoCell);
+
+        document.Add(headerTable);
+        document.Add(Chunk.NEWLINE);
+    }
+
+    private PdfPTable CreateWeeklyScheduleTable(IEnumerable<ClassDto> classes, Font headerFont, Font cellFont, Font dayFont, BaseFont baseFont)
+    {
+        // تحديد الأوقات كما في الصورة
+        var timeSlots = new List<string>
+    {
+        "8:00", "9:00", "10:00", "11:00", "12:00", "1:00", "2:00", "3:00", "4:00", "5:00", "6:00"
+    };
+
+        // أيام الأسبوع
+        var daysOfWeek = new List<string>
+    {
+        "Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"
+    };
+
+        var dayNamesArabic = new Dictionary<string, string>
+    {
+        { "Saturday", "السبت" },
+        { "Sunday", "الأحد" },
+        { "Monday", "الاثنين" },
+        { "Tuesday", "الثلاثاء" },
+        { "Wednesday", "الأربعاء" },
+        { "Thursday", "الخميس" }
+    };
+
+        // إنشاء الجدول
+        var table = new PdfPTable(timeSlots.Count + 1)
+        {
+            RunDirection = PdfWriter.RUN_DIRECTION_RTL,
+            WidthPercentage = 100,
+            SpacingBefore = 10f,
+            SpacingAfter = 10f
+        };
+
+        // تحديد عرض الأعمدة بشكل متساوي أكثر
+        var widths = new List<float> { 1.5f }; // عمود الأيام أعرض قليلاً
+        widths.AddRange(Enumerable.Repeat(1f, timeSlots.Count));
+        table.SetWidths(widths.ToArray());
+
+        // يطابق --primary-color: #003366
+        var headerBlueColor = new BaseColor(0, 51, 102);
+
+        // يطابق --secondary-color: #4a7fbf
+        var lightBlueColor = new BaseColor(74, 127, 191);
+        // أزرق فاتح للأيام
+        var whiteColor = BaseColor.WHITE;
+
+        // صف واحد للـ Time
+        var timeHeaderCell = new PdfPCell(new Phrase("الوقت", new Font(baseFont, 10, Font.BOLD, BaseColor.WHITE)))
+        {
+            RunDirection = PdfWriter.RUN_DIRECTION_RTL,
+            HorizontalAlignment = Element.ALIGN_CENTER,
+            VerticalAlignment = Element.ALIGN_MIDDLE,
+            BackgroundColor = headerBlueColor,
+            BorderColor = BaseColor.BLACK,
+            BorderWidth = 0.5f,
+            Padding = 8,
+            MinimumHeight = 30f
+        };
+        table.AddCell(timeHeaderCell);
+
+        // إضافة خلايا الأوقات
+        foreach (var time in timeSlots)
+        {
+            var timeCell = new PdfPCell(new Phrase(time, new Font(baseFont, 9, Font.BOLD, BaseColor.WHITE)))
+            {
+                RunDirection = PdfWriter.RUN_DIRECTION_RTL,
+                HorizontalAlignment = Element.ALIGN_CENTER,
+                VerticalAlignment = Element.ALIGN_MIDDLE,
+                BackgroundColor = headerBlueColor,
+                BorderColor = BaseColor.BLACK,
+                BorderWidth = 0.5f,
+                Padding = 8,
+                MinimumHeight = 30f
+            };
+            table.AddCell(timeCell);
+        }
+
+        // إضافة صفوف الأيام مع معالجة دمج الخلايا للمحاضرات الطويلة
+        foreach (var day in daysOfWeek)
+        {
+            // خلية اليوم
+            var dayCell = new PdfPCell(new Phrase(dayNamesArabic[day], new Font(baseFont, 11, Font.BOLD)))
+            {
+                RunDirection = PdfWriter.RUN_DIRECTION_RTL,
+                HorizontalAlignment = Element.ALIGN_CENTER,
+                VerticalAlignment = Element.ALIGN_MIDDLE,
+                BackgroundColor = lightBlueColor,
+                BorderColor = BaseColor.BLACK,
+                BorderWidth = 0.5f,
+                Padding = 10,
+                MinimumHeight = 70f
+            };
+            table.AddCell(dayCell);
+
+            // تتبع الخلايا المدموجة
+            var mergedCells = new HashSet<int>();
+
+            // خلايا الأوقات لهذا اليوم
+            for (int timeIndex = 0; timeIndex < timeSlots.Count; timeIndex++)
+            {
+                if (mergedCells.Contains(timeIndex))
+                {
+                    continue; // تخطي الخلايا المدموجة
+                }
+
+                var time = timeSlots[timeIndex];
+                var classesForSlot = GetClassesForDayAndTime(classes, day, time);
+
+                var cell = new PdfPCell()
+                {
+                    RunDirection = PdfWriter.RUN_DIRECTION_RTL,
+                    HorizontalAlignment = Element.ALIGN_CENTER,
+                    VerticalAlignment = Element.ALIGN_MIDDLE,
+                    BorderColor = BaseColor.BLACK,
+                    BorderWidth = 0.5f,
+                    Padding = 5,
+                    MinimumHeight = 70f
+                };
+
+                if (classesForSlot.Any())
+                {
+                    var classInfo = classesForSlot.First();
+
+                    // حساب مدة المحاضرة بالساعات
+                    var duration = classInfo.EndTime - classInfo.StartTime;
+                    int durationHours = (int)Math.Round(duration.TotalHours);
+
+                    // إذا كانت المحاضرة أكثر من ساعة، دمج الخلايا
+                    if (durationHours > 1 && timeIndex + durationHours <= timeSlots.Count)
+                    {
+                        cell.Colspan = durationHours;
+
+                        // تسجيل الخلايا المدموجة
+                        for (int i = 1; i < durationHours; i++)
+                        {
+                            mergedCells.Add(timeIndex + i);
+                        }
+                    }
+
+                    // إضافة المحاضرة للخلية مع تنسيق أفضل
+                    var paragraph = new Paragraph();
+                    paragraph.Alignment = Element.ALIGN_CENTER;
+
+                    // اسم المقرر
+                    if (!string.IsNullOrEmpty(classInfo.CourseName))
+                    {
+                        var courseName = classInfo.CourseName.Length > 25
+                            ? classInfo.CourseName.Substring(0, 22) + "..."
+                            : classInfo.CourseName;
+
+                        paragraph.Add(new Phrase(courseName, new Font(baseFont, 9, Font.BOLD)));
+                        paragraph.Add(Chunk.NEWLINE);
+                    }
+
+                    // المكان
+                    if (!string.IsNullOrEmpty(classInfo.Location))
+                    {
+                        paragraph.Add(new Phrase(classInfo.Location, new Font(baseFont, 8, Font.NORMAL)));
+                        paragraph.Add(Chunk.NEWLINE);
+                    }
+
+                    // الشعبة
+                    if (!string.IsNullOrEmpty(classInfo.DivisionName) &&
+                        classInfo.DivisionName != "عام" &&
+                        classInfo.DivisionName != "لا يوجد شُعب مسجّلة")
+                    {
+                        paragraph.Add(new Phrase(classInfo.DivisionName, new Font(baseFont, 7, Font.ITALIC)));
+                    }
+
+                    cell.AddElement(paragraph);
+                    cell.BackgroundColor = whiteColor;
+                }
+                else
+                {
+                    // خلية فارغة
+                    cell.BackgroundColor = whiteColor;
+                }
+
+                table.AddCell(cell);
+            }
+        }
+
+        return table;
+    }
+
+    private List<ClassDto> GetClassesForDayAndTime(IEnumerable<ClassDto> classes, string day, string timeSlot)
+    {
+        try
+        {
+            if (!int.TryParse(timeSlot.Split(':')[0], out int timeHour))
+            {
+                return new List<ClassDto>();
+            }
+
+            var slotTime = new TimeSpan(timeHour, 0, 0);
+
+            // تحويل اسم اليوم من الإنجليزية إلى العربية للمقارنة
+            var dayMapping = new Dictionary<string, string>
+        {
+            { "Saturday", "السبت" },
+            { "Sunday", "الأحد" },
+            { "Monday", "الاثنين" },
+            { "Tuesday", "الثلاثاء" },
+            { "Wednesday", "الأربعاء" },
+            { "Thursday", "الخميس" }
+        };
+
+            if (!dayMapping.ContainsKey(day))
+            {
+                return new List<ClassDto>();
+            }
+
+            string expectedDayArabic = dayMapping[day];
+
+            // البحث عن المحاضرات التي تبدأ في هذا الوقت تحديداً
+            var classesForSlot = classes.Where(c =>
+            {
+                // مقارنة اسم اليوم
+                string classDay = c.Day?.Trim();
+                bool dayMatch = string.Equals(classDay, expectedDayArabic, StringComparison.OrdinalIgnoreCase);
+
+                // التحقق من أن المحاضرة تبدأ في هذا الوقت تحديداً
+                bool timeMatch = c.StartTime.Hours == timeHour;
+
+                return dayMatch && timeMatch;
+            }).ToList();
+
+            return classesForSlot;
+        }
+        catch (Exception)
+        {
+            return new List<ClassDto>();
+        }
+    }
+
+    private void AddScheduleFooterInfo(Document document, IEnumerable classes, Font cellFont, BaseFont baseFont)
+    {
+        document.Add(Chunk.NEWLINE);
+
+        // تقليل المسافة قبل التوقيعات
+        var signatureTable = new PdfPTable(3)
+        {
+            RunDirection = PdfWriter.RUN_DIRECTION_RTL,
+            WidthPercentage = 100,
+            SpacingBefore = 15f // تقليل المسافة
+        };
+        signatureTable.SetWidths(new float[] { 1f, 1f, 1f });
+
+        // تحسين تنسيق خلايا التوقيع مع تقليل المسافات
+        var deanCell = new PdfPCell()
+        {
+            BorderWidth = 0,
+            HorizontalAlignment = Element.ALIGN_CENTER,
+            VerticalAlignment = Element.ALIGN_MIDDLE,
+            Padding = 5, // تقليل الحشو
+            MinimumHeight = 25f, // تقليل الارتفاع
+            RunDirection = PdfWriter.RUN_DIRECTION_RTL // إضافة اتجاه RTL للخلية
+        };
+
+        var deanParagraph = new Paragraph();
+        deanParagraph.Add(new Phrase("عميد الكلية", new Font(baseFont, 11, Font.BOLD)));
+        deanParagraph.Add(Chunk.NEWLINE);
+        deanParagraph.Add(new Phrase("_________________", new Font(baseFont, 10, Font.NORMAL)));
+        deanParagraph.Add(Chunk.NEWLINE);
+        deanParagraph.Add(new Phrase("أ.د/ سميه السيد جوده", new Font(baseFont, 10, Font.NORMAL)));
+        deanParagraph.Alignment = Element.ALIGN_CENTER;
+        deanParagraph.SpacingBefore = 0f;
+        deanParagraph.SpacingAfter = 0f;
+        deanCell.AddElement(deanParagraph);
+
+        var coordinatorCell = new PdfPCell()
+        {
+            BorderWidth = 0,
+            HorizontalAlignment = Element.ALIGN_CENTER,
+            VerticalAlignment = Element.ALIGN_MIDDLE,
+            Padding = 5,
+            MinimumHeight = 25f,
+            RunDirection = PdfWriter.RUN_DIRECTION_RTL // إضافة اتجاه RTL للخلية
+        };
+
+        var coordinatorParagraph = new Paragraph();
+        coordinatorParagraph.Add(new Phrase("وكيل الكلية لشئون التعليم والطلاب", new Font(baseFont, 11, Font.BOLD)));
+        coordinatorParagraph.Add(Chunk.NEWLINE);
+        coordinatorParagraph.Add(new Phrase("_________________", new Font(baseFont, 10, Font.NORMAL)));
+        coordinatorParagraph.Add(Chunk.NEWLINE);
+        coordinatorParagraph.Add(new Phrase("أ.د/ احمد روبي شافعي", new Font(baseFont, 10, Font.NORMAL)));
+        coordinatorParagraph.Alignment = Element.ALIGN_CENTER;
+        coordinatorParagraph.SpacingBefore = 0f;
+        coordinatorParagraph.SpacingAfter = 0f;
+        coordinatorCell.AddElement(coordinatorParagraph);
+
+        var headCell = new PdfPCell()
+        {
+            BorderWidth = 0,
+            HorizontalAlignment = Element.ALIGN_CENTER,
+            VerticalAlignment = Element.ALIGN_MIDDLE,
+            Padding = 5,
+            MinimumHeight = 25f,
+            RunDirection = PdfWriter.RUN_DIRECTION_RTL // إضافة اتجاه RTL للخلية
+        };
+
+        var headParagraph = new Paragraph();
+        headParagraph.Add(new Phrase("رئيس قسم شئون الطلاب", new Font(baseFont, 11, Font.BOLD)));
+        headParagraph.Add(Chunk.NEWLINE);
+        headParagraph.Add(new Phrase("_________________", new Font(baseFont, 10, Font.NORMAL)));
+        headParagraph.Alignment = Element.ALIGN_CENTER;
+        headParagraph.SpacingBefore = 0f;
+        headParagraph.SpacingAfter = 0f;
+        headCell.AddElement(headParagraph);
+
+        signatureTable.AddCell(deanCell);
+        signatureTable.AddCell(coordinatorCell);
+        signatureTable.AddCell(headCell);
+        document.Add(signatureTable);
+
+        // الحل الصحيح: استخدام جدول منفصل للنص السفلي
+        var footerTable = new PdfPTable(1)
+        {
+            RunDirection = PdfWriter.RUN_DIRECTION_RTL,
+            WidthPercentage = 100,
+            SpacingBefore = 10f
+        };
+
+        var footerCell = new PdfPCell()
+        {
+            BorderWidth = 0,
+            HorizontalAlignment = Element.ALIGN_CENTER,
+            VerticalAlignment = Element.ALIGN_MIDDLE,
+            RunDirection = PdfWriter.RUN_DIRECTION_RTL,
+            Padding = 0
+        };
+
+        var footerParagraph = new Paragraph("مكتب وكيل الكلية لشئون التعليم والطلاب", new Font(baseFont, 9, Font.NORMAL))
+        {
+            Alignment = Element.ALIGN_CENTER
+        };
+
+        footerCell.AddElement(footerParagraph);
+        footerTable.AddCell(footerCell);
+        document.Add(footerTable);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using FacultyManagementSystemAPI.Data;
 using FacultyManagementSystemAPI.Models.DTOs.Courses;
+using FacultyManagementSystemAPI.Models.DTOs.Student;
 using FacultyManagementSystemAPI.Models.Entities;
 using FacultyManagementSystemAPI.Repositories.Interfaces;
 using iTextSharp.text;
@@ -162,6 +163,8 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                      .Select(cd => cd.Division.Name)
                      .Distinct()
                      .ToList()
+
+
                 })
                 .Distinct()
                 .ToListAsync();
@@ -291,7 +294,7 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
         //        .ToListAsync();
         //    }
 
-        public async Task<List<CourseDto>> GetCoursesByStudentIdAsync(int studentId)
+        public async Task<List<CourseStudentDto>> GetCoursesByStudentIdAsync(int studentId)
         {
             return await _dbContext.Enrollments
                 .Where(e => e.StudentId == studentId)
@@ -303,35 +306,32 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                 .Include(e => e.Course.CourseDivisions)
                     .ThenInclude(cd => cd.Division)
                         .ThenInclude(d => d.Department)
-                .Select(e => new CourseDto
+                .Select(e => new CourseStudentDto
                 {
                     Id = e.Course.Id,
                     Name = e.Course.Name,
                     Description = e.Course.Description,
                     Credits = e.Course.Credits,
-                    Status = e.Course.Status,
                     Code = e.Course.Code,
                     Semester = e.Course.Semester,
-                    MaxSeats = e.Course.MaxSeats,
-
+                    
                     ProfessorName = e.Course.Classes
                         .Select(cls => cls.Professor.FullName)
                         .FirstOrDefault() ?? "لا يوجد مدرس لهذا المقرر",
                     PreCourseName = e.Course.Prerequisites.Any()
                         ? string.Join("، ", e.Course.Prerequisites.Select(p => p.PrerequisiteCourse.Name))
                         : "لا يوجد مقرر مطلوب لهذا المقرر",
-
                     DepartmentName = e.Course.CourseDivisions
                         .Select(cd => cd.Division.Department.Name)
                         .FirstOrDefault() ?? "لا يوجد قسم لهذا المقرر",
-                    DivisionNames = e.Course.CourseDivisions
-                     .Where(cd => cd.Division != null)
-                     .Select(cd => cd.Division.Name)
-                     .Distinct()
-                     .ToList()
-
+                    DivisionNames = string.Join("، ",
+                        e.Course.CourseDivisions
+                            .Where(cd => cd.Division != null)
+                            .Select(cd => cd.Division.Name)
+                            .Distinct()),
+                    EnrollmentStatus = e.IsCompleted
                 })
-                .Distinct()
+                
                 .ToListAsync();
         }
 
@@ -422,6 +422,8 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                                 .Any(d => NormalizeArabicText(d).Contains(divisionName)))
                     .ToList();
             }
+
+
 
             return courses;
         }

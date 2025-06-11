@@ -1,4 +1,5 @@
-﻿using FacultyManagementSystemAPI.Models.DTOs.Report;
+﻿using FacultyManagementSystemAPI.Models.DTOs.Classes;
+using FacultyManagementSystemAPI.Models.DTOs.Report;
 
 namespace FacultyManagementSystemAPI.Services.Interfaces
 {
@@ -11,8 +12,12 @@ namespace FacultyManagementSystemAPI.Services.Interfaces
         Task<IEnumerable<CourseGradeReportDto>> GetCourseGradesAsync();
         Task<IEnumerable<ProfessorCoursesDto>> GetProfessorCoursesAsync();
         Task<IEnumerable<StudentAttendanceDto>> GetStudentAttendanceAsync();
+        Task<IEnumerable<FilterDto>> GetFilteredCoursesAsync
+            (string? courseName, string? departmentName, string? courseStatus, string? divisionName);
 
         Task<byte[]> ExportToExcelAsync<T>(IEnumerable<T> data, string sheetName);
         Task<byte[]> ExportToPdfAsync<T>(IEnumerable<T> data, string title);
+        Task<byte[]> GenerateProfessorSchedulePdfAsync(IEnumerable<ClassDto> classes, string professorName);
+
     }
 }
