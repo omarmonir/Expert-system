@@ -45,7 +45,6 @@ namespace FacultyManagementSystemAPI.Controllers
             }
         }
 
-
         [HttpGet("EnrollmentById/{id}")]
         public async Task<IActionResult> GetById(int id)
         {

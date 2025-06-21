@@ -45,5 +45,7 @@ namespace FacultyManagementSystemAPI.Repositories.Interfaces
 
         Task UpdateStudentStatusAsync(int studentId, string newStatus);
         Task<IEnumerable<StudentExamGradesDto>> GetStudentGradesByStudentIdAsync(int studentId);
+        Task<(int totalStudents, double enrollmentRatio)> GetStudentEnrollmentStatsAsync();
+        Task<string> GetStudentNameById(int studentId);
     }
 }

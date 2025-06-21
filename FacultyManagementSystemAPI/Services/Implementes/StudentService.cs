@@ -354,6 +354,17 @@ namespace FacultyManagementSystemAPI.Services.Implementes
 
             return studentSto;
         }
+        public async Task<string> GetStudentNameById(int studentId)
+        {
+            if (studentId <= 0)
+                throw new ArgumentException("يجب أن يكون معرف الطالب رقمًا موجبا");
+
+            var student = await _studentRepository.GetStudentNameById(studentId) ??
+                throw new Exception("الطالب غير موجود");
+
+
+            return student;
+        }
 
         public async Task UpdateAsync(int id, UpdateStudentDto updateStudentDto)
         {
@@ -595,6 +606,14 @@ namespace FacultyManagementSystemAPI.Services.Implementes
             return count;
 
         }
+        public async Task<(int totalStudents, double enrollmentRatio)> GetStudentEnrollmentStatsAsync()
+        {
+            var stats = await _studentRepository.GetStudentEnrollmentStatsAsync();
+            if (stats.totalStudents == 0)
+                throw new Exception("لا يوجد طلاب مسجلين");
+            return stats;
+        }
+
         private async Task ValidateStudentData(CreateStudentDto studentDto)
         {
             if (await _studentRepository.EmailExistsAsync(studentDto.Email))

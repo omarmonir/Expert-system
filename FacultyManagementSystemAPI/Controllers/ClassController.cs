@@ -160,13 +160,13 @@ namespace FacultyManagementSystemAPI.Controllers
         }
         [HttpGet("FilterByDivisionNameAndSemster")]
         public async Task<IActionResult> GetAllClassesWithProfNameAndCourseName(
-        [FromQuery] byte? semester,
+        [FromQuery] string? level,
         [FromQuery] string? divisionName)
         {
             try
             {
                 var students = await _classService
-                    .GetAllClassesWithProfNameAndCourseNameAsync(divisionName, semester);
+                    .GetAllClassesWithProfNameAndCourseNameAsyncOptimized(divisionName, level);
 
                 return Ok(students);
             }

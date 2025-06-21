@@ -13,9 +13,9 @@ namespace FacultyManagementSystemAPI.Services.Interfaces
         Task DeleteClassAsync(int id);
         Task<int> GetClassCountAsync();
         Task<IEnumerable<string>> GetAllLocationsNameAsync();
-        Task<IEnumerable<ClassDto>> GetAllClassesWithProfNameAndCourseNameAsync(
-                string? divisionName = null,
-                 byte? semester = null);
+        Task<IEnumerable<ClassDto>> GetAllClassesWithProfNameAndCourseNameAsyncOptimized(
+       string? divisionName = null,
+       string? level = null);
         Task<IEnumerable<ClassDto>> GetProfessorClassesAsync(int professorId);
         Task<IEnumerable<ClassDto>> GetStudentClassesAsync(int studentId);
     }

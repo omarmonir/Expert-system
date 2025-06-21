@@ -15,23 +15,6 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
             _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
 
-        //public async Task<IEnumerable<EnrollmentDto>> GetAllIncludeStudentNameCourseNameAsync()
-        //{
-        //    return await _dbContext.Enrollments
-        //        .AsNoTracking()
-        //        .Select(e => new EnrollmentDto
-        //        {
-        //            Id = e.Id,
-        //            StudentID = e.StudentId,
-        //            StudentName = e.Student.Name ?? "غير معروف",
-        //            CourseCode = e.Course.Code ?? "غير معروف",
-        //            CourseName = e.Course.Name ?? "غير معروف",
-        //            EnrollmentDate = e.AddedEnrollmentDate,
-        //            EnrollmentStatus = e.IsCompleted,
-        //            Semester = e.Semester
-        //        })
-        //        .ToListAsync();
-        //}
         public async Task<IEnumerable<EnrollmentDto>> GetAllIncludeStudentNameCourseNameAsync(int pageNumber)
         {
             int pageSize = 20;
@@ -270,5 +253,23 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                 .Select(d => d.Semester)
                 .Distinct()
                 .ToListAsync();
+
+        //public async Task<IEnumerable<EnrollmentDto>> GetAllIncludeStudentNameCourseNameAsync()
+        //{
+        //    return await _dbContext.Enrollments
+        //        .AsNoTracking()
+        //        .Select(e => new EnrollmentDto
+        //        {
+        //            Id = e.Id,
+        //            StudentID = e.StudentId,
+        //            StudentName = e.Student.Name ?? "غير معروف",
+        //            CourseCode = e.Course.Code ?? "غير معروف",
+        //            CourseName = e.Course.Name ?? "غير معروف",
+        //            EnrollmentDate = e.AddedEnrollmentDate,
+        //            EnrollmentStatus = e.IsCompleted,
+        //            Semester = e.Semester
+        //        })
+        //        .ToListAsync();
+        //}
     }
 }

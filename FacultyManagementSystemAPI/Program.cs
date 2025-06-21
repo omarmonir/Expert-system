@@ -21,6 +21,27 @@ ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
+builder.Services.AddSwaggerGen(c =>
+{       // To Show Authorize Button
+    c.AddSecurityDefinition("bearerAuthorization", new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.Http, // Because Use JWT Token Bearer
+        Scheme = "Bearer"
+    });
+    // To Apply Token In Swagger
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "bearerAuthorization"}
+                    },
+                    []
+                }
+
+   });
+});
+
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 
 {
@@ -69,27 +90,7 @@ builder.Services.AddControllers();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-//builder.Services.AddSwaggerGen(c =>
-//{       // To Show Authorize Button
-//    c.AddSecurityDefinition("bearerAuthorization", new OpenApiSecurityScheme
-//    {
-//        Type = SecuritySchemeType.Http, // Because Use JWT Token Bearer
-//        Scheme = "Bearer"
-//    });
-//    // To Apply Token In Swagger
-//    c.AddSecurityRequirement(new OpenApiSecurityRequirement
-//            {
-//                {
-//                    new OpenApiSecurityScheme
-//                    {
-//                        Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "bearerAuthorization"}
-//                    },
-//                    []
-//                }
-
-//   });
-//});
-builder.Services.AddSwaggerGen();
+//builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<ICourseRepository, CourseRepository>();

@@ -18,6 +18,6 @@ namespace FacultyManagementSystemAPI.Services.Interfaces
         Task<byte[]> ExportToExcelAsync<T>(IEnumerable<T> data, string sheetName);
         Task<byte[]> ExportToPdfAsync<T>(IEnumerable<T> data, string title);
         Task<byte[]> GenerateProfessorSchedulePdfAsync(IEnumerable<ClassDto> classes, string professorName);
-
+        Task<byte[]> GenerateStudentSchedulePdfAsync(IEnumerable<ClassDto> classes, string StudentName);
     }
 }

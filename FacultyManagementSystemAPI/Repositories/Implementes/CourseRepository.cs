@@ -56,7 +56,7 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                      Credits = c.Credits,
                      Status = c.Status,
                      Code = c.Code,
-                     CurrentEnrolledStudents = c.CurrentEnrolledStudents,
+                     CurrentEnrolledStudents = _dbContext.Enrollments.Count(e => e.CourseId == c.Id),
                      MaxSeats = c.MaxSeats,
                      Semester = c.Semester,
                      PreCourseName = c.Prerequisites.Any()
@@ -150,11 +150,10 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                     Code = c.Course.Code,
                     MaxSeats = c.Course.MaxSeats,
                     ProfessorName = c.Professor.FullName,
-
+                    CurrentEnrolledStudents = _dbContext.Enrollments.Count(e => e.CourseId == c.CourseId && e.IsCompleted =="قيد الدراسة"),
                     PreCourseName = c.Course.Prerequisites
                                         .Select(p => p.PrerequisiteCourse.Name)
                                         .FirstOrDefault() ?? "لا يوجد مقرر مطلوب لهذا المقرر",
-
                     DepartmentName = c.Course.CourseDivisions
                                         .Select(cd => cd.Division.Department.Name)
                                         .FirstOrDefault() ?? "لا يوجد قسم لهذا المقرر",
@@ -163,10 +162,7 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                      .Select(cd => cd.Division.Name)
                      .Distinct()
                      .ToList()
-
-
                 })
-                .Distinct()
                 .ToListAsync();
 
             

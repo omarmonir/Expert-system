@@ -16,9 +16,9 @@ namespace FacultyManagementSystemAPI.Repositories.Interfaces
         Task<bool> IsTimeAndLocationConflictAsync(TimeSpan startTime, TimeSpan endTime, string day, string location);
         Task<int> CountAsync();
         Task<IEnumerable<string>> GetAllLocationsNameAsync();
-        Task<IEnumerable<ClassDto>> GetAllClassesWithProfNameAndCourseNameAsync(
-                string? divisionName = null,
-                 byte? semester = null);
+        Task<IEnumerable<ClassDto>> GetAllClassesWithProfNameAndCourseNameAsyncOptimized(
+        string? divisionName = null,
+        string? level = null);
         Task<IEnumerable<ClassDto>> GetProfessorClassesAsync(int professorId);
         Task<IEnumerable<ClassDto>> GetStudentClassesAsync(int studentId);
     }

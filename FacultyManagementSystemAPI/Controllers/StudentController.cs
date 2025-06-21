@@ -372,6 +372,29 @@ namespace FacultyManagementSystemAPI.Controllers
             }
         }
 
+        [HttpGet("StudentStatistics")]
+        public async Task<IActionResult> GetStudentEnrollmentStats()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var stats = await _studentService.GetStudentEnrollmentStatsAsync();
+                return Ok(new
+                {
+                    totalStudents = stats.totalStudents,
+                    enrollmentRatio = stats.enrollmentRatio
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpGet("CountOfCanceledEnrollmentStudents")]
         public async Task<IActionResult> GetCanceledEnrollmentStudents()
         {

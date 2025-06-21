@@ -28,7 +28,6 @@ namespace FacultyManagementSystemAPI.Controllers
                 return BadRequest(ex.Message);
             }
         }
-
         [HttpPost("AddMultipleProfessors")]
         //[Authorize(Roles = "Admin, SuperAdmin")]
         public async Task<IActionResult> AddMultiple([FromBody] List<CreateProfessorDto> professors)

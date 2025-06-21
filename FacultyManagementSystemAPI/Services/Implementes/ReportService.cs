@@ -77,6 +77,12 @@ namespace FacultyManagementSystemAPI.Services.Implementes
 
             return courses;
         }
+
+        public async Task<byte[]> GenerateStudentSchedulePdfAsync(IEnumerable<ClassDto> classes, string StudentName)
+        {
+            return await _pdfService.GenerateStudentSchedulePdfAsync(classes, StudentName);
+        }
+
     }
 
 }

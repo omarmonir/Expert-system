@@ -14,7 +14,7 @@ namespace FacultyManagementSystemAPI.Models.DTOs.Classes
 
         [Required(ErrorMessage = "اليوم مطلوب.")]
         [MaxLength(20)]
-        [RegularExpression(@"^(السبت|الأحد|الإثنين|الثلاثاء|الأربعاء|الخميس)$")]
+        //[RegularExpression(@"^(السبت|الأحد|الإثنين|الثلاثاء|الأربعاء|الخميس)$")]
         public string Day { get; set; }
 
         [MaxLength(100)]

@@ -40,7 +40,6 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
             return warnings;
         }
 
-
         public Task<IEnumerable<CourseEnrollmentDto>> GetCourseEnrollmentTrendsAsync()
         {
             throw new NotImplementedException();

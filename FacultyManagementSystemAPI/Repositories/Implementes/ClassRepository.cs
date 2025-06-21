@@ -125,7 +125,8 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                     .ThenInclude(co => co.CourseDivisions)
                         .ThenInclude(cd => cd.Division)
                 .AsNoTrackingWithIdentityResolution()
-                .OrderBy(c => c.Id)
+                .OrderBy(c => c.Course.Semester) // ترتيب حسب الفرقة (السمستر)
+                .ThenBy(c => c.Id) // ترتيب ثانوي حسب الـ ID
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize);
 
@@ -174,44 +175,64 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                 _ => "غير معروف"
             };
         }
-        public async Task<IEnumerable<ClassDto>> GetAllClassesWithProfNameAndCourseNameAsync(   
-                string? divisionName = null,
-                 byte? semester = null)
+        public async Task<IEnumerable<ClassDto>> GetAllClassesWithProfNameAndCourseNameAsyncOptimized(
+        string? divisionName = null,
+        string? level = null)
         {
             var query = _dbContext.Classes
-          .Include(c => c.Professor)
-          .Include(c => c.Course)             
-          .Include(c => c.Course)
-              .ThenInclude(co => co.CourseDivisions)
-                  .ThenInclude(cd => cd.Division)
-          .AsNoTrackingWithIdentityResolution();
+                .Include(c => c.Professor)
+                .Include(c => c.Course)
+                .Include(c => c.Course)
+                    .ThenInclude(co => co.CourseDivisions)
+                        .ThenInclude(cd => cd.Division)
+                .AsNoTrackingWithIdentityResolution();
+
             if (!string.IsNullOrEmpty(divisionName))
             {
                 query = query.Where(c => c.Course.CourseDivisions
                     .Any(cd => cd.Division.Name == divisionName));
             }
 
-            if (semester.HasValue)
+            // فلترة بالـ Level عن طريق تحويل الـ Level للسمستر المطابق
+            if (!string.IsNullOrEmpty(level))
             {
-                query = query.Where(c => c.Course.Semester == semester.Value);
+                var semesters = GetSemestersForLevel(level);
+                if (semesters.Any())
+                {
+                    query = query.Where(c => semesters.Contains(c.Course.Semester));
+                }
             }
+
             var classDtos = await query
-        .OrderBy(c => c.Id)
-        .Select(c => new ClassDto
-        {
-            Id = c.Id,
-            StartTime = c.StartTime,
-            EndTime = c.EndTime,
-            Day = c.Day,
-            Location = c.Location,
-            CourseName = c.Course.Name,
-            ProfessorName = c.Professor.FullName,           
-            DivisionName = string.Join("، ", c.Course.CourseDivisions.Select(cd => cd.Division.Name)),
-            Level = GetLevelFromSemester(c.Course.Semester)
-        })
-        .ToListAsync();
+                .OrderBy(c => c.Course.Semester) // ترتيب حسب الفرقة (السمستر)
+                .ThenBy(c => c.Course.Name) // ترتيب ثانوي حسب اسم المادة
+                .ThenBy(c => c.Id) // ترتيب ثالث حسب الـ ID
+                .Select(c => new ClassDto
+                {
+                    Id = c.Id,
+                    StartTime = c.StartTime,
+                    EndTime = c.EndTime,
+                    Day = c.Day,
+                    Location = c.Location,
+                    CourseName = c.Course.Name,
+                    ProfessorName = c.Professor.FullName,
+                    DivisionName = string.Join("، ", c.Course.CourseDivisions.Select(cd => cd.Division.Name)),
+                    Level = GetLevelFromSemester(c.Course.Semester)
+                })
+                .ToListAsync();
 
             return classDtos;
+        }
+        private List<byte> GetSemestersForLevel(string level)
+        {
+            return level switch
+            {
+                "الفرقة الأولى" => new List<byte> { 1, 2 },
+                "الفرقة الثانية" => new List<byte> { 3, 4 },
+                "الفرقة الثالثة" => new List<byte> { 5, 6 },
+                "الفرقة الرابعة" => new List<byte> { 7, 8 },
+                _ => new List<byte>()
+            };
         }
         public async Task<IEnumerable<ClassDto>> GetProfessorClassesAsync(int professorId)
         {

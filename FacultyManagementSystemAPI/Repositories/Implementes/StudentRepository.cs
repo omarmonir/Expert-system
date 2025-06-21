@@ -81,7 +81,11 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
 
             return studentDto;
         }
-
+        
+        public async Task<string> GetStudentNameById(int studentId)
+        {
+            return await _dbContext.Students.Where(s => s.Id == studentId).Select(s => s.Name).FirstOrDefaultAsync();
+        }
         public async Task<IEnumerable<StudentDto>> GetByNameWithDepartmentNameAsync(string name)
         {
             var students = await _dbContext.Students
@@ -560,7 +564,20 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
 
         public async Task<int> GetAllEnrollmentStudentsCountAsync()
         {
-            return await _dbContext.Enrollments.Select(e => e.StudentId).Distinct().CountAsync();
+            return await _dbContext.Students.Select(e => e.Id).CountAsync();
+        }
+        public async Task<(int totalStudents, double enrollmentRatio)> GetStudentEnrollmentStatsAsync()
+        {
+            var totalStudents = await _dbContext.Students.CountAsync();
+            var totalEnrollments = await _dbContext.Enrollments.CountAsync();
+            var completedEnrollments = await _dbContext.Enrollments
+                .Where(e => e.IsCompleted != "ملغاه")
+                .CountAsync();
+
+            // حساب نسبة الالتحاق (الملتحقين الفعليين من إجمالي الالتحاقات)
+            double enrollmentRatio = totalEnrollments == 0 ? 0 : ((double)completedEnrollments / totalEnrollments)*100;
+
+            return (totalStudents, enrollmentRatio);
         }
 
         public async Task<IEnumerable<string>> GetAllStudentStatusesAsync()
@@ -575,12 +592,23 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
 
         public async Task<IEnumerable<string>> GetAllStudentLevelsAsync()
         {
-            var studentLevel = await _dbContext.Students
+            var studentLevels = await _dbContext.Students
                 .Select(d => d.StudentLevel)
                 .Distinct()
                 .ToListAsync();
 
-            return studentLevel;
+            // ترتيب مخصص للمستويات
+            var levelOrder = new Dictionary<string, int>
+                {
+                    { "سنة أولى", 1 },
+                    { "سنة ثانية", 2 },
+                    { "سنة ثالثة", 3 },
+                    { "سنة رابعة", 4 }
+                };
+
+            return studentLevels
+                .OrderBy(level => levelOrder.ContainsKey(level) ? levelOrder[level] : int.MaxValue)
+                .ToList();
         }
 
         public async Task<IEnumerable<string>> GetAllStudentGenderAsync()

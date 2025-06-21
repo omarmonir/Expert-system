@@ -158,10 +158,12 @@ namespace FacultyManagementSystemAPI.Services.Implementes
             return names;
         }
 
-        public async Task<IEnumerable<ClassDto>> GetAllClassesWithProfNameAndCourseNameAsync(string? divisionName = null, byte? semester = null)
+        public async Task<IEnumerable<ClassDto>> GetAllClassesWithProfNameAndCourseNameAsyncOptimized(
+        string? divisionName = null,
+        string? level = null)
         {
             var classListDto = await _classRepository
-              .GetAllClassesWithProfNameAndCourseNameAsync(divisionName, semester);
+              .GetAllClassesWithProfNameAndCourseNameAsyncOptimized(divisionName, level);
 
             if (classListDto == null || !classListDto.Any())
                 throw new Exception("لا يوجد محاضرات");

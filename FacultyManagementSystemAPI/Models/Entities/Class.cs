@@ -22,7 +22,6 @@ namespace FacultyManagementSystemAPI.Models.Entities
 		[MaxLength(100)]
 		public string Location { get; set; }
 
-		//
 		public int ProfessorId { get; set; }
 		[ForeignKey(nameof(ProfessorId))]
 		public Professor Professor { get; set; }
