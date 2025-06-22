@@ -438,7 +438,7 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
         {
             var enrollments = await _dbContext.Enrollments
                 .AsNoTracking()
-                .Where(e => e.CourseId == courseId)
+                .Where(e => e.CourseId == courseId && e.DeletedEnrollmentDate == null)
                 .ToListAsync();
 
             int enrolledStudentsCount = enrollments.Count;
@@ -447,7 +447,7 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
             int departmentsCount = await _dbContext.CourseDivisions
                 .AsNoTracking()
                 .Where(cd => cd.CourseId == courseId)
-                .Select(cd => cd.Division.DepartmentId)
+                .Select(cd => cd.Division.Id)
                 .Distinct()
                 .CountAsync();
 
