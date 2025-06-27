@@ -14,6 +14,10 @@
             {"studentStatus", "حالة الطالب"},
             {"departmentName", "القسم"},
             {"divisionName", "الشعبة"},
+            {"professorName", "الدكتور"},
+            {"FullName", "الاسم"},
+            {"JoinDate", "تاريخ التوظيف"},
+            {"Position", "المنصب"},
             
             // للكورسات
             {"courseName", "الكورس"},

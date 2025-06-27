@@ -356,7 +356,10 @@ public partial class PdfService
             { "MaxSeats", "الحد الاقصى للمقاعد" },
             { "CurrentEnrolledStudents", "عدد الطلاب المسجلين" },
             { "DivisionNames", "الشعبة" },
-            { "PreCourseName", "الكورسات السابقة" }
+            { "PreCourseName", "الكورسات السابقة" },
+             {"FullName", "الاسم"},
+            {"JoinDate", "تاريخ التوظيف"},
+            {"Position", "المنصب"}
         };
 
         return translations.ContainsKey(englishName) ? translations[englishName] : englishName;
@@ -1377,7 +1380,7 @@ public partial class PdfService
             SpacingAfter = 10f
         };
 
-        var levelTitleCell = new PdfPCell(new Phrase($"الفرقة {levelName}", levelTitleFont))
+        var levelTitleCell = new PdfPCell(new Phrase($"سنة {levelName}", levelTitleFont))
         {
             RunDirection = PdfWriter.RUN_DIRECTION_RTL,
             HorizontalAlignment = Element.ALIGN_CENTER,
@@ -1556,4 +1559,327 @@ public partial class PdfService
         return baseFont;
     }
 
+    public async Task<byte[]> GenerateAdminClassesPdfAsync(IEnumerable<ClassDto> classes, string? filterInfo = null)
+    {
+        // التحقق من وجود بيانات
+        if (!classes.Any())
+        {
+            throw new InvalidOperationException("لا توجد محاضرات للعرض");
+        }
+
+        using var ms = new MemoryStream();
+        var document = new Document(PageSize.A4.Rotate(), 20f, 20f, 20f, 20f);
+        var writer = PdfWriter.GetInstance(document, ms);
+        writer.RunDirection = PdfWriter.RUN_DIRECTION_RTL;
+
+        document.AddCreator("نظام إدارة الطلاب");
+        document.AddAuthor("جامعة الفيوم");
+        document.AddSubject("جدول المحاضرات العام");
+        document.AddTitle("جدول المحاضرات العام");
+        document.Open();
+
+        // إعداد الخطوط
+        BaseFont baseFont = GetArabicFont();
+        var titleFont = new Font(baseFont, 16, Font.BOLD);
+        var subtitleFont = new Font(baseFont, 12, Font.BOLD);
+        var headerFont = new Font(baseFont, 10, Font.BOLD, BaseColor.WHITE);
+        var cellFont = new Font(baseFont, 9, Font.NORMAL);
+        var dayFont = new Font(baseFont, 10, Font.BOLD);
+        var divisionTitleFont = new Font(baseFont, 14, Font.BOLD, new BaseColor(0, 51, 102)); // أزرق داكن
+        var semesterTitleFont = new Font(baseFont, 12, Font.BOLD, new BaseColor(102, 0, 51)); // بنفسجي داكن
+
+        // إضافة الهيدر العام
+        AddGeneralScheduleHeader(document, titleFont, subtitleFont, baseFont, filterInfo);
+
+        // تجميع المحاضرات حسب الشعبة أولاً ثم حسب السيمستر
+        var classesGroupedByDivisionAndSemester = classes
+            .GroupBy(c => c.DivisionName ?? "عام")
+            .OrderBy(g => g.Key)
+            .ToDictionary(
+                divisionGroup => divisionGroup.Key,
+                divisionGroup => divisionGroup
+                    .GroupBy(c => GetSemesterFromLevel(c.Level ?? "غير محدد"))
+                    .Where(semesterGroup => semesterGroup.Key > 0) // فقط السيمسترات الصحيحة
+                    .OrderBy(semesterGroup => semesterGroup.Key)
+                    .ToList()
+            );
+
+        bool isFirstDivision = true;
+
+        foreach (var divisionGroup in classesGroupedByDivisionAndSemester)
+        {
+            string divisionName = divisionGroup.Key;
+            var semesterGroups = divisionGroup.Value;
+
+            if (!semesterGroups.Any()) continue;
+
+            // إضافة صفحة جديدة للشعبة (ما عدا الأولى)
+            if (!isFirstDivision)
+            {
+                document.NewPage();
+            }
+            isFirstDivision = false;
+
+            // عنوان الشعبة
+            AddDivisionTitle(document, divisionName, divisionTitleFont, baseFont);
+
+            // إحصائيات عامة للشعبة
+            var allDivisionClasses = semesterGroups.SelectMany(sg => sg).ToList();
+            AddDivisionStatistics(document, allDivisionClasses, baseFont);
+
+            bool isFirstSemester = true;
+            foreach (var semesterGroup in semesterGroups)
+            {
+                int semesterNumber = semesterGroup.Key;
+                var semesterClasses = semesterGroup.ToList();
+
+                // إضافة مسافة بين السيمسترات (ما عدا الأول)
+                if (!isFirstSemester)
+                {
+                    document.Add(new Paragraph(" ", new Font(baseFont, 10)));
+                }
+                isFirstSemester = false;
+
+                // عنوان السيمستر
+                AddSemesterTitle(document, semesterNumber, semesterTitleFont, baseFont);
+
+                // إحصائيات السيمستر
+                AddSemesterStatistics(document, semesterClasses, baseFont);
+
+                // إنشاء جدول المحاضرات للسيمستر
+                var semesterScheduleTable = CreateWeeklyScheduleTable(semesterClasses, headerFont, cellFont, dayFont, baseFont);
+                document.Add(semesterScheduleTable);
+
+                // إضافة قائمة بأسماء الأساتذة والمواد للسيمستر
+                AddSemesterCoursesAndProfessors(document, semesterClasses, baseFont);
+            }
+        }
+
+        // إضافة الفوتر العام
+        AddScheduleFooterInfo(document, classes, cellFont, baseFont);
+
+        document.Close();
+        return ms.ToArray();
+    }
+
+    private void AddDivisionTitle(Document document, string divisionName, Font divisionTitleFont, BaseFont baseFont)
+    {
+        // إطار ملون لعنوان الشعبة
+        var divisionTitleTable = new PdfPTable(1)
+        {
+            RunDirection = PdfWriter.RUN_DIRECTION_RTL,
+            WidthPercentage = 100,
+            SpacingBefore = 15f,
+            SpacingAfter = 10f
+        };
+
+        var divisionTitleCell = new PdfPCell(new Phrase($"شعبة {divisionName}", divisionTitleFont))
+        {
+            RunDirection = PdfWriter.RUN_DIRECTION_RTL,
+            HorizontalAlignment = Element.ALIGN_CENTER,
+            VerticalAlignment = Element.ALIGN_MIDDLE,
+            BackgroundColor = new BaseColor(217, 237, 247), // أزرق فاتح
+            BorderColor = new BaseColor(0, 51, 102), // أزرق داكن
+            BorderWidth = 2f,
+            Padding = 12,
+            MinimumHeight = 40f
+        };
+
+        divisionTitleTable.AddCell(divisionTitleCell);
+        document.Add(divisionTitleTable);
+    }
+
+    private void AddSemesterTitle(Document document, int semesterNumber, Font semesterTitleFont, BaseFont baseFont)
+    {
+        var semesterTitleTable = new PdfPTable(1)
+        {
+            RunDirection = PdfWriter.RUN_DIRECTION_RTL,
+            WidthPercentage = 80,
+            SpacingBefore = 10f,
+            SpacingAfter = 8f,
+            HorizontalAlignment = Element.ALIGN_CENTER
+        };
+
+        string levelName = GetLevelNameFromSemester(semesterNumber);
+        var semesterTitleCell = new PdfPCell(new Phrase($"الفصل الدراسي {semesterNumber} - {levelName}", semesterTitleFont))
+        {
+            RunDirection = PdfWriter.RUN_DIRECTION_RTL,
+            HorizontalAlignment = Element.ALIGN_CENTER,
+            VerticalAlignment = Element.ALIGN_MIDDLE,
+            BackgroundColor = new BaseColor(240, 240, 240), // رمادي فاتح
+            BorderColor = new BaseColor(102, 0, 51), // بنفسجي داكن
+            BorderWidth = 1f,
+            Padding = 8,
+            MinimumHeight = 30f
+        };
+
+        semesterTitleTable.AddCell(semesterTitleCell);
+        document.Add(semesterTitleTable);
+    }
+
+    private void AddDivisionStatistics(Document document, List<ClassDto> divisionClasses, BaseFont baseFont)
+    {
+        var statsTable = new PdfPTable(5)
+        {
+            RunDirection = PdfWriter.RUN_DIRECTION_RTL,
+            WidthPercentage = 100,
+            SpacingAfter = 10f
+        };
+        statsTable.SetWidths(new float[] { 1f, 1f, 1f, 1f, 1f });
+
+        var totalClasses = divisionClasses.Count;
+        var totalCourses = divisionClasses.Select(c => c.CourseName).Distinct().Count();
+        var totalProfessors = divisionClasses.Select(c => c.ProfessorName).Distinct().Count();
+        var totalSemesters = divisionClasses.Select(c => GetSemesterFromLevel(c.Level ?? "غير محدد")).Distinct().Count();
+        var totalLevels = divisionClasses.Select(c => c.Level).Distinct().Count();
+
+        var headerColor = new BaseColor(91, 155, 213);
+        var statsFont = new Font(baseFont, 9, Font.BOLD, BaseColor.WHITE);
+
+        // Headers
+        statsTable.AddCell(CreateStatsCell("إجمالي المحاضرات", statsFont, headerColor));
+        statsTable.AddCell(CreateStatsCell("عدد المواد", statsFont, headerColor));
+        statsTable.AddCell(CreateStatsCell("عدد الأساتذة", statsFont, headerColor));
+        statsTable.AddCell(CreateStatsCell("عدد السيمسترات", statsFont, headerColor));
+        statsTable.AddCell(CreateStatsCell("عدد الفرق", statsFont, headerColor));
+
+        // Values
+        var valueFont = new Font(baseFont, 9, Font.NORMAL);
+        statsTable.AddCell(CreateStatsCell(totalClasses.ToString(), valueFont, BaseColor.WHITE));
+        statsTable.AddCell(CreateStatsCell(totalCourses.ToString(), valueFont, BaseColor.WHITE));
+        statsTable.AddCell(CreateStatsCell(totalProfessors.ToString(), valueFont, BaseColor.WHITE));
+        statsTable.AddCell(CreateStatsCell(totalSemesters.ToString(), valueFont, BaseColor.WHITE));
+        statsTable.AddCell(CreateStatsCell(totalLevels.ToString(), valueFont, BaseColor.WHITE));
+
+        document.Add(statsTable);
+    }
+
+    private void AddSemesterStatistics(Document document, List<ClassDto> semesterClasses, BaseFont baseFont)
+    {
+        var statsTable = new PdfPTable(3)
+        {
+            RunDirection = PdfWriter.RUN_DIRECTION_RTL,
+            WidthPercentage = 60,
+            SpacingAfter = 8f,
+            HorizontalAlignment = Element.ALIGN_CENTER
+        };
+        statsTable.SetWidths(new float[] { 1f, 1f, 1f });
+
+        var totalClasses = semesterClasses.Count;
+        var totalCourses = semesterClasses.Select(c => c.CourseName).Distinct().Count();
+        var totalProfessors = semesterClasses.Select(c => c.ProfessorName).Distinct().Count();
+
+        var headerColor = new BaseColor(155, 187, 89);
+        var statsFont = new Font(baseFont, 8, Font.BOLD, BaseColor.WHITE);
+
+        // Headers
+        statsTable.AddCell(CreateStatsCell("محاضرات", statsFont, headerColor));
+        statsTable.AddCell(CreateStatsCell("مواد", statsFont, headerColor));
+        statsTable.AddCell(CreateStatsCell("أساتذة", statsFont, headerColor));
+
+        // Values
+        var valueFont = new Font(baseFont, 8, Font.NORMAL);
+        statsTable.AddCell(CreateStatsCell(totalClasses.ToString(), valueFont, BaseColor.WHITE));
+        statsTable.AddCell(CreateStatsCell(totalCourses.ToString(), valueFont, BaseColor.WHITE));
+        statsTable.AddCell(CreateStatsCell(totalProfessors.ToString(), valueFont, BaseColor.WHITE));
+
+        document.Add(statsTable);
+    }
+
+    private void AddSemesterCoursesAndProfessors(Document document, List<ClassDto> semesterClasses, BaseFont baseFont)
+    {
+        document.Add(new Paragraph(" ", new Font(baseFont, 4))); // مسافة صغيرة
+
+        var infoTable = new PdfPTable(2)
+        {
+            RunDirection = PdfWriter.RUN_DIRECTION_RTL,
+            WidthPercentage = 100,
+            SpacingBefore = 5f,
+            SpacingAfter = 10f
+        };
+        infoTable.SetWidths(new float[] { 1f, 1f });
+
+        // قائمة المواد
+        var coursesCell = new PdfPCell()
+        {
+            BorderWidth = 0.5f,
+            BorderColor = BaseColor.GRAY,
+            HorizontalAlignment = Element.ALIGN_RIGHT,
+            VerticalAlignment = Element.ALIGN_TOP,
+            Padding = 6,
+            RunDirection = PdfWriter.RUN_DIRECTION_RTL
+        };
+
+        var coursesParagraph = new Paragraph();
+        coursesParagraph.Add(new Phrase("المواد:", new Font(baseFont, 9, Font.BOLD)));
+        coursesParagraph.Add(Chunk.NEWLINE);
+
+        var courses = semesterClasses.Select(c => c.CourseName).Distinct().OrderBy(c => c).ToList();
+        for (int i = 0; i < courses.Count; i++)
+        {
+            coursesParagraph.Add(new Phrase($"{i + 1}. {courses[i]}", new Font(baseFont, 7, Font.NORMAL)));
+            if (i < courses.Count - 1) coursesParagraph.Add(Chunk.NEWLINE);
+        }
+
+        coursesParagraph.Alignment = Element.ALIGN_RIGHT;
+        coursesCell.AddElement(coursesParagraph);
+
+        // قائمة الأساتذة
+        var professorsCell = new PdfPCell()
+        {
+            BorderWidth = 0.5f,
+            BorderColor = BaseColor.GRAY,
+            HorizontalAlignment = Element.ALIGN_RIGHT,
+            VerticalAlignment = Element.ALIGN_TOP,
+            Padding = 6,
+            RunDirection = PdfWriter.RUN_DIRECTION_RTL
+        };
+
+        var professorsParagraph = new Paragraph();
+        professorsParagraph.Add(new Phrase("الأساتذة:", new Font(baseFont, 9, Font.BOLD)));
+        professorsParagraph.Add(Chunk.NEWLINE);
+
+        var professors = semesterClasses.Select(c => c.ProfessorName).Distinct().OrderBy(p => p).ToList();
+        for (int i = 0; i < professors.Count; i++)
+        {
+            professorsParagraph.Add(new Phrase($"{i + 1}. {professors[i]}", new Font(baseFont, 7, Font.NORMAL)));
+            if (i < professors.Count - 1) professorsParagraph.Add(Chunk.NEWLINE);
+        }
+
+        professorsParagraph.Alignment = Element.ALIGN_RIGHT;
+        professorsCell.AddElement(professorsParagraph);
+
+        infoTable.AddCell(coursesCell);
+        infoTable.AddCell(professorsCell);
+        document.Add(infoTable);
+    }
+
+    private int GetSemesterFromLevel(string levelName)
+    {
+        // تحويل اسم الفرقة إلى رقم السيمستر
+        return levelName switch
+        {
+            "الأولى" => 1, // يمكن أن يكون 1 أو 2
+            "الثانية" => 3, // يمكن أن يكون 3 أو 4
+            "الثالثة" => 5, // يمكن أن يكون 5 أو 6
+            "الرابعة" => 7, // يمكن أن يكون 7 أو 8
+            _ => 0
+        };
+    }
+
+    private string GetLevelNameFromSemester(int semester)
+    {
+        return semester switch
+        {
+            1 or 2 => "الفرقة الأولى",
+            3 or 4 => "الفرقة الثانية",
+            5 or 6 => "الفرقة الثالثة",
+            7 or 8 => "الفرقة الرابعة",
+            _ => "غير محدد"
+        };
+    }
+
+    
+ 
+    
 }

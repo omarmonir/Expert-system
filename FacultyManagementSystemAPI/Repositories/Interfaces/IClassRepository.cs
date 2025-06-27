@@ -13,7 +13,7 @@ namespace FacultyManagementSystemAPI.Repositories.Interfaces
         Task<bool> IsCourseAlreadyAssignedAsync(int courseId, int departmentId);
         Task AssignCourseToProfessorAsync(int courseId, string professorName);
         Task<bool> ClassExistsAsync(int? ClassId);
-        Task<bool> IsTimeAndLocationConflictAsync(TimeSpan startTime, TimeSpan endTime, string day, string location);
+        Task<bool> IsTimeAndLocationConflictAsync(TimeSpan startTime, TimeSpan endTime, string day, string location, int? excludeClassId = null);
         Task<int> CountAsync();
         Task<IEnumerable<string>> GetAllLocationsNameAsync();
         Task<IEnumerable<ClassDto>> GetAllClassesWithProfNameAndCourseNameAsyncOptimized(

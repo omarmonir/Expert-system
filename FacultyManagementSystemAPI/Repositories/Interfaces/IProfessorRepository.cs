@@ -13,5 +13,10 @@ namespace FacultyManagementSystemAPI.Repositories.Interfaces
         Task<IEnumerable<CourseDto>> GetCoursesByProfessorIdAsync(int professorId);
         Task<bool> ProfessorExistsAsync(string professorName);
         Task<IEnumerable<string>> GetAllProfessorsNameAsync();
+        Task<IEnumerable<ProfessorDto>> GetProfessorsByFiltersAsync(
+        string? departmentName,
+        string? professorName,
+        string? Position);
+        Task<IEnumerable<string>> GetAllProfessorsPositionAsync();
     }
 }

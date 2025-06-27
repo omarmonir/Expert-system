@@ -64,6 +64,7 @@ namespace FacultyManagementSystemAPI.Services.Implementes
             throw new NotImplementedException();
         }
 
+
         //public async Task<IEnumerable<StudentPerDepartmentDto>> GetStudentsPerDepartmentAsync()
         //{
         //    return await _reportRepository.GetStudentsPerDepartmentAsync();
@@ -83,6 +84,10 @@ namespace FacultyManagementSystemAPI.Services.Implementes
             return await _pdfService.GenerateStudentSchedulePdfAsync(classes, StudentName);
         }
 
+        public async Task<byte[]> GenerateAdminClassesPdfAsync(IEnumerable<ClassDto> classes, string? filterInfo = null)
+        {
+            return await _pdfService.GenerateAdminClassesPdfAsync(classes, filterInfo);
+        }
     }
 
 }

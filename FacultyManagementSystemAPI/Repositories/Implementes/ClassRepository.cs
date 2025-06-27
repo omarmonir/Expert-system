@@ -103,13 +103,22 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
             return await _dbContext.Classes
                  .AnyAsync(d => d.Id == ClassId);
         }
-        public async Task<bool> IsTimeAndLocationConflictAsync(TimeSpan startTime, TimeSpan endTime, string day, string location)
+        public async Task<bool> IsTimeAndLocationConflictAsync(TimeSpan startTime, TimeSpan endTime, string day, string location, int? excludeClassId = null)
         {
-            return await _dbSet.AnyAsync(c =>
-                EF.Property<string>(c, "Day") == day &&
-                EF.Property<string>(c, "Location") == location &&
-                (EF.Property<TimeSpan>(c, "StartTime") < endTime && EF.Property<TimeSpan>(c, "EndTime") > startTime)
+            var query = _dbSet.Where(c =>
+                c.Day == day &&
+                c.Location == location &&
+                // التحقق من تداخل الأوقات
+                (c.StartTime < endTime && c.EndTime > startTime)
             );
+
+            // استبعاد المحاضرة الحالية في حالة التعديل
+            if (excludeClassId.HasValue)
+            {
+                query = query.Where(c => c.Id != excludeClassId.Value);
+            }
+
+            return await query.AnyAsync();
         }
 
         public async Task<IEnumerable<ClassDto>> GetAllClassesWithProfNameAndCourseNameAsync(int pageNumber)
@@ -168,10 +177,10 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
         {
             return semester switch
             {
-                1 or 2 => "الفرقة الأولى",
-                3 or 4 => "الفرقة الثانية",
-                5 or 6 => "الفرقة الثالثة",
-                7 or 8 => "الفرقة الرابعة",
+                1 or 2 => "سنة أولى",      // بدون "الـ"
+                3 or 4 => "سنة ثانية",     // بدون "الـ"
+                5 or 6 => "سنة ثالثة",     // بدون "الـ"
+                7 or 8 => "سنة رابعة",     // بدون "الـ"
                 _ => "غير معروف"
             };
         }
@@ -227,10 +236,10 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
         {
             return level switch
             {
-                "الفرقة الأولى" => new List<byte> { 1, 2 },
-                "الفرقة الثانية" => new List<byte> { 3, 4 },
-                "الفرقة الثالثة" => new List<byte> { 5, 6 },
-                "الفرقة الرابعة" => new List<byte> { 7, 8 },
+                "سنة أولى" => new List<byte> { 1, 2 },   // بدون "الـ"
+                "سنة ثانية" => new List<byte> { 3, 4 },  // بدون "الـ"
+                "سنة ثالثة" => new List<byte> { 5, 6 },  // بدون "الـ"
+                "سنة رابعة" => new List<byte> { 7, 8 },  // بدون "الـ"
                 _ => new List<byte>()
             };
         }

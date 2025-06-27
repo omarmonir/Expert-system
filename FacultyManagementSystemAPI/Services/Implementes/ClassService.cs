@@ -101,13 +101,20 @@ namespace FacultyManagementSystemAPI.Services.Implementes
 
             if (updateClassDto == null)
                 throw new ArgumentNullException("البيانات المدخلة لا يمكن أن تكون فارغة.");
+            var professor = await _classRepository.GetProfessorByNameAsync(updateClassDto.ProfessorName)
+             ?? throw new KeyNotFoundException($"الدكتور '{updateClassDto.ProfessorName}' غير موجود.");
+
+            var course = await _courseRepository.GetCoursesByNamesAsync(updateClassDto.CourseName)
+                ?? throw new KeyNotFoundException($"المادة '{updateClassDto.CourseName}' غير موجودة.");
+
 
             // التحقق من تعارض الوقت والمكان
             bool isConflict = await _classRepository.IsTimeAndLocationConflictAsync(
                 updateClassDto.StartTime,
                 updateClassDto.EndTime,
                 updateClassDto.Day,
-                updateClassDto.Location
+                updateClassDto.Location,
+                id
             );
 
             if (isConflict)
@@ -116,14 +123,11 @@ namespace FacultyManagementSystemAPI.Services.Implementes
             var Class = await _classRepository.GetByIdAsync(id)
            ?? throw new KeyNotFoundException($"لم يتم العثور على المحاضرة برقم {id}.");
 
-            bool isAlreadyAssigned = await _classRepository.IsCourseAlreadyAssignedAsync(updateClassDto.CourseId, updateClassDto.ProfessorId);
-            if (isAlreadyAssigned)
-            {
-                throw new InvalidOperationException($"الكورس موجود بالفعل.");
-            }
 
             // إنشاء الفصل
             var courseUpdate = _mapper.Map(updateClassDto, Class);
+            courseUpdate.ProfessorId = professor.Id;
+            courseUpdate.CourseId = course.Id;
             await _classRepository.UpdateAsync(id, courseUpdate);
 
 

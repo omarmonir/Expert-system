@@ -313,6 +313,16 @@ namespace FacultyManagementSystemAPI.Services.Implementes
                 throw new Exception("لا يوجد أي دكاترة");
 
             return names;
+        } 
+        public async Task<IEnumerable<string>> GetAllProfessorsPositionAsync()
+        {
+
+            var names = await _professorRepository.GetAllProfessorsPositionAsync();
+
+            if (names == null || !names.Any())
+                throw new Exception("لا يوجد أي دكاترة");
+
+            return names;
         }
 
         public async Task<IEnumerable<ProfessorDto>> GetByDepartmentIdAsync(int departmentId)
@@ -337,6 +347,14 @@ namespace FacultyManagementSystemAPI.Services.Implementes
             if (professorDto == null || !professorDto.Any())
                 throw new Exception("لا توجد مقررات لهذا الدكتور.");
             return professorDto;
+        }
+
+        public async Task<IEnumerable<ProfessorDto>> GetProfessorsByFiltersAsync(
+       string? departmentName,
+       string? professorName,
+       string? Position)
+        {
+            return await _professorRepository.GetProfessorsByFiltersAsync(departmentName, professorName, Position);
         }
 
         public async Task UpdateAsync(int id, UpdateProfessorDto updateProfessorDto)

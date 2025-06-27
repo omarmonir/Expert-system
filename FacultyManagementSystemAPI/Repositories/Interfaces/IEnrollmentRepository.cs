@@ -26,6 +26,8 @@ namespace FacultyManagementSystemAPI.Repositories.Interfaces
         Task<Course?> GetCourseByIdAsync(int id);
         Task<Student?> GetStudentByIdAsync(int id);
         Task<bool> ExistsAsync(int studentId, int courseId);
+        Task<IEnumerable<EnrollmentDto>> GetEnrollmentsAsync(string? studentName);
+
     }
 
 }

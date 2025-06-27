@@ -19,5 +19,6 @@ namespace FacultyManagementSystemAPI.Services.Interfaces
         Task<byte[]> ExportToPdfAsync<T>(IEnumerable<T> data, string title);
         Task<byte[]> GenerateProfessorSchedulePdfAsync(IEnumerable<ClassDto> classes, string professorName);
         Task<byte[]> GenerateStudentSchedulePdfAsync(IEnumerable<ClassDto> classes, string StudentName);
+        Task<byte[]> GenerateAdminClassesPdfAsync(IEnumerable<ClassDto> classes, string? filterInfo = null);
     }
 }

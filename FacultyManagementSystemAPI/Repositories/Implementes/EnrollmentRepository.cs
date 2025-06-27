@@ -215,6 +215,36 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                 .ToListAsync();
         }
 
+
+        public async Task<IEnumerable<EnrollmentDto>> GetEnrollmentsAsync(string? studentName)
+        {
+            var query = _dbContext.Enrollments.AsNoTracking();
+
+            if (!string.IsNullOrWhiteSpace(studentName))
+            {
+                var normalizedStudentName = NormalizeArabicText(studentName);
+                query = query.Where(e => EF.Functions.Like(e.Student.Name, $"%{studentName}%"));
+            }
+
+        
+            // جلب البيانات مع تضمين العلاقات المطلوبة واستخدام التعيين المباشر
+            return await query
+                .Include(e => e.Student)
+                .Include(e => e.Course)
+                .Select(e => new EnrollmentDto
+                {
+                    Id = e.Id,
+                    StudentID = e.StudentId,
+                    StudentName = e.Student.Name ?? "غير معروف",
+                    CourseCode = e.Course.Code ?? "غير معروف",
+                    CourseName = e.Course.Name ?? "غير معروف",
+                    EnrollmentDate = e.AddedEnrollmentDate,
+                    EnrollmentStatus = e.IsCompleted,
+                    Semester = e.Semester
+                })
+                .ToListAsync();
+        }
+
         public async Task<Course?> GetCourseByIdAsync(int id)
         {
             return await _dbContext.Courses.FindAsync(id);

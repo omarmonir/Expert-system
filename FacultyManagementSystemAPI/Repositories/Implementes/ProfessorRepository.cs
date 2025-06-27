@@ -126,11 +126,91 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
 
             return names;
         }
+        public async Task<IEnumerable<string>> GetAllProfessorsPositionAsync()
+        {
+            var Positions = await _context.Professors
+          .Select(d => d.Position)
+          .Distinct()
+          .ToListAsync();
+
+            return Positions;
+        }
 
         public async Task<Department?> GetDepartmentByNameAsync(string name)
         {
             return await _context.Departments
                 .FirstOrDefaultAsync(d => d.Name.ToLower() == name.ToLower());
         }
+        public async Task<IEnumerable<ProfessorDto>> GetProfessorsByFiltersAsync(
+       string? departmentName,
+       string? professorName, 
+       string? Position)
+        {
+            var professorQuery = _context.Professors.AsNoTrackingWithIdentityResolution();
+
+           
+
+            var professors = await professorQuery
+                .Select(p => new ProfessorDto
+                {
+                    Id = p.Id,
+                    FullName = p.FullName,
+                    NationalId = p.NationalId,
+                    Gender = p.Gender,
+                    DateOfBirth = p.DateOfBirth,
+                    Address = p.Address,
+                    Email = p.Email,
+                    Phone = p.Phone,
+                    JoinDate = p.Join_Date,
+                    Position = p.Position,
+                    ImagePath = p.ImagePath,
+                    DepartmentName = _context.Departments
+                        .Where(d => d.Id == p.DepartmentId)
+                        .Select(d => d.Name)
+                        .FirstOrDefault()
+                })
+                .ToListAsync();
+
+            // Apply name filter in memory (for Arabic text normalization)
+            if (!string.IsNullOrWhiteSpace(professorName))
+            {
+                professorName = NormalizeArabicText(professorName);
+                professors = professors
+                    .Where(p => NormalizeArabicText(p.FullName).Contains(professorName))
+                    .ToList();
+            }
+            if (!string.IsNullOrWhiteSpace(Position))
+            {
+                Position = NormalizeArabicText(Position);
+                professors = professors
+                    .Where(p => NormalizeArabicText(p.Position).Equals(Position, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+
+            // Apply department filter in memory (for Arabic text normalization)
+            if (!string.IsNullOrWhiteSpace(departmentName))
+            {
+                departmentName = NormalizeArabicText(departmentName);
+                professors = professors
+                    .Where(p => NormalizeArabicText(p.DepartmentName).Contains(departmentName))
+                    .ToList();
+            }
+
+            return professors;
+        }
+
+        private string NormalizeArabicText(string? text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+                return string.Empty;
+
+            return text.Replace('أ', 'ا')
+                       .Replace('إ', 'ا')
+                       .Replace('آ', 'ا')
+                       .Replace('ى', 'ي')
+                       .Replace('ه', 'ة');
+        }
+
     }
+
 }

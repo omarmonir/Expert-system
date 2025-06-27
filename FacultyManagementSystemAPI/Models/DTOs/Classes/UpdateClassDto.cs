@@ -15,7 +15,7 @@ namespace FacultyManagementSystemAPI.Models.DTOs.Classes
 
         
         [MaxLength(20, ErrorMessage = "يجب ألا يتجاوز اليوم 20 حرفًا.")]
-        [RegularExpression(@"^(الأحد|الإثنين|الثلاثاء|الأربعاء|السبت|الخميس)$", ErrorMessage = "يجب أن يكون اليوم بين السبت والخميس.")]
+        //[RegularExpression(@"^(الأحد|الإثنين|الثلاثاء|الأربعاء|السبت|الخميس)$", ErrorMessage = "يجب أن يكون اليوم بين السبت والخميس.")]
         [DefaultValue("الثلاثاء")]
         public string Day { get; set; }
 
@@ -23,12 +23,11 @@ namespace FacultyManagementSystemAPI.Models.DTOs.Classes
         [DefaultValue("معمل 5 - مبنى الفيزياء")]
         public string Location { get; set; }
 
-       
-        [DefaultValue(1035)]
-        public int ProfessorId { get; set; }
 
-        
-        [DefaultValue(10085)]
-        public int CourseId { get; set; }
+        [Required(ErrorMessage = "اسم الدكتور مطلوب.")]
+        public string ProfessorName { get; set; }
+
+        [Required(ErrorMessage = "اسم المادة مطلوب.")]
+        public string CourseName { get; set; }
     }
 }

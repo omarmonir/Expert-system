@@ -1,4 +1,5 @@
-﻿using FacultyManagementSystemAPI.Services.Implementes;
+﻿using FacultyManagementSystemAPI.Models.DTOs.professors;
+using FacultyManagementSystemAPI.Services.Implementes;
 using FacultyManagementSystemAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -8,12 +9,15 @@ namespace FacultyManagementSystemAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ReportsController(IReportService reportService, IStudentService studentService, ICourseService courseService, IClassService classService) : ControllerBase
+    public class ReportsController(IReportService reportService, IStudentService studentService, IEnrollmentService enrollmentService,
+        ICourseService courseService, IClassService classService, IProfessorService professorService) : ControllerBase
     {
         private readonly IReportService _reportService = reportService;
         private readonly IStudentService _studentService = studentService;
         private readonly ICourseService _courseService = courseService;
         private readonly IClassService _classService = classService;
+        private readonly IEnrollmentService _enrollmentService = enrollmentService;
+        private readonly IProfessorService _professorService = professorService;
         private readonly DynamicTitleGenerator _titleGenerator = new DynamicTitleGenerator();
 
 
@@ -122,6 +126,38 @@ namespace FacultyManagementSystemAPI.Controllers
             var data = await _reportService.GetFilteredCoursesAsync(courseName, departmentName, courseStatus, divisionName);
             var fileBytes = await _reportService.ExportToPdfAsync(data, title);
             return File(fileBytes, "application/pdf", fileName);
+        } 
+        [HttpGet("StudentEnrollment/pdf")]
+        public async Task<IActionResult> GetEnrollment([FromQuery] string? studentName)
+        {
+            var filters = new Dictionary<string, object>
+            {
+                ["studentName"] = studentName,
+               
+            };
+            var title = _titleGenerator.GenerateTitle("بيانات التسجيلات", filters);
+            var fileName = _titleGenerator.GenerateFileName("Enrollment", filters);
+            var data = await _enrollmentService.GetEnrollmentsAsync(studentName);
+            var fileBytes = await _reportService.ExportToPdfAsync(data, title);
+            return File(fileBytes, "application/pdf", fileName);
+        } 
+        
+        [HttpGet("FilterProfessor/pdf")]
+        public async Task<ActionResult<IEnumerable<ProfessorDto>>> GetProfessorsByFilters(
+        [FromQuery] string? departmentName,
+        [FromQuery] string? professorName,
+        [FromQuery] string? Position)
+        {
+            var filters = new Dictionary<string, object>
+            {
+                ["departmentName"] = departmentName,
+                ["professorName"] = professorName,               
+            };
+            var title = _titleGenerator.GenerateTitle("بيانات الدكاترة", filters);
+            var fileName = _titleGenerator.GenerateFileName("ProfessorData", filters);
+            var data = await _professorService.GetProfessorsByFiltersAsync(departmentName, professorName, Position);
+            var fileBytes = await _reportService.ExportToPdfAsync(data, title);
+            return File(fileBytes, "application/pdf", fileName);
         }
         
         [HttpGet("classes/pdf")]
@@ -203,6 +239,71 @@ namespace FacultyManagementSystemAPI.Controllers
             {
                 return StatusCode(500, $"حدث خطأ أثناء إنشاء التقرير: {ex.Message}");
             }
+        }
+        [HttpGet("pdf")]
+        public async Task<IActionResult> GetClassesPdf(
+            [FromQuery] string? divisionName = null,
+            [FromQuery] string? level = null)
+        {
+            try
+            {
+               
+
+                // جلب البيانات مع الفلترة
+                var classes = await _classService.GetAllClassesWithProfNameAndCourseNameAsyncOptimized(
+                    divisionName, level);
+
+                if (!classes.Any())
+                {
+                    return NotFound(new { Message = "لا توجد محاضرات لإنشاء التقرير" });
+                }
+
+                // إنشاء معلومات الفلترة للتقرير
+                var filterInfo = BuildFilterInfo(divisionName, level);
+
+                // إنشاء ملف PDF
+                var pdfBytes = await _reportService.GenerateAdminClassesPdfAsync(classes, filterInfo);
+
+                // إنشاء اسم الملف
+                var fileName = BuildPdfFileName(divisionName, level);
+
+                return File(pdfBytes, "application/pdf", fileName);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    Success = false,
+                    Message = "حدث خطأ أثناء إنشاء التقرير",
+                    Error = ex.Message
+                });
+            }
+        }
+        private string BuildFilterInfo(string? divisionName, string? level)
+        {
+            var filterParts = new List<string>();
+
+            if (!string.IsNullOrEmpty(divisionName))
+                filterParts.Add($"الشعبة: {divisionName}");
+
+            if (!string.IsNullOrEmpty(level))
+                filterParts.Add($"الفرقة: {level}");
+
+            return filterParts.Any() ? string.Join(" | ", filterParts) : null;
+        }
+        private string BuildPdfFileName(string? divisionName, string? level)
+        {
+            var fileName = "جدول_المحاضرات";
+
+            if (!string.IsNullOrEmpty(divisionName))
+                fileName += $"_شعبة_{divisionName.Replace(" ", "_")}";
+
+            if (!string.IsNullOrEmpty(level))
+                fileName += $"_فرقة_{level.Replace(" ", "_")}";
+
+            fileName += $"_{DateTime.Now:yyyy-MM-dd}.pdf";
+
+            return fileName;
         }
     }
 }

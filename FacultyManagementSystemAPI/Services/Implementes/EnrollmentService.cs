@@ -278,5 +278,15 @@ namespace FacultyManagementSystemAPI.Services.Implementes
 
             return status;
         }
+
+        public async Task<IEnumerable<EnrollmentDto>> GetEnrollmentsAsync(string? studentName)
+        {
+            var enrollments = await _enrollmentRepository.GetEnrollmentsAsync(studentName);
+
+            if (!enrollments.Any())
+                throw new KeyNotFoundException("لا يوجد تسجيلات مطابقة للمعايير المحددة.");
+
+            return enrollments;
+        }
     }
 }

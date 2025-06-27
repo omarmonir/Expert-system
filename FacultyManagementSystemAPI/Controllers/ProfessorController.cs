@@ -212,5 +212,46 @@ namespace FacultyManagementSystemAPI.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpGet("AllPositionsProfessors")]
+        public async Task<IActionResult> GetAllProfessorsPosition()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            try
+            {
+                var names = await _professorService.GetAllProfessorsPositionAsync();
+                return Ok(names);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("FilterByProfessorNameAndDepartmentName")]
+        public async Task<ActionResult<IEnumerable<ProfessorDto>>> GetProfessorsByFilters(
+        [FromQuery] string? departmentName,
+        [FromQuery] string? professorName,
+        [FromQuery] string? Position)
+        {
+            try
+            {
+                var professors = await _professorService.GetProfessorsByFiltersAsync(
+                    departmentName,
+                    professorName,
+                    Position);
+
+                return Ok(professors);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                return StatusCode(500, "An error occurred while retrieving professors.");
+            }
+        }
     }
 }
+
