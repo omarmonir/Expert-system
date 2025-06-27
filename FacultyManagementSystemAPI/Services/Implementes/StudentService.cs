@@ -636,6 +636,15 @@ namespace FacultyManagementSystemAPI.Services.Implementes
 
             return status;
         }
+        public async Task<IEnumerable<string>> GetAllStudentNamesAsync()
+        {
+            var status = await _studentRepository.GetAllStudentNamesAsync();
+
+            if (status == null || !status.Any())
+                throw new Exception("لا يوجد أي طلاب");
+
+            return status;
+        }
 
         public async Task<IEnumerable<string>> GetAllStudentLevelsAsync()
         {

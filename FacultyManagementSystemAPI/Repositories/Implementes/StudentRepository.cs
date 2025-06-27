@@ -589,6 +589,15 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
 
             return status;
         }
+        public async Task<IEnumerable<string>> GetAllStudentNamesAsync()
+        {
+            var Names = await _dbContext.Students
+                .Select(d => d.Name)
+                .Distinct()
+                .ToListAsync();
+
+            return Names;
+        }
 
         public async Task<IEnumerable<string>> GetAllStudentLevelsAsync()
         {

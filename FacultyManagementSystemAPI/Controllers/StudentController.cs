@@ -505,6 +505,24 @@ namespace FacultyManagementSystemAPI.Controllers
             {
                 return BadRequest(ex.Message);
             }
+        } 
+        
+        [HttpGet("AllStudentNames")]
+        public async Task<IActionResult> GetAllStudentNames()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            try
+            {
+                var status = await _studentService.GetAllStudentNamesAsync();
+                return Ok(status);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet("AllStudentLevels")]
