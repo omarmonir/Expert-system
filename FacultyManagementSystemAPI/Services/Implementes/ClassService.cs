@@ -66,6 +66,10 @@ namespace FacultyManagementSystemAPI.Services.Implementes
             var professor = await _classRepository.GetProfessorByNameAsync(dto.ProfessorName)
                 ?? throw new KeyNotFoundException($"الدكتور '{dto.ProfessorName}' غير موجود.");
 
+            // التحقق من حالة الدكتور النشطة
+            if (professor.ApplicationUser?.IsActive != true)
+                throw new InvalidOperationException($"الدكتور '{dto.ProfessorName}' غير نشط حالياً ولا يمكن تعيين محاضرات له.");
+
             var course = await _courseRepository.GetCoursesByNamesAsync(dto.CourseName)
                 ?? throw new KeyNotFoundException($"المادة '{dto.CourseName}' غير موجودة.");
 
@@ -73,7 +77,6 @@ namespace FacultyManagementSystemAPI.Services.Implementes
             bool isConflict = await _classRepository.IsTimeAndLocationConflictAsync(
                 dto.StartTime, dto.EndTime, dto.Day, dto.Location
             );
-
             if (isConflict)
                 throw new Exception("هناك محاضرة أخرى في نفس المكان والوقت.");
 

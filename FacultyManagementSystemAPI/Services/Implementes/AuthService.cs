@@ -24,6 +24,7 @@ namespace FacultyManagementSystemAPI.Services.Implementes
         private readonly IEmailService _emailService;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly int _refreshTokenValidityInDays;
+        private readonly AppDbContext _context;
 
         public AuthService(
             UserManager<ApplicationUser> userManager,
@@ -32,7 +33,8 @@ namespace FacultyManagementSystemAPI.Services.Implementes
             IConfiguration configuration,
             IMapper mapper,
             IEmailService emailService,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            AppDbContext context)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -42,6 +44,7 @@ namespace FacultyManagementSystemAPI.Services.Implementes
             _httpContextAccessor = httpContextAccessor;
             _refreshTokenValidityInDays = configuration.GetValue<int>("Jwt:RefreshTokenValidityInDays");
             _roleManager = roleManager;
+            _context = context;
         }
         public async Task AddAsync(UserCreateDto userCreateDto)
         {
@@ -258,6 +261,17 @@ namespace FacultyManagementSystemAPI.Services.Implementes
             if (!result.Succeeded)
                 throw new Exception(string.Join(", ", result.Errors.Select(e => e.Description)));
 
+            if (user.UserType == ConstantRoles.Student && user.StudentId.HasValue)
+            {
+                var student = await _context.Students.FindAsync(user.StudentId.Value);
+                if (student != null)
+                {
+                    student.status = "غير نشط"; // أو "معطل" أو أي حالة تريدها
+                    _context.Students.Update(student);
+                    await _context.SaveChangesAsync();
+                }
+            }
+
             string subject = "تم تعطيل حسابك";
             string body = $@"
             <h2>إشعار تعطيل الحساب</h2>
@@ -286,6 +300,16 @@ namespace FacultyManagementSystemAPI.Services.Implementes
             var result = await _userManager.UpdateAsync(user);
             if (!result.Succeeded)
                 throw new Exception(string.Join(", ", result.Errors.Select(e => e.Description)));
+            if (user.UserType == ConstantRoles.Student && user.StudentId.HasValue)
+            {
+                var student = await _context.Students.FindAsync(user.StudentId.Value);
+                if (student != null)
+                {
+                    student.status = "نشط"; // أو "مفعل" أو الحالة الافتراضية
+                    _context.Students.Update(student);
+                    await _context.SaveChangesAsync();
+                }
+            }
 
             string subject = "تم إعادة تفعيل حسابك";
             string body = $@"
