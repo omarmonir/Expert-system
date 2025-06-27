@@ -1,4 +1,4 @@
-﻿using FacultyManagementSystemAPI.Data;
+﻿ using FacultyManagementSystemAPI.Data;
 using FacultyManagementSystemAPI.Models.DTOs.Courses;
 using FacultyManagementSystemAPI.Models.DTOs.professors;
 using FacultyManagementSystemAPI.Models.Entities;

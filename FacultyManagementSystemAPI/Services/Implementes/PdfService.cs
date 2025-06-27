@@ -358,7 +358,14 @@ public partial class PdfService
             { "DivisionNames", "الشعبة" },
             { "PreCourseName", "الكورسات السابقة" },
              {"FullName", "الاسم"},
-            {"JoinDate", "تاريخ التوظيف"},
+            {"StudentId", "الرقم"},
+            {"StudentName", "الاسم"},
+            {"CourseName", "الكورس"},
+            {"Exam1Grade", "درجة الامتحان الاول"},
+            {"Exam2Grade", "درجة الامتحان الثاني"},
+            {"Grade", "درجه الامتحان النهائي"},
+            {"FinalGrade", "الدرجة النهائية"},
+            {"Semster", "الفصل الدراسي"},
             {"Position", "المنصب"}
         };
 

@@ -637,15 +637,15 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                .Include(e => e.Student)
                .Select(e => new StudentExamGradesDto
                {
-                   StudentId = e.Student.Id,
+                   StudentId = e.StudentId,
                    CourseName = e.Course.Name,
                    Code = e.Course.Code,
                    StudentName = e.Student.Name,
                    Exam1Grade = e.Exam1Grade ?? 0.0m,
                    Exam2Grade = e.Exam2Grade ?? 0.0m,
                    Grade = e.Grade ?? 0.0m,
-                   FinalGrade = e.FinalGrade ?? 0.0m
-
+                   FinalGrade = e.Grade == 0.0m ? 0.0m : (e.FinalGrade ?? 0.0m),
+                   Semster = e.Semester
                })
                .ToListAsync();
         }
@@ -698,12 +698,11 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
                     Exam1Grade = e.Exam1Grade ?? 0.0m,
                     Exam2Grade = e.Exam2Grade ?? 0.0m,
                     Grade = e.Grade ?? 0.0m,
-                    FinalGrade = e.FinalGrade ?? 0.0m,
-                    Semster = e.NumberOFSemster
+                    FinalGrade = e.Grade == 0.0m ? 0.0m : (e.FinalGrade ?? 0.0m),
+                    Semster = e.Semester
                 })
                 .ToListAsync();
         }
-
     }
 
 

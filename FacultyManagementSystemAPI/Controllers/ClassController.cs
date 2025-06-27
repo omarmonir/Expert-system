@@ -35,7 +35,7 @@ namespace FacultyManagementSystemAPI.Controllers
         }
 
         [HttpPut("UpdateClass/{id}")]
-        public async Task<IActionResult> UpdateClass(int id, [FromForm] UpdateClassDto updateClassDto)
+        public async Task<IActionResult> UpdateClass(int id, [FromBody] UpdateClassDto updateClassDto)
         {
             try
             {
@@ -52,6 +52,7 @@ namespace FacultyManagementSystemAPI.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
 
         [HttpPut("AssignCourseToProfessor")]
         public async Task<IActionResult> AssignCourseToProfessor([FromBody] AssignClassRequestDto assignClassRequest)

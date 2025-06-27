@@ -5,20 +5,19 @@ namespace FacultyManagementSystemAPI.Models.DTOs.Auth
 {
     public class UpdateUserDto
     {
-
-        //[MaxLength(100, ErrorMessage = "Full Name cannot exceed 100 characters.")]
-        //[DefaultValue("أسم المستخدم")]
-        //public string? UserName { get; set; }
-
+        [Required(ErrorMessage = "الاسم الكامل مطلوب")]
+        [MaxLength(100, ErrorMessage = "يجب ألا يتجاوز الاسم الكامل 100 حرف")]
+        [DefaultValue("الأسم كامل")]
+        public string Name { get; set; }
 
         [EmailAddress(ErrorMessage = "Invalid email format.")]
         [MaxLength(100, ErrorMessage = "Email cannot exceed 100 characters.")]
         [DefaultValue("user@example.com")]
-        public string? Email { get; set; }
+        public string Email { get; set; }
 
         [Phone(ErrorMessage = "Invalid phone number format.")]
         [MaxLength(15, ErrorMessage = "Phone Number cannot exceed 15 characters.")]
         [DefaultValue("+201234567891")]
-        public string? PhoneNumber { get; set; }
+        public string PhoneNumber { get; set; }
     }
 }

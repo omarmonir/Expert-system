@@ -107,6 +107,30 @@ namespace FacultyManagementSystemAPI.Controllers
             var fileBytes = await _reportService.ExportToPdfAsync(data, title);
             return File(fileBytes, "application/pdf", fileName);
         }
+
+        [HttpGet("StudentsWithExamGradesByCourseId/{courseId}")]
+        public async Task<IActionResult> GetStudentsWithExamGradesByCourseId(int courseId)
+        {
+            try
+            {
+                // إنشاء الفيلتر للعنوان واسم الملف
+                var filters = await _courseService.GetByIdWithPreCourseNameAsync(courseId);
+
+
+                // جلب البيانات
+                var students = await _studentService.GetStudentsWithExamGradesByCourseIdAsync(courseId);
+
+                // تصدير البيانات إلى PDF
+                var fileBytes = await _reportService.ExportToPdfAsync(students, $"درجات الطلاب في كورس {filters.Name}");
+
+                // إرجاع الملف
+                return File(fileBytes, "application/pdf", "StudentGrades");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
         [HttpGet("FilterCourses/pdf")]
         public async Task<IActionResult> GetFilteredCourses(
                                          [FromQuery] string? courseName,

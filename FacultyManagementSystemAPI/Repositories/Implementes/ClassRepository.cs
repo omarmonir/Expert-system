@@ -103,23 +103,41 @@ namespace FacultyManagementSystemAPI.Repositories.Implementes
             return await _dbContext.Classes
                  .AnyAsync(d => d.Id == ClassId);
         }
-        public async Task<bool> IsTimeAndLocationConflictAsync(TimeSpan startTime, TimeSpan endTime, string day, string location, int? excludeClassId = null)
+        public async Task<bool> IsTimeAndLocationConflictAsync(
+            TimeSpan startTime,
+            TimeSpan endTime,
+            string day,
+            string location,
+            int? excludeClassId = null)
         {
-            var query = _dbSet.Where(c =>
-                c.Day == day &&
-                c.Location == location &&
-                // التحقق من تداخل الأوقات
-                (c.StartTime < endTime && c.EndTime > startTime)
-            );
+            // تتبع البيانات المُرسلة
+            Console.WriteLine($"[ConflictCheck] Checking time conflict:");
+            Console.WriteLine($"StartTime: {startTime}, EndTime: {endTime}, Day: '{day}', Location: '{location}', Exclude ID: {excludeClassId}");
 
-            // استبعاد المحاضرة الحالية في حالة التعديل
-            if (excludeClassId.HasValue)
+            var query = _dbSet.AsQueryable();
+
+            // استبعاد المحاضرة نفسها إذا كانت في وضع التعديل
+            if (excludeClassId.HasValue && excludeClassId.Value > 0)
             {
                 query = query.Where(c => c.Id != excludeClassId.Value);
             }
 
-            return await query.AnyAsync();
+            // التحقق من تعارض الوقت والمكان في نفس اليوم
+            query = query.Where(c =>
+                c.Day.Trim().ToLower() == day.Trim().ToLower() &&
+                c.Location.Trim().ToLower() == location.Trim().ToLower() &&
+                c.StartTime < endTime &&
+                c.EndTime > startTime
+            );
+
+            var hasConflict = await query.AnyAsync();
+
+            Console.WriteLine($"[ConflictCheck] Conflict found: {hasConflict}");
+
+            return hasConflict;
         }
+
+
 
         public async Task<IEnumerable<ClassDto>> GetAllClassesWithProfNameAndCourseNameAsync(int pageNumber)
         {

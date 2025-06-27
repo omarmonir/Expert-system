@@ -67,7 +67,7 @@ namespace FacultyManagementSystemAPI.Services.Implementes
                 ?? throw new KeyNotFoundException($"الدكتور '{dto.ProfessorName}' غير موجود.");
 
             // التحقق من حالة الدكتور النشطة
-            if (professor.ApplicationUser?.IsActive != true)
+            if (professor.ApplicationUser?.IsActive == false)
                 throw new InvalidOperationException($"الدكتور '{dto.ProfessorName}' غير نشط حالياً ولا يمكن تعيين محاضرات له.");
 
             var course = await _courseRepository.GetCoursesByNamesAsync(dto.CourseName)
@@ -101,40 +101,38 @@ namespace FacultyManagementSystemAPI.Services.Implementes
 
         public async Task UpdateClassAsync(int id, UpdateClassDto updateClassDto)
         {
-
             if (updateClassDto == null)
                 throw new ArgumentNullException("البيانات المدخلة لا يمكن أن تكون فارغة.");
+
             var professor = await _classRepository.GetProfessorByNameAsync(updateClassDto.ProfessorName)
-             ?? throw new KeyNotFoundException($"الدكتور '{updateClassDto.ProfessorName}' غير موجود.");
+                ?? throw new KeyNotFoundException($"الدكتور '{updateClassDto.ProfessorName}' غير موجود.");
 
             var course = await _courseRepository.GetCoursesByNamesAsync(updateClassDto.CourseName)
                 ?? throw new KeyNotFoundException($"المادة '{updateClassDto.CourseName}' غير موجودة.");
 
+            var Class = await _classRepository.GetByIdAsync(id)
+                ?? throw new KeyNotFoundException($"لم يتم العثور على المحاضرة برقم {id}.");
 
-            // التحقق من تعارض الوقت والمكان
+            // التحقق من التعارض مع استثناء نفس المحاضرة
             bool isConflict = await _classRepository.IsTimeAndLocationConflictAsync(
                 updateClassDto.StartTime,
                 updateClassDto.EndTime,
                 updateClassDto.Day,
                 updateClassDto.Location,
-                id
+                id // هنا نمرر ID المحاضرة التي يتم تعديلها
             );
 
             if (isConflict)
                 throw new Exception("هناك محاضرة أخرى في نفس المكان والوقت.");
 
-            var Class = await _classRepository.GetByIdAsync(id)
-           ?? throw new KeyNotFoundException($"لم يتم العثور على المحاضرة برقم {id}.");
+            // تحديث البيانات
+            var updatedClass = _mapper.Map(updateClassDto, Class);
+            updatedClass.ProfessorId = professor.Id;
+            updatedClass.CourseId = course.Id;
 
-
-            // إنشاء الفصل
-            var courseUpdate = _mapper.Map(updateClassDto, Class);
-            courseUpdate.ProfessorId = professor.Id;
-            courseUpdate.CourseId = course.Id;
-            await _classRepository.UpdateAsync(id, courseUpdate);
-
-
+            await _classRepository.UpdateAsync(id, updatedClass);
         }
+
 
         public async Task DeleteClassAsync(int id)
         {

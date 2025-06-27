@@ -10,7 +10,7 @@
         public decimal? Exam2Grade { get; set; }
         public decimal? FinalGrade { get; set; } 
         public decimal? Grade { get; set; }
-        public int Semster { get; set; }
+        public string Semster { get; set; }
     }
 }
 

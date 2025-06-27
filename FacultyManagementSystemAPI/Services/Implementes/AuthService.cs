@@ -408,17 +408,22 @@ namespace FacultyManagementSystemAPI.Services.Implementes
             var user = await _userManager.FindByIdAsync(Id)
                 ?? throw new Exception("المستخدم غير موجود");
 
-            if ( user.PhoneNumber == model.PhoneNumber
+            // Fixed validation logic to include all fields
+            if (user.UserName == model.Name
+                && user.PhoneNumber == model.PhoneNumber
                 && user.Email == model.Email)
-                throw new Exception("لم تقم بالتعديل البيانات موجوده بالفعل");
+                throw new Exception("لم تقم بتعديل البيانات - البيانات موجودة بالفعل");
 
-            _mapper.Map(model, user);
+            // Map the updated fields
+            user.UserName = model.Name;
+            user.Email = model.Email;
+            user.PhoneNumber = model.PhoneNumber;
 
             var result = await _userManager.UpdateAsync(user);
             if (!result.Succeeded)
             {
                 var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-                throw new Exception($"فشل  في التعديل علي المستخدم: {errors}");
+                throw new Exception($"فشل في التعديل على المستخدم: {errors}");
             }
         }
 
