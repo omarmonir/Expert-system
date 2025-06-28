@@ -1,5 +1,6 @@
 ﻿using FacultyManagementSystemAPI.Models.DTOs.professors;
 using FacultyManagementSystemAPI.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FacultyManagementSystemAPI.Controllers
@@ -135,6 +136,29 @@ namespace FacultyManagementSystemAPI.Controllers
             {
                 return BadRequest(ex.Message);
             }
+        } 
+        
+        [HttpGet("ProfessorProfile")]
+        public async Task<IActionResult> GetById()
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+                var professorIdClaim = User.FindFirst("ProfessorId");
+                if (professorIdClaim == null)
+                    return Unauthorized("Invalid token: ProfessorId not found");
+
+                int professorId = int.Parse(professorIdClaim.Value);
+                var professorDto = await _professorService.GetByIdAsync(professorId);
+                return Ok(professorDto);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpGet("GetProfessorByDepartmentId/{id:int}")]
@@ -156,8 +180,9 @@ namespace FacultyManagementSystemAPI.Controllers
             }
         }
 
-        [HttpGet("GetCoursesByProfessorId/{id:int}")]
-        public async Task<IActionResult> GetCoursesByProfessorId(int id)
+        [Authorize(Roles = ConstantRoles.Professor)]
+        [HttpGet("GetCoursesByProfessorId")]
+        public async Task<IActionResult> GetCoursesByProfessorId()
         {
             try
             {
@@ -165,8 +190,13 @@ namespace FacultyManagementSystemAPI.Controllers
                 {
                     return BadRequest(ModelState);
                 }
+                var professorIdClaim = User.FindFirst("ProfessorId");
+                if (professorIdClaim == null)
+                    return Unauthorized("Invalid token: ProfessorId not found");
 
-                var professorDto = await _professorService.GetCoursesByProfessorIdAsync(id);
+                int professorId = int.Parse(professorIdClaim.Value);
+
+                var professorDto = await _professorService.GetCoursesByProfessorIdAsync(professorId);
                 return Ok(professorDto);
             }
             catch (Exception ex)

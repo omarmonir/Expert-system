@@ -1,6 +1,7 @@
 ﻿using FacultyManagementSystemAPI.Models.DTOs.Courses;
 using FacultyManagementSystemAPI.Services.Implementes;
 using FacultyManagementSystemAPI.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FacultyManagementSystemAPI.Controllers
@@ -149,6 +150,7 @@ namespace FacultyManagementSystemAPI.Controllers
         //        }
         //    }
 
+        [Authorize(Roles = ConstantRoles.Student)]
         [HttpGet("CoursesByStudentId/{studentId}")]
         public async Task<IActionResult> GetCoursesByStudentId(int studentId)
         {

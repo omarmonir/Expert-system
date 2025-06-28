@@ -2,6 +2,7 @@
 using FacultyManagementSystemAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace FacultyManagementSystemAPI.Controllers
 {
@@ -14,8 +15,8 @@ namespace FacultyManagementSystemAPI.Controllers
         //private readonly ICourseService _courseService = courseService;
         //private readonly IEnrollmentService _enrollmentService = enrollmentService;
 
-        //[Authorize(Roles = ConstantRoles.Admin)]
-        //[Authorize(Roles = ConstantRoles.SuperAdmin)]
+        [Authorize(Roles = ConstantRoles.Admin)]
+        [Authorize(Roles = ConstantRoles.SuperAdmin)]
         [HttpGet("AllStudents")]
         public async Task<IActionResult> GetAllWithDepartmentName([FromQuery] int pageNumber = 1)
         {
@@ -45,6 +46,38 @@ namespace FacultyManagementSystemAPI.Controllers
                 }
 
                 var studentDto = await _studentService.GetByIdWithDepartmentNameAsync(id);
+                return Ok(studentDto);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        [Authorize(Roles = ConstantRoles.Student)]
+        [HttpGet("StudentProfile")]
+        public async Task<IActionResult> GetStudent()
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+
+                // استخراج الـ ID من التوكن
+                var studentIdClaim = User.FindFirst("StudentId");
+                if (studentIdClaim == null)
+                    return Unauthorized("Invalid token: StudentId not found");
+
+                int studentId = int.Parse(studentIdClaim.Value);
+
+                var studentDto = await _studentService.GetByIdWithDepartmentNameAsync(studentId);
+
+                if (studentDto == null)
+                {
+                    return NotFound("Student not found");
+                }
+
                 return Ok(studentDto);
             }
             catch (Exception ex)
@@ -111,8 +144,10 @@ namespace FacultyManagementSystemAPI.Controllers
                 return BadRequest(ex.Message);
             }
         }
+        [Authorize(Roles = ConstantRoles.Admin)]
+        [Authorize(Roles = ConstantRoles.SuperAdmin)]
         [HttpPost("AddMultipleStudents")]
-        //[Authorize(Roles = "Admin, SuperAdmin")]
+        
         public async Task<IActionResult> AddMultiple([FromBody] List<CreateStudentDto> students)
         {
             try
@@ -143,7 +178,8 @@ namespace FacultyManagementSystemAPI.Controllers
                 return BadRequest(ex.Message);
             }
         }
-
+        [Authorize(Roles = ConstantRoles.Admin)]
+        [Authorize(Roles = ConstantRoles.SuperAdmin)]
         [HttpPut("UpdateStudent/{id}")]
         public async Task<IActionResult> Update(int id, [FromForm] UpdateStudentDto updateStudentDto)
         {
@@ -544,7 +580,7 @@ namespace FacultyManagementSystemAPI.Controllers
                 return BadRequest(ex.Message);
             }
         }
-
+        [Authorize(Roles = ConstantRoles.Professor)]
         [HttpGet("StudentsWithExamGradesByCourseId/{courseId}")]
         public async Task<IActionResult> GetStudentsWithExamGradesByCourseId(int courseId)
         {
@@ -591,6 +627,8 @@ namespace FacultyManagementSystemAPI.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [Authorize(Roles = ConstantRoles.Student)]
 
         [HttpGet("GetGradesByStudentId/{studentId}")]
         public async Task<IActionResult> GetGradesByStudentId(int studentId)
